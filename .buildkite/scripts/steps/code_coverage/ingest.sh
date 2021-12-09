@@ -12,6 +12,11 @@ export USER_FROM_VAULT="$(retry 5 5 vault read -field=username secret/kibana-iss
 export PASS_FROM_VAULT="$(retry 5 5 vault read -field=password secret/kibana-issues/prod/coverage/elasticsearch)"
 export HOST_FROM_VAULT="$(retry 5 5 vault read -field=host secret/kibana-issues/prod/coverage/elasticsearch)"
 
+echo "--- downloadPrevSha"
+.buildkite/scripts/steps/code_coverage/ingest/downloadPrevSha.sh
+echo "--- uploadPrevSha"
+.buildkite/scripts/steps/code_coverage/ingest/uploadPrevSha.sh
+
 .buildkite/scripts/bootstrap.sh
 
 node scripts/build_kibana_platform_plugins.js --no-cache
