@@ -1,0 +1,1274 @@
+{
+  "bfetchExplorer": {
+    "dependencies": ["bfetch", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dashboardEmbeddableExamples": {
+    "dependencies": ["embeddable", "embeddableExamples", "dashboard", "developerExamples", "kibanaReact"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dataViewFieldEditorExample": {
+    "dependencies": ["data", "dataViewFieldEditor", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "developerExamples": {
+    "dependencies": [],
+    "reverseDependencies": ["bfetchExplorer", "dashboardEmbeddableExamples", "dataViewFieldEditorExample", "embeddableExplorer", "expressionsExplorer", "fieldFormatsExample", "helloWorld", "locatorExplorer", "paertialResultsExample", "routingExample", "screenshotModeExample", "searchExamples", "stateContainersExamples", "uiActionsExplorer", "alertingExample", "embeddedLensExample", "exploratoryViewExample", "reportingExample", "testingEmbeddedLens", "thirdPartyLensNavigationPrompt", "thirdPartyVisLensExample", "uiActionsEnhancedExamples"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "embeddableExamples": {
+    "dependencies": ["embeddable", "uiActions", "savedObjects", "dashboard", "kibanaUtils"],
+    "reverseDependencies": ["dashboardEmbeddableExamples", "embeddableExplorer"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "embeddableExplorer": {
+    "dependencies": ["uiActions", "inspector", "embeddable", "embeddableExamples", "developerExamples", "dashboard", "kibanaReact", "savedObjects"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionsExplorer": {
+    "dependencies": ["expressions", "inspector", "uiActions", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "fieldFormatsExample": {
+    "dependencies": ["developerExamples", "fieldFormats", "dataViewFieldEditor", "data"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "helloWorld": {
+    "dependencies": ["developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "locatorExamples": {
+    "dependencies": ["share"],
+    "reverseDependencies": ["locatorExplorer"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "locatorExplorer": {
+    "dependencies": ["share", "locatorExamples", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "paertialResultsExample": {
+    "dependencies": ["developerExamples", "expressions"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "routingExample": {
+    "dependencies": ["developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "screenshotModeExample": {
+    "dependencies": ["navigation", "screenshotMode", "usageCollection", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "searchExamples": {
+    "dependencies": ["navigation", "data", "developerExamples", "kibanaUtils", "share"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "shareExamples": {
+    "dependencies": ["share"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "stateContainersExamples": {
+    "dependencies": ["navigation", "data", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "uiActionsExamples": {
+    "dependencies": ["uiActions"],
+    "reverseDependencies": ["uiActionsExplorer"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "uiActionsExplorer": {
+    "dependencies": ["uiActions", "uiActionsExamples", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "testPlugin": {
+    "dependencies": ["navigation"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "advancedSettings": {
+    "dependencies": ["management", "home", "usageCollection"],
+    "reverseDependencies": ["telemetryManagementSection", "spaces"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "bfetch": {
+    "dependencies": [],
+    "reverseDependencies": ["bfetchExplorer", "data", "canvas", "dataEnhanced"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionGauge": {
+    "dependencies": ["expressions", "fieldFormats", "charts", "visualizations", "presentationUtil", "data"],
+    "reverseDependencies": ["lens"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionHeatmap": {
+    "dependencies": ["expressions", "fieldFormats", "charts", "visualizations", "presentationUtil", "data"],
+    "reverseDependencies": ["lens"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionMetricVis": {
+    "dependencies": ["expressions", "fieldFormats", "charts", "visualizations", "presentationUtil"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionPartitionVis": {
+    "dependencies": ["charts", "data", "expressions", "visualizations", "fieldFormats", "presentationUtil"],
+    "reverseDependencies": ["visTypePie"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionTagcloud": {
+    "dependencies": ["expressions", "visualizations", "charts", "presentationUtil", "fieldFormats"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "charts": {
+    "dependencies": ["expressions"],
+    "reverseDependencies": ["expressionGauge", "expressionHeatmap", "expressionMetricVis", "expressionPartitionVis", "expressionTagcloud", "discover", "visTypeHeatmap", "visTypeMetric", "visTypePie", "visTypeTagcloud", "visTypeTimelion", "visTypeTimeseries", "visTypeVislib", "visTypeXy", "alertingExample", "canvas", "dataVisualizer", "enterpriseSearch", "lens", "maps", "ml", "triggersActionsUi", "watcher"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "console": {
+    "dependencies": ["devTools", "share", "usageCollection", "home"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "controls": {
+    "dependencies": ["presentationUtil", "savedObjects", "kibanaReact", "expressions", "embeddable", "dataViews", "data"],
+    "reverseDependencies": ["dashboard"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "customIntegrations": {
+    "dependencies": ["presentationUtil"],
+    "reverseDependencies": ["home", "dataVisualizer", "enterpriseSearch", "fleet", "maps"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dashboard": {
+    "dependencies": ["data", "dataViews", "embeddable", "controls", "inspector", "navigation", "savedObjects", "share", "screenshotMode", "uiActions", "urlForwarding", "presentationUtil", "visualizations", "home", "spaces", "savedObjectsTaggingOss", "usageCollection"],
+    "reverseDependencies": ["dashboardEmbeddableExamples", "embeddableExamples", "embeddableExplorer", "uiActionsEnhancedExamples", "dashboardEnhanced", "lens", "maps", "ml", "securitySolution"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "data": {
+    "dependencies": ["bfetch", "expressions", "uiActions", "share", "inspector", "fieldFormats", "dataViews", "usageCollection"],
+    "reverseDependencies": ["dataViewFieldEditorExample", "fieldFormatsExample", "searchExamples", "stateContainersExamples", "expressionGauge", "expressionHeatmap", "expressionPartitionVis", "controls", "dashboard", "dataViewEditor", "dataViewFieldEditor", "dataViewManagement", "discover", "inputControlVis", "navigation", "savedObjects", "savedObjectsManagement", "visTypeHeatmap", "visTypeMetric", "visTypePie", "visTypeTable", "visTypeTagcloud", "visTypeTimelion", "visTypeTimeseries", "visTypeVega", "visTypeVislib", "visTypeXy", "visualizations", "alertingExample", "embeddedLensExample", "exploratoryViewExample", "testingEmbeddedLens", "thirdPartyLensNavigationPrompt", "uiActionsEnhancedExamples", "apm", "canvas", "dashboardEnhanced", "dataEnhanced", "dataVisualizer", "enterpriseSearch", "fileUpload", "fleet", "graph", "infra", "lens", "maps", "ml", "monitoring", "observability", "osquery", "reporting", "ruleRegistry", "security", "securitySolution", "stackAlerts", "timelines", "transform", "triggersActionsUi", "upgradeAssistant", "uptime", "ux", "watcher"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dataViewEditor": {
+    "dependencies": ["data", "dataViews"],
+    "reverseDependencies": ["dataViewManagement", "discover", "sharedUX"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dataViewFieldEditor": {
+    "dependencies": ["data", "fieldFormats", "dataViews", "usageCollection"],
+    "reverseDependencies": ["dataViewFieldEditorExample", "fieldFormatsExample", "dataViewManagement", "discover", "dataVisualizer", "lens", "securitySolution"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dataViewManagement": {
+    "dependencies": ["management", "data", "urlForwarding", "dataViewFieldEditor", "dataViewEditor", "dataViews", "fieldFormats", "spaces"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dataViews": {
+    "dependencies": ["fieldFormats", "expressions", "usageCollection"],
+    "reverseDependencies": ["controls", "dashboard", "data", "dataViewEditor", "dataViewFieldEditor", "dataViewManagement", "home", "kibanaOverview", "presentationUtil", "savedObjects", "savedObjectsManagement", "sharedUX", "thirdPartyLensNavigationPrompt", "thirdPartyVisLensExample", "lens", "ml", "observability"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "devTools": {
+    "dependencies": ["urlForwarding"],
+    "reverseDependencies": ["console", "grokdebugger", "painlessLab", "searchprofiler"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "discover": {
+    "dependencies": ["charts", "data", "embeddable", "inspector", "fieldFormats", "urlForwarding", "navigation", "uiActions", "savedObjects", "dataViewFieldEditor", "dataViewEditor", "home", "share", "usageCollection", "spaces"],
+    "reverseDependencies": ["uiActionsEnhancedExamples", "dataVisualizer", "discoverEnhanced", "ml", "observability", "osquery"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "embeddable": {
+    "dependencies": ["inspector", "uiActions"],
+    "reverseDependencies": ["dashboardEmbeddableExamples", "embeddableExamples", "embeddableExplorer", "controls", "dashboard", "discover", "presentationUtil", "visualizations", "embeddedLensExample", "exploratoryViewExample", "testingEmbeddedLens", "thirdPartyLensNavigationPrompt", "thirdPartyVisLensExample", "apm", "canvas", "dashboardEnhanced", "dataVisualizer", "discoverEnhanced", "urlDrilldown", "embeddableEnhanced", "infra", "lens", "maps", "ml", "observability", "reporting", "securitySolution", "uiActionsEnhanced", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "esUiShared": {
+    "dependencies": [],
+    "reverseDependencies": ["cases", "reporting"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionError": {
+    "dependencies": ["expressions", "presentationUtil"],
+    "reverseDependencies": ["canvas"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionImage": {
+    "dependencies": ["expressions", "presentationUtil"],
+    "reverseDependencies": ["canvas"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionMetric": {
+    "dependencies": ["expressions", "presentationUtil"],
+    "reverseDependencies": ["canvas"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionRepeatImage": {
+    "dependencies": ["expressions", "presentationUtil"],
+    "reverseDependencies": ["canvas"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionRevealImage": {
+    "dependencies": ["expressions", "presentationUtil"],
+    "reverseDependencies": ["canvas"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressionShape": {
+    "dependencies": ["expressions", "presentationUtil"],
+    "reverseDependencies": ["canvas"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "expressions": {
+    "dependencies": [],
+    "reverseDependencies": ["expressionsExplorer", "paertialResultsExample", "expressionGauge", "expressionHeatmap", "expressionMetricVis", "expressionPartitionVis", "expressionTagcloud", "charts", "controls", "data", "dataViews", "expressionError", "expressionImage", "expressionMetric", "expressionRepeatImage", "expressionRevealImage", "expressionShape", "inputControlVis", "presentationUtil", "visTypeMarkdown", "visTypeHeatmap", "visTypeMetric", "visTypePie", "visTypeTable", "visTypeTagcloud", "visTypeTimelion", "visTypeTimeseries", "visTypeVega", "visTypeVislib", "visTypeXy", "visualizations", "thirdPartyVisLensExample", "canvas", "lens", "maps"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "fieldFormats": {
+    "dependencies": [],
+    "reverseDependencies": ["fieldFormatsExample", "expressionGauge", "expressionHeatmap", "expressionMetricVis", "expressionPartitionVis", "expressionTagcloud", "data", "dataViewFieldEditor", "dataViewManagement", "dataViews", "discover", "visTypeHeatmap", "thirdPartyVisLensExample", "lens", "ml", "reporting", "transform"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "home": {
+    "dependencies": ["dataViews", "share", "urlForwarding", "usageCollection", "telemetry", "customIntegrations"],
+    "reverseDependencies": ["advancedSettings", "console", "dashboard", "discover", "kibanaOverview", "management", "savedObjectsManagement", "visTypeTimeseries", "visTypeVega", "visualizations", "apm", "canvas", "cloud", "crossClusterReplication", "dataVisualizer", "enterpriseSearch", "fleet", "graph", "grokdebugger", "indexLifecycleManagement", "indexManagement", "infra", "licenseManagement", "logstash", "maps", "ml", "monitoring", "observability", "osquery", "painlessLab", "reporting", "rollup", "searchprofiler", "security", "securitySolution", "snapshotRestore", "spaces", "transform", "triggersActionsUi", "uptime", "watcher"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "inputControlVis": {
+    "dependencies": ["data", "expressions", "visDefaultEditor", "visualizations"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "inspector": {
+    "dependencies": ["share"],
+    "reverseDependencies": ["embeddableExplorer", "expressionsExplorer", "dashboard", "data", "discover", "embeddable", "visTypeTimeseries", "visTypeVega", "visualizations", "apm", "canvas", "lens", "maps", "observability", "securitySolution", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "kibanaOverview": {
+    "dependencies": ["navigation", "dataViews", "home", "share", "newsfeed", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "kibanaReact": {
+    "dependencies": [],
+    "reverseDependencies": ["dashboardEmbeddableExamples", "embeddableExplorer", "controls", "presentationUtil", "alertingExample", "reportingExample", "testingEmbeddedLens", "cases", "embeddableEnhanced", "stackAlerts", "timelines", "triggersActionsUi"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "kibanaUsageCollection": {
+    "dependencies": ["usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "kibanaUtils": {
+    "dependencies": [],
+    "reverseDependencies": ["embeddableExamples", "searchExamples", "alerting", "cases", "dataEnhanced", "timelines", "triggersActionsUi"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "management": {
+    "dependencies": ["home", "share"],
+    "reverseDependencies": ["advancedSettings", "dataViewManagement", "savedObjectsManagement", "crossClusterReplication", "dataEnhanced", "indexLifecycleManagement", "indexManagement", "ingestPipelines", "licenseManagement", "logstash", "ml", "remoteClusters", "reporting", "rollup", "savedObjectsTagging", "security", "snapshotRestore", "spaces", "transform", "triggersActionsUi", "upgradeAssistant", "watcher"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "mapsEms": {
+    "dependencies": ["licensing"],
+    "reverseDependencies": ["visTypeVega", "maps"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "navigation": {
+    "dependencies": ["data"],
+    "reverseDependencies": ["screenshotModeExample", "searchExamples", "stateContainersExamples", "testPlugin", "dashboard", "discover", "kibanaOverview", "visualizations", "reportingExample", "fleet", "graph", "lens", "maps", "monitoring", "osquery"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "newsfeed": {
+    "dependencies": ["screenshotMode"],
+    "reverseDependencies": ["kibanaOverview", "securitySolution"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "presentationUtil": {
+    "dependencies": ["savedObjects", "kibanaReact", "embeddable", "expressions", "dataViews"],
+    "reverseDependencies": ["expressionGauge", "expressionHeatmap", "expressionMetricVis", "expressionPartitionVis", "expressionTagcloud", "controls", "customIntegrations", "dashboard", "expressionError", "expressionImage", "expressionMetric", "expressionRepeatImage", "expressionRevealImage", "expressionShape", "visualizations", "canvas", "lens", "maps"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "savedObjects": {
+    "dependencies": ["data", "dataViews"],
+    "reverseDependencies": ["embeddableExamples", "embeddableExplorer", "controls", "dashboard", "discover", "presentationUtil", "savedObjectsTaggingOss", "visualizations", "graph", "maps", "stackAlerts", "transform", "triggersActionsUi"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "savedObjectsManagement": {
+    "dependencies": ["management", "data", "dataViews", "home", "savedObjectsTaggingOss", "spaces"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "savedObjectsTaggingOss": {
+    "dependencies": ["savedObjects"],
+    "reverseDependencies": ["dashboard", "savedObjectsManagement", "visualizations", "savedObjectsTagging"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "screenshotMode": {
+    "dependencies": [],
+    "reverseDependencies": ["screenshotModeExample", "dashboard", "newsfeed", "telemetry", "reportingExample", "banners", "dataEnhanced", "reporting", "screenshotting"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "share": {
+    "dependencies": [],
+    "reverseDependencies": ["locatorExamples", "locatorExplorer", "searchExamples", "shareExamples", "console", "dashboard", "data", "discover", "home", "inspector", "kibanaOverview", "management", "visualizations", "reportingExample", "canvas", "dashboardEnhanced", "dataEnhanced", "dataVisualizer", "discoverEnhanced", "fleet", "indexLifecycleManagement", "indexManagement", "ingestPipelines", "lens", "maps", "ml", "remoteClusters", "reporting", "security", "snapshotRestore", "transform", "upgradeAssistant", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "sharedUX": {
+    "dependencies": ["dataViewEditor", "dataViews"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "telemetry": {
+    "dependencies": ["telemetryCollectionManager", "usageCollection", "screenshotMode"],
+    "reverseDependencies": ["home", "telemetryManagementSection", "fleet", "licenseManagement", "osquery", "securitySolution", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "telemetryCollectionManager": {
+    "dependencies": ["usageCollection"],
+    "reverseDependencies": ["telemetry", "telemetryCollectionXpack"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "telemetryManagementSection": {
+    "dependencies": ["advancedSettings", "telemetry", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "uiActions": {
+    "dependencies": [],
+    "reverseDependencies": ["embeddableExamples", "embeddableExplorer", "expressionsExplorer", "uiActionsExamples", "uiActionsExplorer", "dashboard", "data", "discover", "embeddable", "visualizations", "uiActionsEnhancedExamples", "canvas", "dataVisualizer", "discoverEnhanced", "urlDrilldown", "embeddableEnhanced", "lens", "maps", "ml", "reporting", "securitySolution", "uiActionsEnhanced"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "urlForwarding": {
+    "dependencies": [],
+    "reverseDependencies": ["dashboard", "dataViewManagement", "devTools", "discover", "home", "visualizations", "lens"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "usageCollection": {
+    "dependencies": [],
+    "reverseDependencies": ["screenshotModeExample", "advancedSettings", "console", "dashboard", "data", "dataViewFieldEditor", "dataViews", "discover", "home", "kibanaOverview", "kibanaUsageCollection", "telemetry", "telemetryCollectionManager", "telemetryManagementSection", "visTypeHeatmap", "visTypePie", "visTypeTable", "visTypeTimeseries", "visTypeVega", "visTypeXy", "visualizations", "actions", "alerting", "apm", "canvas", "cases", "cloud", "crossClusterReplication", "dataEnhanced", "dataVisualizer", "discoverEnhanced", "enterpriseSearch", "fileUpload", "fleet", "globalSearchBar", "indexLifecycleManagement", "indexManagement", "infra", "ingestPipelines", "lens", "maps", "ml", "monitoring", "observability", "osquery", "remoteClusters", "reporting", "rollup", "savedObjectsTagging", "security", "securitySolution", "snapshotRestore", "spaces", "taskManager", "transform", "upgradeAssistant", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visDefaultEditor": {
+    "dependencies": ["visualizations"],
+    "reverseDependencies": ["inputControlVis"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeMarkdown": {
+    "dependencies": ["expressions", "visualizations"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeHeatmap": {
+    "dependencies": ["charts", "data", "expressions", "visualizations", "usageCollection", "fieldFormats"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeMetric": {
+    "dependencies": ["data", "visualizations", "charts", "expressions"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypePie": {
+    "dependencies": ["charts", "data", "expressions", "visualizations", "usageCollection", "expressionPartitionVis"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeTable": {
+    "dependencies": ["expressions", "visualizations", "data", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeTagcloud": {
+    "dependencies": ["data", "expressions", "visualizations", "charts"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeTimelion": {
+    "dependencies": ["visualizations", "data", "expressions", "charts"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeTimeseries": {
+    "dependencies": ["charts", "data", "expressions", "visualizations", "inspector", "home", "usageCollection"],
+    "reverseDependencies": ["infra", "rollup"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeVega": {
+    "dependencies": ["data", "visualizations", "mapsEms", "expressions", "inspector", "home", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeVislib": {
+    "dependencies": ["charts", "data", "expressions", "visualizations"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visTypeXy": {
+    "dependencies": ["charts", "data", "expressions", "visualizations", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "visualizations": {
+    "dependencies": ["data", "expressions", "uiActions", "urlForwarding", "navigation", "embeddable", "inspector", "savedObjects", "presentationUtil", "home", "share", "usageCollection", "spaces", "savedObjectsTaggingOss"],
+    "reverseDependencies": ["expressionGauge", "expressionHeatmap", "expressionMetricVis", "expressionPartitionVis", "expressionTagcloud", "dashboard", "inputControlVis", "visDefaultEditor", "visTypeMarkdown", "visTypeHeatmap", "visTypeMetric", "visTypePie", "visTypeTable", "visTypeTagcloud", "visTypeTimelion", "visTypeTimeseries", "visTypeVega", "visTypeVislib", "visTypeXy", "canvas", "lens", "maps"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "alertingExample": {
+    "dependencies": ["triggersActionsUi", "charts", "data", "alerting", "actions", "kibanaReact", "features", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "embeddedLensExample": {
+    "dependencies": ["lens", "data", "embeddable", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "exploratoryViewExample": {
+    "dependencies": ["cases", "data", "developerExamples", "embeddable", "observability"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "reportingExample": {
+    "dependencies": ["reporting", "developerExamples", "kibanaReact", "navigation", "screenshotMode", "share"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "testingEmbeddedLens": {
+    "dependencies": ["lens", "data", "embeddable", "developerExamples", "kibanaReact"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "thirdPartyLensNavigationPrompt": {
+    "dependencies": ["lens", "data", "dataViews", "embeddable", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "thirdPartyVisLensExample": {
+    "dependencies": ["lens", "dataViews", "embeddable", "developerExamples", "expressions", "fieldFormats"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "uiActionsEnhancedExamples": {
+    "dependencies": ["uiActions", "uiActionsEnhanced", "data", "discover", "dashboard", "dashboardEnhanced", "developerExamples"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "actions": {
+    "dependencies": ["licensing", "taskManager", "encryptedSavedObjects", "eventLog", "features", "usageCollection", "spaces", "security"],
+    "reverseDependencies": ["alertingExample", "alerting", "apm", "cases", "monitoring", "osquery", "securitySolution", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "alerting": {
+    "dependencies": ["actions", "encryptedSavedObjects", "eventLog", "features", "kibanaUtils", "licensing", "taskManager", "usageCollection", "spaces", "security"],
+    "reverseDependencies": ["alertingExample", "apm", "infra", "ml", "monitoring", "observability", "ruleRegistry", "securitySolution", "stackAlerts", "timelines", "transform", "triggersActionsUi", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "apm": {
+    "dependencies": ["data", "embeddable", "features", "infra", "inspector", "licensing", "observability", "ruleRegistry", "triggersActionsUi", "actions", "alerting", "cloud", "fleet", "home", "ml", "security", "spaces", "taskManager", "usageCollection"],
+    "reverseDependencies": ["ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "banners": {
+    "dependencies": ["licensing", "screenshotMode"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "canvas": {
+    "dependencies": ["bfetch", "charts", "data", "embeddable", "expressionError", "expressionImage", "expressionMetric", "expressionRepeatImage", "expressionRevealImage", "expressionShape", "expressions", "features", "inspector", "presentationUtil", "visualizations", "uiActions", "share", "home", "reporting", "spaces", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "cases": {
+    "dependencies": ["actions", "esUiShared", "lens", "features", "kibanaReact", "kibanaUtils", "triggersActionsUi", "security", "spaces", "usageCollection"],
+    "reverseDependencies": ["exploratoryViewExample", "observability", "securitySolution", "timelines", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "cloud": {
+    "dependencies": ["usageCollection", "home", "security"],
+    "reverseDependencies": ["apm", "dataVisualizer", "enterpriseSearch", "fleet", "indexLifecycleManagement", "ml", "monitoring", "remoteClusters", "snapshotRestore", "triggersActionsUi", "upgradeAssistant", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "crossClusterReplication": {
+    "dependencies": ["home", "licensing", "licenseApiGuard", "management", "remoteClusters", "indexManagement", "features", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dashboardEnhanced": {
+    "dependencies": ["dashboard", "data", "embeddable", "share", "uiActionsEnhanced"],
+    "reverseDependencies": ["uiActionsEnhancedExamples"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dataEnhanced": {
+    "dependencies": ["bfetch", "data", "features", "management", "share", "taskManager", "screenshotMode", "kibanaUtils", "usageCollection", "security"],
+    "reverseDependencies": ["infra", "osquery", "securitySolution", "timelines"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "dataVisualizer": {
+    "dependencies": ["data", "usageCollection", "embeddable", "share", "discover", "fileUpload", "uiActions", "charts", "security", "maps", "home", "lens", "dataViewFieldEditor", "customIntegrations", "cloud"],
+    "reverseDependencies": ["ml"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "discoverEnhanced": {
+    "dependencies": ["uiActions", "embeddable", "discover", "share", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "urlDrilldown": {
+    "dependencies": ["embeddable", "uiActions", "uiActionsEnhanced"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "embeddableEnhanced": {
+    "dependencies": ["embeddable", "kibanaReact", "uiActions", "uiActionsEnhanced"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "encryptedSavedObjects": {
+    "dependencies": ["security"],
+    "reverseDependencies": ["actions", "alerting", "fleet", "monitoring", "securitySolution", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "enterpriseSearch": {
+    "dependencies": ["features", "spaces", "security", "licensing", "data", "charts", "infra", "cloud", "usageCollection", "home", "customIntegrations"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "eventLog": {
+    "dependencies": ["spaces"],
+    "reverseDependencies": ["actions", "alerting", "securitySolution"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "features": {
+    "dependencies": ["licensing"],
+    "reverseDependencies": ["alertingExample", "actions", "alerting", "apm", "canvas", "cases", "crossClusterReplication", "dataEnhanced", "enterpriseSearch", "fleet", "graph", "indexLifecycleManagement", "indexManagement", "infra", "ingestPipelines", "licenseManagement", "logstash", "maps", "ml", "monitoring", "observability", "osquery", "remoteClusters", "reporting", "rollup", "savedObjectsTagging", "security", "securitySolution", "snapshotRestore", "spaces", "stackAlerts", "transform", "triggersActionsUi", "upgradeAssistant", "uptime", "ux", "watcher"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "fileUpload": {
+    "dependencies": ["data", "usageCollection", "security"],
+    "reverseDependencies": ["dataVisualizer", "ingestPipelines", "maps"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "fleet": {
+    "dependencies": ["licensing", "data", "encryptedSavedObjects", "navigation", "customIntegrations", "share", "spaces", "security", "features", "cloud", "usageCollection", "home", "globalSearch", "telemetry"],
+    "reverseDependencies": ["apm", "indexManagement", "osquery", "securitySolution", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "globalSearch": {
+    "dependencies": ["licensing"],
+    "reverseDependencies": ["fleet", "globalSearchBar", "globalSearchProviders", "lens"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "globalSearchBar": {
+    "dependencies": ["globalSearch", "usageCollection", "savedObjectsTagging"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "globalSearchProviders": {
+    "dependencies": ["globalSearch"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "graph": {
+    "dependencies": ["licensing", "data", "navigation", "savedObjects", "home", "features", "spaces"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "grokdebugger": {
+    "dependencies": ["licensing", "home", "devTools"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "indexLifecycleManagement": {
+    "dependencies": ["licensing", "management", "features", "share", "cloud", "usageCollection", "indexManagement", "home"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "indexManagement": {
+    "dependencies": ["home", "management", "features", "share", "security", "usageCollection", "fleet"],
+    "reverseDependencies": ["crossClusterReplication", "indexLifecycleManagement", "remoteClusters", "rollup"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "infra": {
+    "dependencies": ["features", "usageCollection", "spaces", "embeddable", "data", "dataEnhanced", "visTypeTimeseries", "alerting", "triggersActionsUi", "observability", "ruleRegistry", "ml", "home", "osquery"],
+    "reverseDependencies": ["apm", "enterpriseSearch", "monitoring", "upgradeAssistant", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "ingestPipelines": {
+    "dependencies": ["management", "features", "share", "fileUpload", "security", "usageCollection"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "lens": {
+    "dependencies": ["data", "dataViews", "charts", "expressions", "fieldFormats", "inspector", "navigation", "urlForwarding", "visualizations", "dashboard", "uiActions", "embeddable", "share", "presentationUtil", "dataViewFieldEditor", "expressionGauge", "expressionHeatmap", "usageCollection", "taskManager", "globalSearch", "savedObjectsTagging", "spaces"],
+    "reverseDependencies": ["embeddedLensExample", "testingEmbeddedLens", "thirdPartyLensNavigationPrompt", "thirdPartyVisLensExample", "cases", "dataVisualizer", "observability", "osquery", "securitySolution"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "licenseApiGuard": {
+    "dependencies": [],
+    "reverseDependencies": ["crossClusterReplication", "watcher"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "licenseManagement": {
+    "dependencies": ["home", "licensing", "management", "features", "telemetry"],
+    "reverseDependencies": ["ml"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "licensing": {
+    "dependencies": [],
+    "reverseDependencies": ["mapsEms", "actions", "alerting", "apm", "banners", "crossClusterReplication", "enterpriseSearch", "features", "fleet", "globalSearch", "graph", "grokdebugger", "indexLifecycleManagement", "licenseManagement", "logstash", "maps", "ml", "monitoring", "observability", "painlessLab", "remoteClusters", "reporting", "rollup", "searchprofiler", "security", "securitySolution", "snapshotRestore", "spaces", "transform", "uiActionsEnhanced", "upgradeAssistant", "uptime", "ux", "watcher"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "lists": {
+    "dependencies": ["spaces", "security"],
+    "reverseDependencies": ["securitySolution"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "logstash": {
+    "dependencies": ["licensing", "management", "features", "home", "monitoring", "security"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "maps": {
+    "dependencies": ["licensing", "features", "inspector", "data", "fileUpload", "uiActions", "navigation", "expressions", "visualizations", "dashboard", "embeddable", "mapsEms", "savedObjects", "share", "presentationUtil", "customIntegrations", "home", "savedObjectsTagging", "charts", "security", "spaces", "usageCollection"],
+    "reverseDependencies": ["dataVisualizer", "ml", "securitySolution", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "ml": {
+    "dependencies": ["data", "dataViews", "cloud", "features", "dataVisualizer", "licensing", "share", "embeddable", "uiActions", "discover", "triggersActionsUi", "fieldFormats", "alerting", "home", "security", "spaces", "management", "licenseManagement", "maps", "usageCollection", "dashboard", "charts"],
+    "reverseDependencies": ["apm", "infra", "securitySolution", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "monitoring": {
+    "dependencies": ["licensing", "features", "data", "navigation", "observability", "infra", "usageCollection", "home", "cloud", "triggersActionsUi", "alerting", "actions", "encryptedSavedObjects"],
+    "reverseDependencies": ["logstash"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "observability": {
+    "dependencies": ["alerting", "cases", "data", "dataViews", "features", "inspector", "ruleRegistry", "timelines", "triggersActionsUi", "discover", "embeddable", "home", "lens", "licensing", "spaces", "usageCollection"],
+    "reverseDependencies": ["exploratoryViewExample", "apm", "infra", "monitoring", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "osquery": {
+    "dependencies": ["actions", "data", "dataEnhanced", "discover", "features", "navigation", "taskManager", "triggersActionsUi", "security", "fleet", "home", "usageCollection", "lens", "telemetry"],
+    "reverseDependencies": ["infra"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "painlessLab": {
+    "dependencies": ["devTools", "licensing", "home"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "remoteClusters": {
+    "dependencies": ["licensing", "management", "indexManagement", "features", "share", "usageCollection", "cloud"],
+    "reverseDependencies": ["crossClusterReplication"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "reporting": {
+    "dependencies": ["data", "fieldFormats", "esUiShared", "home", "management", "licensing", "uiActions", "taskManager", "embeddable", "screenshotting", "screenshotMode", "share", "features", "security", "spaces", "usageCollection"],
+    "reverseDependencies": ["reportingExample", "canvas"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "rollup": {
+    "dependencies": ["management", "licensing", "features", "home", "indexManagement", "usageCollection", "visTypeTimeseries"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "ruleRegistry": {
+    "dependencies": ["alerting", "data", "triggersActionsUi", "security", "spaces"],
+    "reverseDependencies": ["apm", "infra", "observability", "securitySolution", "uptime"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "runtimeFields": {
+    "dependencies": [],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "savedObjectsTagging": {
+    "dependencies": ["features", "management", "savedObjectsTaggingOss", "usageCollection", "security"],
+    "reverseDependencies": ["globalSearchBar", "lens", "maps"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "screenshotting": {
+    "dependencies": ["screenshotMode"],
+    "reverseDependencies": ["reporting"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "searchprofiler": {
+    "dependencies": ["devTools", "home", "licensing"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "security": {
+    "dependencies": ["data", "features", "licensing", "taskManager", "home", "management", "usageCollection", "spaces", "share"],
+    "reverseDependencies": ["actions", "alerting", "apm", "cases", "cloud", "dataEnhanced", "dataVisualizer", "encryptedSavedObjects", "enterpriseSearch", "fileUpload", "fleet", "indexManagement", "ingestPipelines", "lists", "logstash", "maps", "ml", "osquery", "reporting", "ruleRegistry", "savedObjectsTagging", "securitySolution", "snapshotRestore", "timelines", "transform", "upgradeAssistant", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "securitySolution": {
+    "dependencies": ["actions", "alerting", "cases", "data", "dataEnhanced", "embeddable", "eventLog", "features", "inspector", "licensing", "maps", "ruleRegistry", "taskManager", "timelines", "triggersActionsUi", "uiActions", "encryptedSavedObjects", "fleet", "ml", "dashboard", "newsfeed", "security", "spaces", "usageCollection", "lens", "lists", "home", "telemetry", "dataViewFieldEditor"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "snapshotRestore": {
+    "dependencies": ["licensing", "management", "features", "share", "usageCollection", "security", "cloud", "home"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "spaces": {
+    "dependencies": ["features", "licensing", "advancedSettings", "home", "management", "usageCollection"],
+    "reverseDependencies": ["dashboard", "dataViewManagement", "discover", "savedObjectsManagement", "visualizations", "actions", "alerting", "apm", "canvas", "cases", "enterpriseSearch", "eventLog", "fleet", "graph", "infra", "lens", "lists", "maps", "ml", "observability", "reporting", "ruleRegistry", "security", "securitySolution", "transform", "triggersActionsUi"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "stackAlerts": {
+    "dependencies": ["alerting", "features", "triggersActionsUi", "kibanaReact", "savedObjects", "data"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "taskManager": {
+    "dependencies": ["usageCollection"],
+    "reverseDependencies": ["actions", "alerting", "apm", "dataEnhanced", "lens", "osquery", "reporting", "security", "securitySolution", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "telemetryCollectionXpack": {
+    "dependencies": ["telemetryCollectionManager"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "timelines": {
+    "dependencies": ["alerting", "cases", "data", "dataEnhanced", "kibanaReact", "kibanaUtils", "security"],
+    "reverseDependencies": ["observability", "securitySolution"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "transform": {
+    "dependencies": ["data", "home", "licensing", "management", "features", "savedObjects", "share", "triggersActionsUi", "fieldFormats", "security", "usageCollection", "spaces", "alerting"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "translations": {
+    "dependencies": [],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "triggersActionsUi": {
+    "dependencies": ["management", "charts", "data", "kibanaReact", "kibanaUtils", "savedObjects", "alerting", "cloud", "features", "home", "spaces"],
+    "reverseDependencies": ["alertingExample", "apm", "cases", "infra", "ml", "monitoring", "observability", "osquery", "ruleRegistry", "securitySolution", "stackAlerts", "transform", "uptime", "ux"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "uiActionsEnhanced": {
+    "dependencies": ["embeddable", "uiActions", "licensing"],
+    "reverseDependencies": ["uiActionsEnhancedExamples", "dashboardEnhanced", "urlDrilldown", "embeddableEnhanced"],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "upgradeAssistant": {
+    "dependencies": ["management", "data", "licensing", "features", "share", "usageCollection", "cloud", "security", "infra"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "uptime": {
+    "dependencies": ["alerting", "cases", "embeddable", "encryptedSavedObjects", "features", "inspector", "licensing", "observability", "ruleRegistry", "security", "share", "taskManager", "triggersActionsUi", "usageCollection", "cloud", "data", "fleet", "home", "ml", "telemetry"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "ux": {
+    "dependencies": ["features", "data", "licensing", "triggersActionsUi", "embeddable", "infra", "inspector", "apm", "cloud", "usageCollection", "taskManager", "actions", "observability", "security", "maps"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  },
+  "watcher": {
+    "dependencies": ["home", "licensing", "licenseApiGuard", "management", "charts", "data", "features"],
+    "reverseDependencies": [],
+    "derivedStatus": {
+      "level": "unavailable",
+      "summary": "Unknown status"
+    }
+  }
+}

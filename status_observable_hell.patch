@@ -1,0 +1,811 @@
+Index: src/core/server/status/status_service.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/core/server/status/status_service.ts b/src/core/server/status/status_service.ts
+--- a/src/core/server/status/status_service.ts	
++++ b/src/core/server/status/status_service.ts	
+@@ -47,14 +47,16 @@
+   private readonly logger: Logger;
+   private readonly config$: Observable<StatusConfigType>;
+   private readonly stop$ = new Subject<void>();
++  private readonly pluginsStatus: PluginsStatusService;
+ 
+   private overall$?: Observable<ServiceStatus>;
+-  private pluginsStatus?: PluginsStatusService;
++  private allPlugins$?: Observable<Record<PluginName, ServiceStatus>>;
+   private subscriptions: Subscription[] = [];
+ 
+   constructor(private readonly coreContext: CoreContext) {
+     this.logger = coreContext.logger.get('status');
+     this.config$ = coreContext.configService.atPath<StatusConfigType>(config.path);
++    this.pluginsStatus = new PluginsStatusService();
+   }
+ 
+   public async setup({
+@@ -68,9 +70,10 @@
+   }: SetupDeps) {
+     const statusConfig = await this.config$.pipe(take(1)).toPromise();
+     const core$ = this.setupCoreStatus({ elasticsearch, savedObjects });
+-    this.pluginsStatus = new PluginsStatusService({ core$, pluginDependencies });
++    const pluginsStatusSetup = this.pluginsStatus.setup({ core$, pluginDependencies });
++    this.allPlugins$ = pluginsStatusSetup.getAll$();
+ 
+-    this.overall$ = combineLatest([core$, this.pluginsStatus.getAll$()]).pipe(
++    this.overall$ = combineLatest([core$, this.allPlugins$]).pipe(
+       // Prevent many emissions at once from dependency status resolution from making this too noisy
+       debounceTime(500),
+       map(([coreStatus, pluginsStatus]) => {
+@@ -118,7 +121,7 @@
+       metrics,
+       status: {
+         overall$: this.overall$,
+-        plugins$: this.pluginsStatus.getAll$(),
++        plugins$: pluginsStatusSetup.getAll$(),
+         core$,
+         coreOverall$,
+       },
+@@ -149,9 +152,9 @@
+       coreOverall$,
+       overall$: this.overall$,
+       plugins: {
+-        set: this.pluginsStatus.set.bind(this.pluginsStatus),
+-        getDependenciesStatus$: this.pluginsStatus.getDependenciesStatus$.bind(this.pluginsStatus),
+-        getDerivedStatus$: this.pluginsStatus.getDerivedStatus$.bind(this.pluginsStatus),
++        set: pluginsStatusSetup.set,
++        getDependenciesStatus$: pluginsStatusSetup.getDependenciesStatus$,
++        getDerivedStatus$: pluginsStatusSetup.getDerivedStatus$,
+       },
+       isStatusPageAnonymous: () => statusConfig.allowAnonymous,
+     };
+@@ -161,13 +164,13 @@
+     if (!this.pluginsStatus || !this.overall$) {
+       throw new Error(`StatusService#setup must be called before #start`);
+     }
+-    this.pluginsStatus.blockNewRegistrations();
++    this.pluginsStatus.start();
+ 
+     getOverallStatusChanges(this.overall$, this.stop$).subscribe((message) => {
+       this.logger.info(message);
+     });
+ 
+-    getPluginsStatusChanges(this.pluginsStatus.getAll$(), this.stop$).subscribe((statusChanges) => {
++    getPluginsStatusChanges(this.allPlugins$!, this.stop$).subscribe((statusChanges) => {
+       statusChanges.forEach((statusChange) => {
+         this.logger.info(getServiceLevelChangeMessage(statusChange));
+       });
+Index: src/core/server/status/plugins_status.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/core/server/status/plugins_status.ts b/src/core/server/status/plugins_status.ts
+--- a/src/core/server/status/plugins_status.ts	
++++ b/src/core/server/status/plugins_status.ts	
+@@ -6,7 +6,7 @@
+  * Side Public License, v 1.
+  */
+ 
+-import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
++import { Subject, ReplaySubject, Observable, combineLatest, of, Subscription } from 'rxjs';
+ import {
+   map,
+   distinctUntilChanged,
+@@ -14,21 +14,39 @@
+   debounceTime,
+   timeoutWith,
+   startWith,
++  shareReplay,
+ } from 'rxjs/operators';
+ import { isDeepStrictEqual } from 'util';
+ 
+ import { PluginName } from '../plugins';
+ import { ServiceStatus, CoreStatus, ServiceStatusLevels } from './types';
+ import { getSummaryStatus } from './get_summary_status';
++import { sortPluginsByDependencies } from './sort_plugins_by_dependencies';
+ 
+ const STATUS_TIMEOUT_MS = 30 * 1000; // 30 seconds
++const DEBOUNCE_DURATION_MS = 25;
+ 
+-interface Deps {
++interface SetupDeps {
+   core$: Observable<CoreStatus>;
+   pluginDependencies: ReadonlyMap<PluginName, PluginName[]>;
+ }
+ 
++interface PluginsStatusServiceSetup {
++  set(plugin: PluginName, status$: Observable<ServiceStatus>): void;
++
++  getAll$(): Observable<Record<PluginName, ServiceStatus>>;
++
++  getDependenciesStatus$(plugin: PluginName): Observable<Record<PluginName, ServiceStatus>>;
++
++  getDerivedStatus$(plugin: PluginName): Observable<ServiceStatus>;
++}
++
+ export class PluginsStatusService {
++  private setupDeps?: SetupDeps;
++
++  private readonly pluginCustomStatuses = new Map<PluginName, Observable<ServiceStatus>>();
++  private readonly pluginStatusSubscriptions = new Map<PluginName, Subscription>();
++  private readonly pluginStatusSubjects = new Map<PluginName, Subject<ServiceStatus>>();
+   private readonly pluginStatuses = new Map<PluginName, Observable<ServiceStatus>>();
+   private readonly derivedStatuses = new Map<PluginName, Observable<ServiceStatus>>();
+   private readonly dependenciesStatuses = new Map<
+@@ -37,88 +55,142 @@
+   >();
+   private allPluginsStatuses?: Observable<Record<PluginName, ServiceStatus>>;
+ 
+-  private readonly update$ = new BehaviorSubject(true);
+-  private readonly defaultInheritedStatus$: Observable<ServiceStatus>;
+   private newRegistrationsAllowed = true;
+ 
+-  constructor(private readonly deps: Deps) {
+-    this.defaultInheritedStatus$ = this.deps.core$.pipe(
+-      map((coreStatus) => {
+-        return getSummaryStatus(Object.entries(coreStatus), {
+-          allAvailableSummary: `All dependencies are available`,
+-        });
+-      })
+-    );
++  public setup(deps: SetupDeps): PluginsStatusServiceSetup {
++    this.setupDeps = deps;
++
++    this.buildPluginsObservables(deps.pluginDependencies);
++    this.buildAllPluginsStatuses();
++
++    return {
++      set: (plugin, status$) => this.set(plugin, status$),
++      getAll$: () => this.allPluginsStatuses!,
++      getDependenciesStatus$: (plugin) => this.dependenciesStatuses.get(plugin)!,
++      getDerivedStatus$: (plugin) => this.derivedStatuses.get(plugin)!,
++    };
++  }
++
++  public start() {
++    this.newRegistrationsAllowed = false;
+   }
+ 
+-  public set(plugin: PluginName, status$: Observable<ServiceStatus>) {
++  private set(plugin: PluginName, status$: Observable<ServiceStatus>) {
+     if (!this.newRegistrationsAllowed) {
+       throw new Error(
+         `Custom statuses cannot be registered after setup, plugin [${plugin}] attempted`
+       );
+     }
+-    this.pluginStatuses.set(plugin, status$);
+-    this.update$.next(true); // trigger all existing Observables to update from the new source Observable
++    this.pluginCustomStatuses.set(plugin, status$);
++    const currentSubscription = this.pluginStatusSubscriptions.get(plugin);
++    const pluginStatus = this.pluginStatusSubjects.get(plugin)!;
++    const newSubscription = status$.subscribe((status) => {
++      console.log('*** set subscription', status)
++      pluginStatus.next(status);
++    });
++    this.pluginStatusSubscriptions.set(plugin, newSubscription);
++    if (currentSubscription) {
++      currentSubscription.unsubscribe();
++    }
+   }
+ 
+-  public blockNewRegistrations() {
+-    this.newRegistrationsAllowed = false;
++  private buildAllPluginsStatuses() {
++    this.allPluginsStatuses = combineLatest(
++      [...this.pluginStatuses.entries()].map(([pluginName, pluginStatus$]) =>
++        pluginStatus$.pipe(map((pluginStatus) => [pluginName, pluginStatus]))
++      )
++    ).pipe(
++      debounceTime(DEBOUNCE_DURATION_MS), // Avoid calling the plugin's custom status logic for every plugin that depends on it.
++      map((statuses) => Object.fromEntries(statuses)),
++      distinctUntilChanged<Record<PluginName, ServiceStatus>>(isDeepStrictEqual),
++      shareReplay(1)
++    );
+   }
+ 
+-  public getAll$(): Observable<Record<PluginName, ServiceStatus>> {
+-    if (!this.allPluginsStatuses) {
+-      this.allPluginsStatuses = this.getPluginStatuses$([...this.deps.pluginDependencies.keys()]);
+-    }
+-    return this.allPluginsStatuses;
++  private buildPluginsObservables(pluginDependencies: ReadonlyMap<PluginName, PluginName[]>) {
++    const sortedPlugins = sortPluginsByDependencies(pluginDependencies);
++    sortedPlugins.forEach((pluginName) =>
++      this.buildPluginObservables(pluginName, pluginDependencies)
++    );
++  }
++
++  private buildPluginObservables(
++    pluginName: PluginName,
++    pluginDependencies: ReadonlyMap<PluginName, PluginName[]>
++  ) {
++    // dependencies status
++    this.buildPluginDependenciesStatus(pluginName, pluginDependencies);
++    // derived status
++    this.buildPluginDerivedStatus(pluginName);
++    // plugin  status
++    this.buildPluginStatus(pluginName);
+   }
+ 
+-  public getDependenciesStatus$(plugin: PluginName): Observable<Record<PluginName, ServiceStatus>> {
+-    const dependencies = this.deps.pluginDependencies.get(plugin);
+-    if (!dependencies) {
+-      throw new Error(`Unknown plugin: ${plugin}`);
++  // build a plugin's dependencies status.
++  // assume that all dependent plugins were previously processed
++  private buildPluginDependenciesStatus(
++    pluginName: PluginName,
++    pluginDependencies: ReadonlyMap<PluginName, PluginName[]>
++  ) {
++    const dependencyNames = pluginDependencies.get(pluginName)!;
++    if (dependencyNames.length === 0) {
++      this.dependenciesStatuses.set(pluginName, of({}));
++      return;
+     }
+-    if (!this.dependenciesStatuses.has(plugin)) {
+-      this.dependenciesStatuses.set(
+-        plugin,
+-        this.getPluginStatuses$(dependencies).pipe(
+-          // Prevent many emissions at once from dependency status resolution from making this too noisy
+-          debounceTime(25)
+-        )
+-      );
+-    }
+-    return this.dependenciesStatuses.get(plugin)!;
++    const dependencyMap = dependencyNames.reduce((depMap, depName) => {
++      depMap[depName] = this.pluginStatuses.get(depName)!;
++      return depMap;
++    }, {} as Record<PluginName, Observable<ServiceStatus>>);
++
++    const dependenciesStatus = combineLatest(
++      Object.entries(dependencyMap).map(([depName, depStatus$]) =>
++        depStatus$.pipe(map((depStatus) => [depName, depStatus]))
++      )
++    ).pipe(
++      debounceTime(DEBOUNCE_DURATION_MS), // Avoid calling the plugin's custom status logic for every plugin that depends on it.
++      map((statuses) => Object.fromEntries(statuses)),
++      distinctUntilChanged<Record<PluginName, ServiceStatus>>(isDeepStrictEqual),
++      shareReplay(1)
++    );
++
++    this.dependenciesStatuses.set(pluginName, dependenciesStatus);
++  }
++
++  private buildPluginStatus(pluginName: PluginName) {
++    const pluginStatus = new ReplaySubject<ServiceStatus>(1);
++    this.pluginStatusSubjects.set(pluginName, pluginStatus);
++    this.pluginStatuses.set(pluginName, pluginStatus.asObservable());
++    const derivedStatus = this.derivedStatuses.get(pluginName)!;
++    const subscription = derivedStatus.subscribe((status) => {
++      pluginStatus.next(status);
++    });
++
++    this.pluginStatusSubscriptions.set(pluginName, subscription);
+   }
+ 
+-  public getDerivedStatus$(plugin: PluginName): Observable<ServiceStatus> {
+-    if (!this.derivedStatuses.has(plugin)) {
+-      this.derivedStatuses.set(
+-        plugin,
+-        this.update$.pipe(
+-          debounceTime(25), // Avoid calling the plugin's custom status logic for every plugin that depends on it.
+-          switchMap(() => {
+-            // Only go up the dependency tree if any of this plugin's dependencies have a custom status
+-            // Helps eliminate memory overhead of creating thousands of Observables unnecessarily.
+-            if (this.anyCustomStatuses(plugin)) {
+-              return combineLatest([this.deps.core$, this.getDependenciesStatus$(plugin)]).pipe(
+-                map(([coreStatus, pluginStatuses]) => {
+-                  return getSummaryStatus(
+-                    [...Object.entries(coreStatus), ...Object.entries(pluginStatuses)],
+-                    {
+-                      allAvailableSummary: `All dependencies are available`,
+-                    }
+-                  );
+-                })
+-              );
+-            } else {
+-              return this.defaultInheritedStatus$;
+-            }
+-          })
+-        )
+-      );
+-    }
+-    return this.derivedStatuses.get(plugin)!;
++  // build a plugin's derived status.
++  // assume that the plugin's dependenciesStatuses was previously built
++  private buildPluginDerivedStatus(pluginName: PluginName) {
++    const derivedStatus = combineLatest([
++      this.setupDeps!.core$,
++      this.dependenciesStatuses.get(pluginName)!,
++    ]).pipe(
++      debounceTime(DEBOUNCE_DURATION_MS), // Avoid calling the plugin's custom status logic for every plugin that depends on it.
++      map(([coreStatus, pluginStatuses]) => {
++        return getSummaryStatus(
++          [...Object.entries(coreStatus), ...Object.entries(pluginStatuses)],
++          {
++            allAvailableSummary: `All dependencies are available`,
++          }
++        );
++      }),
++      shareReplay(1)
++    );
++    this.derivedStatuses.set(pluginName, derivedStatus);
+   }
+ 
++  // TODO: copy timeout logic
++  /*
+   private getPluginStatuses$(plugins: PluginName[]): Observable<Record<PluginName, ServiceStatus>> {
+     if (plugins.length === 0) {
+       return of({});
+@@ -154,17 +226,5 @@
+       })
+     );
+   }
+-
+-  /**
+-   * Determines whether or not this plugin or any plugin in it's dependency tree have a custom status registered.
+-   */
+-  private anyCustomStatuses(plugin: PluginName): boolean {
+-    if (this.pluginStatuses.get(plugin)) {
+-      return true;
+-    }
+-
+-    return this.deps.pluginDependencies
+-      .get(plugin)!
+-      .reduce((acc, depName) => acc || this.anyCustomStatuses(depName), false as boolean);
+-  }
++  */
+ }
+Index: src/core/server/status/plugins_status.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/core/server/status/plugins_status.test.ts b/src/core/server/status/plugins_status.test.ts
+--- a/src/core/server/status/plugins_status.test.ts	
++++ b/src/core/server/status/plugins_status.test.ts	
+@@ -15,7 +15,15 @@
+ 
+ expect.addSnapshotSerializer(ServiceStatusLevelSnapshotSerializer);
+ 
++const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
++
+ describe('PluginStatusService', () => {
++  let service: PluginsStatusService;
++
++  beforeEach(() => {
++    service = new PluginsStatusService();
++  });
++
+   const coreAllAvailable$: Observable<CoreStatus> = of({
+     elasticsearch: { level: ServiceStatusLevels.available, summary: 'elasticsearch avail' },
+     savedObjects: { level: ServiceStatusLevels.available, summary: 'savedObjects avail' },
+@@ -36,14 +44,14 @@
+ 
+   describe('set', () => {
+     it('throws an exception if called after registrations are blocked', () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies,
+       });
++      service.start();
+ 
+-      service.blockNewRegistrations();
+       expect(() => {
+-        service.set(
++        setup.set(
+           'a',
+           of({
+             level: ServiceStatusLevels.available,
+@@ -58,7 +66,7 @@
+ 
+   describe('getDerivedStatus$', () => {
+     it(`defaults to core's most severe status`, async () => {
+-      const serviceAvailable = new PluginsStatusService({
++      const serviceAvailable = new PluginsStatusService().setup({
+         core$: coreAllAvailable$,
+         pluginDependencies,
+       });
+@@ -67,7 +75,7 @@
+         summary: 'All dependencies are available',
+       });
+ 
+-      const serviceDegraded = new PluginsStatusService({
++      const serviceDegraded = new PluginsStatusService().setup({
+         core$: coreOneDegraded$,
+         pluginDependencies,
+       });
+@@ -78,7 +86,7 @@
+         meta: expect.any(Object),
+       });
+ 
+-      const serviceCritical = new PluginsStatusService({
++      const serviceCritical = new PluginsStatusService().setup({
+         core$: coreOneCriticalOneDegraded$,
+         pluginDependencies,
+       });
+@@ -91,9 +99,10 @@
+     });
+ 
+     it(`provides a summary status when core and dependencies are at same severity level`, async () => {
+-      const service = new PluginsStatusService({ core$: coreOneDegraded$, pluginDependencies });
+-      service.set('a', of({ level: ServiceStatusLevels.degraded, summary: 'a is degraded' }));
+-      expect(await service.getDerivedStatus$('b').pipe(first()).toPromise()).toEqual({
++      const setup = service.setup({ core$: coreOneDegraded$, pluginDependencies });
++      setup.set('a', of({ level: ServiceStatusLevels.degraded, summary: 'a is degraded' }));
++
++      expect(await setup.getDerivedStatus$('b').pipe(first()).toPromise()).toEqual({
+         level: ServiceStatusLevels.degraded,
+         summary: '2 services are degraded: savedObjects, a',
+         detail: 'See the status page for more information',
+@@ -102,9 +111,9 @@
+     });
+ 
+     it(`allows dependencies status to take precedence over lower severity core statuses`, async () => {
+-      const service = new PluginsStatusService({ core$: coreOneDegraded$, pluginDependencies });
+-      service.set('a', of({ level: ServiceStatusLevels.unavailable, summary: 'a is not working' }));
+-      expect(await service.getDerivedStatus$('b').pipe(first()).toPromise()).toEqual({
++      const setup = service.setup({ core$: coreOneDegraded$, pluginDependencies });
++      setup.set('a', of({ level: ServiceStatusLevels.unavailable, summary: 'a is not working' }));
++      expect(await setup.getDerivedStatus$('b').pipe(first()).toPromise()).toEqual({
+         level: ServiceStatusLevels.unavailable,
+         summary: '1 service is unavailable: a',
+         detail: 'See the status page for more information',
+@@ -113,12 +122,12 @@
+     });
+ 
+     it(`allows core status to take precedence over lower severity dependencies statuses`, async () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreOneCriticalOneDegraded$,
+         pluginDependencies,
+       });
+-      service.set('a', of({ level: ServiceStatusLevels.unavailable, summary: 'a is not working' }));
+-      expect(await service.getDerivedStatus$('b').pipe(first()).toPromise()).toEqual({
++      setup.set('a', of({ level: ServiceStatusLevels.unavailable, summary: 'a is not working' }));
++      expect(await setup.getDerivedStatus$('b').pipe(first()).toPromise()).toEqual({
+         level: ServiceStatusLevels.critical,
+         summary: '1 service is critical: elasticsearch',
+         detail: 'See the status page for more information',
+@@ -127,10 +136,10 @@
+     });
+ 
+     it(`allows a severe dependency status to take precedence over a less severe dependency status`, async () => {
+-      const service = new PluginsStatusService({ core$: coreOneDegraded$, pluginDependencies });
+-      service.set('a', of({ level: ServiceStatusLevels.degraded, summary: 'a is degraded' }));
+-      service.set('b', of({ level: ServiceStatusLevels.unavailable, summary: 'b is not working' }));
+-      expect(await service.getDerivedStatus$('c').pipe(first()).toPromise()).toEqual({
++      const setup = service.setup({ core$: coreOneDegraded$, pluginDependencies });
++      setup.set('a', of({ level: ServiceStatusLevels.degraded, summary: 'a is degraded' }));
++      setup.set('b', of({ level: ServiceStatusLevels.unavailable, summary: 'b is not working' }));
++      expect(await setup.getDerivedStatus$('c').pipe(first()).toPromise()).toEqual({
+         level: ServiceStatusLevels.unavailable,
+         summary: '1 service is unavailable: b',
+         detail: 'See the status page for more information',
+@@ -141,15 +150,15 @@
+ 
+   describe('getAll$', () => {
+     it('defaults to empty record if no plugins', async () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies: new Map(),
+       });
+-      expect(await service.getAll$().pipe(first()).toPromise()).toEqual({});
++      expect(await setup.getAll$().pipe(first()).toPromise()).toEqual({});
+     });
+ 
+     it('defaults to core status when no plugin statuses are set', async () => {
+-      const serviceAvailable = new PluginsStatusService({
++      const serviceAvailable = new PluginsStatusService().setup({
+         core$: coreAllAvailable$,
+         pluginDependencies,
+       });
+@@ -159,7 +168,7 @@
+         c: { level: ServiceStatusLevels.available, summary: 'All dependencies are available' },
+       });
+ 
+-      const serviceDegraded = new PluginsStatusService({
++      const serviceDegraded = new PluginsStatusService().setup({
+         core$: coreOneDegraded$,
+         pluginDependencies,
+       });
+@@ -184,7 +193,7 @@
+         },
+       });
+ 
+-      const serviceCritical = new PluginsStatusService({
++      const serviceCritical = new PluginsStatusService().setup({
+         core$: coreOneCriticalOneDegraded$,
+         pluginDependencies,
+       });
+@@ -211,10 +220,10 @@
+     });
+ 
+     it('uses the manually set status level if plugin specifies one', async () => {
+-      const service = new PluginsStatusService({ core$: coreOneDegraded$, pluginDependencies });
+-      service.set('a', of({ level: ServiceStatusLevels.available, summary: 'a status' }));
++      const setup = service.setup({ core$: coreOneDegraded$, pluginDependencies });
++      setup.set('a', of({ level: ServiceStatusLevels.available, summary: 'a status' }));
+ 
+-      expect(await service.getAll$().pipe(first()).toPromise()).toEqual({
++      expect(await setup.getAll$().pipe(first()).toPromise()).toEqual({
+         a: { level: ServiceStatusLevels.available, summary: 'a status' }, // a is available depsite savedObjects being degraded
+         b: {
+           level: ServiceStatusLevels.degraded,
+@@ -232,19 +241,19 @@
+     });
+ 
+     it('updates when a new plugin status observable is set', async () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies: new Map([['a', []]]),
+       });
+       const statusUpdates: Array<Record<PluginName, ServiceStatus>> = [];
+-      const subscription = service
+-        .getAll$()
+-        .subscribe((pluginStatuses) => statusUpdates.push(pluginStatuses));
++      setup.getAll$().subscribe((pluginStatuses) => statusUpdates.push(pluginStatuses));
+ 
+-      service.set('a', of({ level: ServiceStatusLevels.degraded, summary: 'a degraded' }));
+-      service.set('a', of({ level: ServiceStatusLevels.unavailable, summary: 'a unavailable' }));
+-      service.set('a', of({ level: ServiceStatusLevels.available, summary: 'a available' }));
+-      subscription.unsubscribe();
++      setup.set('a', of({ level: ServiceStatusLevels.degraded, summary: 'a degraded' }));
++      await delay(25);
++      setup.set('a', of({ level: ServiceStatusLevels.unavailable, summary: 'a unavailable' }));
++      await delay(25);
++      setup.set('a', of({ level: ServiceStatusLevels.available, summary: 'a available' }));
++      await delay(25);
+ 
+       expect(statusUpdates).toEqual([
+         { a: { level: ServiceStatusLevels.degraded, summary: 'a degraded' } },
+@@ -254,23 +263,23 @@
+     });
+ 
+     it('updates when a plugin status observable emits', async () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies: new Map([['a', []]]),
+       });
+       const statusUpdates: Array<Record<PluginName, ServiceStatus>> = [];
+-      const subscription = service
+-        .getAll$()
+-        .subscribe((pluginStatuses) => statusUpdates.push(pluginStatuses));
++      setup.getAll$().subscribe((pluginStatuses) => statusUpdates.push(pluginStatuses));
+ 
+       const aStatus$ = new BehaviorSubject<ServiceStatus>({
+         level: ServiceStatusLevels.degraded,
+         summary: 'a degraded',
+       });
+-      service.set('a', aStatus$);
++      setup.set('a', aStatus$);
++      await delay(25);
+       aStatus$.next({ level: ServiceStatusLevels.unavailable, summary: 'a unavailable' });
++      await delay(25);
+       aStatus$.next({ level: ServiceStatusLevels.available, summary: 'a available' });
+-      subscription.unsubscribe();
++      await delay(25);
+ 
+       expect(statusUpdates).toEqual([
+         { a: { level: ServiceStatusLevels.degraded, summary: 'a degraded' } },
+@@ -281,7 +290,7 @@
+ 
+     it('emits an unavailable status if first emission times out, then continues future emissions', async () => {
+       jest.useFakeTimers();
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies: new Map([
+           ['a', []],
+@@ -290,8 +299,8 @@
+       });
+ 
+       const pluginA$ = new ReplaySubject<ServiceStatus>(1);
+-      service.set('a', pluginA$);
+-      const firstEmission = service.getAll$().pipe(first()).toPromise();
++      setup.set('a', pluginA$);
++      const firstEmission = setup.getAll$().pipe(first()).toPromise();
+       jest.runAllTimers();
+ 
+       expect(await firstEmission).toEqual({
+@@ -307,7 +316,7 @@
+       });
+ 
+       pluginA$.next({ level: ServiceStatusLevels.available, summary: 'a available' });
+-      const secondEmission = service.getAll$().pipe(first()).toPromise();
++      const secondEmission = setup.getAll$().pipe(first()).toPromise();
+       jest.runAllTimers();
+       expect(await secondEmission).toEqual({
+         a: { level: ServiceStatusLevels.available, summary: 'a available' },
+@@ -319,25 +328,25 @@
+ 
+   describe('getDependenciesStatus$', () => {
+     it('only includes dependencies of specified plugin', async () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies,
+       });
+-      expect(await service.getDependenciesStatus$('a').pipe(first()).toPromise()).toEqual({});
+-      expect(await service.getDependenciesStatus$('b').pipe(first()).toPromise()).toEqual({
++      expect(await setup.getDependenciesStatus$('a').pipe(first()).toPromise()).toEqual({});
++      expect(await setup.getDependenciesStatus$('b').pipe(first()).toPromise()).toEqual({
+         a: { level: ServiceStatusLevels.available, summary: 'All dependencies are available' },
+       });
+-      expect(await service.getDependenciesStatus$('c').pipe(first()).toPromise()).toEqual({
++      expect(await setup.getDependenciesStatus$('c').pipe(first()).toPromise()).toEqual({
+         a: { level: ServiceStatusLevels.available, summary: 'All dependencies are available' },
+         b: { level: ServiceStatusLevels.available, summary: 'All dependencies are available' },
+       });
+     });
+ 
+     it('uses the manually set status level if plugin specifies one', async () => {
+-      const service = new PluginsStatusService({ core$: coreOneDegraded$, pluginDependencies });
+-      service.set('a', of({ level: ServiceStatusLevels.available, summary: 'a status' }));
++      const setup = service.setup({ core$: coreOneDegraded$, pluginDependencies });
++      setup.set('a', of({ level: ServiceStatusLevels.available, summary: 'a status' }));
+ 
+-      expect(await service.getDependenciesStatus$('c').pipe(first()).toPromise()).toEqual({
++      expect(await setup.getDependenciesStatus$('c').pipe(first()).toPromise()).toEqual({
+         a: { level: ServiceStatusLevels.available, summary: 'a status' }, // a is available depsite savedObjects being degraded
+         b: {
+           level: ServiceStatusLevels.degraded,
+@@ -349,14 +358,14 @@
+     });
+ 
+     it('throws error if unknown plugin passed', () => {
+-      const service = new PluginsStatusService({ core$: coreAllAvailable$, pluginDependencies });
++      const setup = service.setup({ core$: coreAllAvailable$, pluginDependencies });
+       expect(() => {
+-        service.getDependenciesStatus$('dont-exist');
++        setup.getDependenciesStatus$('dont-exist');
+       }).toThrowError();
+     });
+ 
+     it('debounces plugins custom status registration', async () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies,
+       });
+@@ -366,17 +375,15 @@
+       };
+ 
+       const statusUpdates: Array<Record<string, ServiceStatus>> = [];
+-      const subscription = service
++      const subscription = setup
+         .getDependenciesStatus$('b')
+         .subscribe((status) => statusUpdates.push(status));
+ 
+       const pluginA$ = new BehaviorSubject(available);
+-      service.set('a', pluginA$);
++      setup.set('a', pluginA$);
+ 
+       expect(statusUpdates).toStrictEqual([]);
+ 
+-      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+-
+       // Waiting for the debounce timeout should cut a new update
+       await delay(25);
+       subscription.unsubscribe();
+@@ -385,7 +392,7 @@
+     });
+ 
+     it('debounces events in quick succession', async () => {
+-      const service = new PluginsStatusService({
++      const setup = service.setup({
+         core$: coreAllAvailable$,
+         pluginDependencies,
+       });
+@@ -398,13 +405,12 @@
+         summary: 'a degraded',
+       };
+       const pluginA$ = new BehaviorSubject(available);
+-      service.set('a', pluginA$);
++      setup.set('a', pluginA$);
+ 
+       const statusUpdates: Array<Record<string, ServiceStatus>> = [];
+-      const subscription = service
++      const subscription = setup
+         .getDependenciesStatus$('b')
+         .subscribe((status) => statusUpdates.push(status));
+-      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+ 
+       pluginA$.next(degraded);
+       pluginA$.next(available);
+Index: src/core/server/status/sort_plugins_by_dependencies.test.ts
+===================================================================
+diff --git a/src/core/server/status/sort_plugins_by_dependencies.test.ts b/src/core/server/status/sort_plugins_by_dependencies.test.ts
+new file mode 100644
+--- /dev/null	
++++ b/src/core/server/status/sort_plugins_by_dependencies.test.ts	
+@@ -0,0 +1,25 @@
++/*
++ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
++ * or more contributor license agreements. Licensed under the Elastic License
++ * 2.0 and the Server Side Public License, v 1; you may not use this file except
++ * in compliance with, at your election, the Elastic License 2.0 or the Server
++ * Side Public License, v 1.
++ */
++
++import { PluginName } from '../plugins';
++import { sortPluginsByDependencies } from './sort_plugins_by_dependencies';
++
++describe('sortPluginsByDependencies', () => {
++  const buildPluginMap = (
++    plugins: Record<PluginName, PluginName[]>
++  ): Map<PluginName, PluginName[]> => new Map([...Object.entries(plugins)]);
++
++  it('sorts plugins from least dependent to most dependent', () => {
++    const pluginMap = buildPluginMap({
++      pluginA: [],
++      pluginB: ['pluginA', 'pluginC'],
++      pluginC: ['pluginA'],
++    });
++    expect(sortPluginsByDependencies(pluginMap)).toEqual(['pluginA', 'pluginC', 'pluginB']);
++  });
++});
+Index: src/core/server/status/sort_plugins_by_dependencies.ts
+===================================================================
+diff --git a/src/core/server/status/sort_plugins_by_dependencies.ts b/src/core/server/status/sort_plugins_by_dependencies.ts
+new file mode 100644
+--- /dev/null	
++++ b/src/core/server/status/sort_plugins_by_dependencies.ts	
+@@ -0,0 +1,52 @@
++/*
++ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
++ * or more contributor license agreements. Licensed under the Elastic License
++ * 2.0 and the Server Side Public License, v 1; you may not use this file except
++ * in compliance with, at your election, the Elastic License 2.0 or the Server
++ * Side Public License, v 1.
++ */
++
++import { PluginName } from '../plugins';
++
++export const sortPluginsByDependencies = (
++  plugins: ReadonlyMap<PluginName, PluginName[]>
++): PluginName[] => {
++  const pluginsDependenciesGraph = new Map(
++    [...plugins.entries()].map(([pluginName, dependencies]) => [pluginName, new Set(dependencies)])
++  );
++
++  // First, find a list of "start nodes" which have no outgoing edges. At least
++  // one such node must exist in a non-empty acyclic graph.
++  const pluginsWithAllDependenciesSorted = [...pluginsDependenciesGraph.keys()].filter(
++    (pluginName) => pluginsDependenciesGraph.get(pluginName)!.size === 0
++  );
++
++  const sortedPluginNames = new Set<PluginName>();
++  while (pluginsWithAllDependenciesSorted.length > 0) {
++    const sortedPluginName = pluginsWithAllDependenciesSorted.pop()!;
++
++    // We know this plugin has all its dependencies sorted, so we can remove it
++    // and include into the final result.
++    pluginsDependenciesGraph.delete(sortedPluginName);
++    sortedPluginNames.add(sortedPluginName);
++
++    // Go through the rest of the plugins and remove `sortedPluginName` from their
++    // unsorted dependencies.
++    for (const [pluginName, dependencies] of pluginsDependenciesGraph) {
++      // If we managed delete `sortedPluginName` from dependencies let's check
++      // whether it was the last one and we can mark plugin as sorted.
++      if (dependencies.delete(sortedPluginName) && dependencies.size === 0) {
++        pluginsWithAllDependenciesSorted.push(pluginName);
++      }
++    }
++  }
++
++  if (pluginsDependenciesGraph.size > 0) {
++    const edgesLeft = JSON.stringify([...pluginsDependenciesGraph.keys()]);
++    throw new Error(
++      `Topological ordering of plugins did not complete, these plugins have cyclic or missing dependencies: ${edgesLeft}`
++    );
++  }
++
++  return [...sortedPluginNames];
++};
