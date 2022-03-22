@@ -162,13 +162,15 @@ export class TelemetryPlugin implements Plugin<TelemetryPluginSetup, TelemetryPl
         }
       });
 
-      home.welcomeScreen.registerTelemetryNoticeRenderer(() =>
-        renderWelcomeTelemetryNotice(
-          this.telemetryService!,
-          http.basePath.prepend,
-          telemetryConstants
-        )
-      );
+      if (this.config.allowChangingOptInStatus) {
+        home.welcomeScreen.registerTelemetryNoticeRenderer(() =>
+          renderWelcomeTelemetryNotice(
+            this.telemetryService!,
+            http.basePath.prepend,
+            telemetryConstants
+          )
+        );
+      }
     }
 
     return {
