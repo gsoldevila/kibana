@@ -1,0 +1,525 @@
+{
+  "core-usage-stats": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.14.1",
+    "namespaceType": "agnostic"
+  },
+  "legacy-url-alias": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.2.0",
+    "namespaceType": "agnostic"
+  },
+  "config": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.7.0",
+    "namespaceType": "single"
+  },
+  "config-global": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "usage-counters": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "task": {
+    "index": ".kibana_task_manager",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "guided-onboarding-guide-state": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "guided-onboarding-plugin-state": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "ui-metric": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "application_usage_totals": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "application_usage_daily": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "event_loop_delays_daily": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "url": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "single"
+  },
+  "index-pattern": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.11.0",
+    "namespaceType": "multiple"
+  },
+  "sample-data-telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "space": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "6.6.0",
+    "namespaceType": "agnostic"
+  },
+  "spaces-usage-stats": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.14.1",
+    "namespaceType": "agnostic"
+  },
+  "exception-list-agnostic": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.12.0",
+    "namespaceType": "agnostic"
+  },
+  "exception-list": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.12.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "file": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "fileShare": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "action": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.3.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "action_task_params": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.0.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "connector_token": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "query": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.16.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "kql-telemetry": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "search-session": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.6.0",
+    "namespaceType": "single"
+  },
+  "search-telemetry": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.12.0",
+    "namespaceType": "agnostic"
+  },
+  "file-upload-usage-collection-telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "alert": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "api_key_pending_invalidation": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "rules-settings": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "single"
+  },
+  "maintenance-window": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "search": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "tag": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "graph-workspace": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.11.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "visualization": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "canvas-element": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "canvas-workpad": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "canvas-workpad-template": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "dashboard": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "lens": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "lens-ui-telemetry": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "single"
+  },
+  "map": {
+    "index": ".kibana_analytics",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "cases-comments": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "cases-configure": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.15.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "cases-connector-mappings": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.14.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "cases": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.7.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "cases-user-actions": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "cases-telemetry": {
+    "index": ".kibana_alerting_cases",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "ingest_manager_settings": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.6.0",
+    "namespaceType": "agnostic"
+  },
+  "ingest-agent-policies": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.5.0",
+    "namespaceType": "agnostic"
+  },
+  "ingest-outputs": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.0.0",
+    "namespaceType": "agnostic"
+  },
+  "ingest-package-policies": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "epm-packages": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.6.0",
+    "namespaceType": "agnostic"
+  },
+  "epm-packages-assets": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "fleet-preconfiguration-deletion-record": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "ingest-download-sources": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "fleet-fleet-server-host": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "fleet-proxy": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "fleet-message-signing-keys": {
+    "index": ".kibana_ingest",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "osquery-manager-usage-metric": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "osquery-saved-query": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "osquery-pack": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "osquery-pack-asset": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "csp-rule-template": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.7.0",
+    "namespaceType": "agnostic"
+  },
+  "slo": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "ml-job": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.10.0",
+    "namespaceType": "multiple"
+  },
+  "ml-trained-model": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.10.0",
+    "namespaceType": "multiple"
+  },
+  "ml-module": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.10.0",
+    "namespaceType": "agnostic"
+  },
+  "uptime-dynamic-settings": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.2.0",
+    "namespaceType": "single"
+  },
+  "synthetics-privates-locations": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "synthetics-monitor": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.8.0",
+    "namespaceType": "single"
+  },
+  "uptime-synthetics-api-key": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "synthetics-param": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple"
+  },
+  "siem-ui-timeline-note": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.16.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "siem-ui-timeline-pinned-event": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.16.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "siem-detection-engine-rule-actions": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.16.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "security-rule": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "siem-ui-timeline": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.16.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "endpoint:user-artifact-manifest": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.12.0",
+    "namespaceType": "agnostic"
+  },
+  "security-solution-signals-migration": {
+    "index": ".kibana_security_solution",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "single"
+  },
+  "infrastructure-ui-source": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "7.16.2",
+    "namespaceType": "single"
+  },
+  "inventory-view": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "single"
+  },
+  "infrastructure-monitoring-log-view": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "multiple-isolated"
+  },
+  "metrics-explorer-view": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "single"
+  },
+  "upgrade-assistant-reindex-operation": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "upgrade-assistant-ml-upgrade-operation": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "monitoring-telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "enterprise_search_telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "app_search_telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "workplace_search_telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "apm-indices": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.2.0",
+    "namespaceType": "single"
+  },
+  "apm-telemetry": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "apm-server-schema": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "namespaceType": "agnostic"
+  },
+  "apm-service-group": {
+    "index": ".kibana",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.5.0",
+    "namespaceType": "multiple"
+  }
+}
