@@ -944,7 +944,6 @@ x-pack/plugins/observability_solution/observability_onboarding/e2e @elastic/obs-
 x-pack/plugins/observability_solution/observability_shared @elastic/observability-ui
 x-pack/plugins/observability_solution/profiling @elastic/obs-ux-infra_services-team
 x-pack/plugins/observability_solution/profiling_data_access @elastic/obs-ux-infra_services-team
-x-pack/plugins/observability_solution/uptime @elastic/obs-ux-management-team
 x-pack/plugins/observability_solution/ux @elastic/obs-ux-infra_services-team
 x-pack/plugins/osquery @elastic/security-defend-workflows
 x-pack/plugins/painless_lab @elastic/kibana-management
@@ -999,6 +998,7 @@ x-pack/solutions/observability/plugins/serverless_observability @elastic/obs-ux-
 x-pack/solutions/observability/plugins/slo @elastic/obs-ux-management-team
 x-pack/solutions/observability/plugins/synthetics @elastic/obs-ux-management-team
 x-pack/solutions/observability/plugins/synthetics/e2e @elastic/obs-ux-management-team
+x-pack/solutions/observability/plugins/uptime @elastic/obs-ux-management-team
 x-pack/test
 x-pack/test_serverless
 x-pack/test/alerting_api_integration/common/plugins/aad @elastic/response-ops
