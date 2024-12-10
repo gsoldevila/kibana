@@ -6,6 +6,7 @@
  */
 import { FtrConfigProviderContext } from '@kbn/test';
 import path from 'path';
+import { REPO_ROOT } from '@kbn/repo-info';
 import { SyntheticsRunner } from './synthetics_runner';
 import { argv } from './parse_args_params';
 
@@ -25,12 +26,12 @@ async function runE2ETests({ readConfigFile }: FtrConfigProviderContext) {
 
       await syntheticsRunner.setup();
 
-      await syntheticsRunner.loadTestData(path.join(__dirname, '../../../ux/e2e/fixtures/'), [
-        'rum_8.0.0',
-        'rum_test_data',
-      ]);
       await syntheticsRunner.loadTestData(
-        path.join(__dirname, '../../../synthetics/e2e/fixtures/es_archiver/'),
+        `${REPO_ROOT}/x-pack/plugins/observability_solution/ux/e2e/fixtures/`,
+        ['rum_8.0.0', 'rum_test_data']
+      );
+      await syntheticsRunner.loadTestData(
+        `${REPO_ROOT}/x-pack/solutions/observability/plugins/synthetics/e2e/fixtures/es_archiver/`,
         ['full_heartbeat', 'browser']
       );
       await syntheticsRunner.loadTestFiles(async () => {
