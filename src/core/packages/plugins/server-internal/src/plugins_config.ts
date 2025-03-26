@@ -22,6 +22,14 @@ const configSchema = schema.object({
    */
   paths: schema.arrayOf(schema.string(), { defaultValue: [] }),
   /**
+   * Defines an array of directories to ignore when loading plugins.
+   */
+  excludedPluginPaths: schema.arrayOf(schema.string(), { defaultValue: [] }),
+  /**
+   * Defines an array of directories to NOT ignore when loading plugins.
+   */
+  includedPluginPaths: schema.arrayOf(schema.string(), { defaultValue: [] }),
+  /**
    * Internal config, not intended to be used by end users. Only for specific
    * internal purposes.
    */
@@ -61,10 +69,22 @@ export class PluginsConfig {
    */
   public readonly shouldEnableAllPlugins: boolean;
 
+  /**
+   * Specify some plugin paths that should be excluded by the discovery mechanism.
+   */
+  public readonly excludedPluginPaths: readonly string[];
+
+  /**
+   * Specify some plugin paths that should NOT be excluded by the discovery mechanism.
+   */
+  public readonly includedPluginPaths: readonly string[];
+
   constructor(rawConfig: PluginsConfigType, env: Env) {
     this.initialize = rawConfig.initialize;
     this.pluginSearchPaths = env.pluginSearchPaths;
     this.additionalPluginPaths = rawConfig.paths;
+    this.excludedPluginPaths = rawConfig.excludedPluginPaths;
+    this.includedPluginPaths = rawConfig.includedPluginPaths;
     this.shouldEnableAllPlugins = get(rawConfig, ENABLE_ALL_PLUGINS_CONFIG_PATH, false);
   }
 }
