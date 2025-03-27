@@ -135,7 +135,7 @@ async function testSetup() {
   coreId = Symbol('core');
   env = Env.createDefault(REPO_ROOT, getEnvOptions());
 
-  pluginsConfig = { initialize: true, paths: [] };
+  pluginsConfig = { initialize: true, paths: [], excludedPluginPaths: [], includedPluginPaths: [] };
   config$ = new BehaviorSubject<Record<string, any>>({ plugins: pluginsConfig });
   const rawConfigService = rawConfigServiceMock.create({ rawConfig$: config$ });
   configService = new ConfigService(rawConfigService, env, logger);
@@ -742,6 +742,8 @@ describe('PluginsService', () => {
       expect(mockDiscover).toHaveBeenCalledWith({
         config: {
           additionalPluginPaths: [],
+          excludedPluginPaths: [],
+          includedPluginPaths: [],
           initialize: true,
           pluginSearchPaths: [
             resolve(REPO_ROOT, '..', 'kibana-extra'),

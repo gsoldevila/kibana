@@ -44,14 +44,15 @@ const pluginManifestFromPluginPackageMock: jest.Mock = jest.requireMock(
   './plugin_manifest_from_plugin_package'
 ).pluginManifestFromPluginPackage;
 
-function getMockPackage(id: string) {
+function getMockPackage(id: string, relativePath: string = `packages/${id}`) {
   return {
     id,
     manifest: {
       id,
       type: 'plugin',
     },
-    directory: resolve(REPO_ROOT, `packages/${id}`),
+    directory: resolve(REPO_ROOT, relativePath),
+    normalizedRepoRelativeDir: relativePath,
   } as Package;
 }
 
@@ -648,6 +649,74 @@ describe('plugins discovery system', () => {
         type: 'return',
         value: plugin.manifest,
       });
+    });
+
+    it('filters out plugins from excluded folders', async () => {
+      const foo = getMockPackage('foo');
+      const bar = getMockPackage('bar');
+      const obs = getMockPackage('obs', 'x-pack/solutions/observability/plugins/private/obs');
+      const sec = getMockPackage('sec', 'x-pack/solutions/security/plugins/private/sec');
+      coreContext.env = {
+        ...env,
+        pluginSearchPaths: [],
+        repoPackages: [foo, bar, obs, sec],
+      };
+
+      getPluginPackagesFilterMock.mockReturnValue(Boolean);
+
+      const filteredPluginsConfig: PluginsConfigType = {
+        ...pluginConfig,
+        excludedPluginPaths: ['x-pack/solutions'],
+      };
+
+      const { plugin$ } = discover({
+        config: new PluginsConfig(filteredPluginsConfig, coreContext.env),
+        coreContext,
+        instanceInfo,
+        nodeInfo,
+      });
+
+      const plugins = await firstValueFrom(plugin$.pipe(toArray()));
+
+      expect(plugins.length).toEqual(2);
+      // plugin discovery sorts them by name
+      expect(plugins[0].name).toEqual('bar');
+      expect(plugins[1].name).toEqual('foo');
+    });
+
+    it('does not filter out plugins from included folders', async () => {
+      const foo = getMockPackage('foo');
+      const bar = getMockPackage('bar');
+      const obs = getMockPackage('obs', 'x-pack/solutions/observability/plugins/private/obs');
+      const sec = getMockPackage('sec', 'x-pack/solutions/security/plugins/private/sec');
+      coreContext.env = {
+        ...env,
+        pluginSearchPaths: [],
+        repoPackages: [foo, bar, obs, sec],
+      };
+
+      getPluginPackagesFilterMock.mockReturnValue(Boolean);
+
+      const filteredPluginsConfig: PluginsConfigType = {
+        ...pluginConfig,
+        excludedPluginPaths: ['x-pack/solutions/'],
+        includedPluginPaths: ['x-pack/solutions/observability/'],
+      };
+
+      const { plugin$ } = discover({
+        config: new PluginsConfig(filteredPluginsConfig, coreContext.env),
+        coreContext,
+        instanceInfo,
+        nodeInfo,
+      });
+
+      const plugins = await firstValueFrom(plugin$.pipe(toArray()));
+
+      expect(plugins.length).toEqual(3);
+      // plugin discovery sorts them by name
+      expect(plugins[0].name).toEqual('bar');
+      expect(plugins[1].name).toEqual('foo');
+      expect(plugins[2].name).toEqual('obs');
     });
   });
 

@@ -18,6 +18,8 @@ describe('PluginsConfig', () => {
     const rawConfig: PluginsConfigType = {
       initialize: true,
       paths: ['some-path', 'another-path'],
+      excludedPluginPaths: [],
+      includedPluginPaths: [],
     };
     const config = new PluginsConfig(rawConfig, env);
     expect(config.additionalPluginPaths).toEqual(['some-path', 'another-path']);
@@ -28,6 +30,8 @@ describe('PluginsConfig', () => {
     const rawConfig: PluginsConfigType = {
       initialize: true,
       paths: ['some-path', 'another-path'],
+      excludedPluginPaths: [],
+      includedPluginPaths: [],
     };
     const config = new PluginsConfig(rawConfig, env);
     expect(config.additionalPluginPaths).toEqual(['some-path', 'another-path']);
@@ -35,12 +39,28 @@ describe('PluginsConfig', () => {
 
   it('retrieves shouldEnableAllPlugins', () => {
     const env = Env.createDefault(REPO_ROOT, getEnvOptions({ cliArgs: { dev: true } }));
-    const rawConfig: any = {
+    const rawConfig: PluginsConfigType = {
       initialize: true,
       paths: ['some-path', 'another-path'],
       forceEnableAllPlugins: true,
+      excludedPluginPaths: [],
+      includedPluginPaths: [],
     };
     const config = new PluginsConfig(rawConfig, env);
-    expect(config.shouldEnableAllPlugins).toBe(true);
+    expect(config.shouldEnableAllPlugins).toEqual(true);
+  });
+
+  it('retrieves included and excluded paths', () => {
+    const env = Env.createDefault(REPO_ROOT, getEnvOptions({ cliArgs: { dev: true } }));
+    const rawConfig: PluginsConfigType = {
+      initialize: true,
+      paths: ['some-path', 'another-path'],
+      forceEnableAllPlugins: true,
+      excludedPluginPaths: ['some/excluded/path'],
+      includedPluginPaths: ['some/excluded/path/included/subfolder'],
+    };
+    const config = new PluginsConfig(rawConfig, env);
+    expect(config.excludedPluginPaths).toEqual(['some/excluded/path']);
+    expect(config.includedPluginPaths).toEqual(['some/excluded/path/included/subfolder']);
   });
 });
