@@ -38,7 +38,6 @@ export const dashboardVisualization: SavedObjectsType = {
   name: 'dashboard_visualization', <1>
   hidden: true,
   namespaceType: 'multiple-isolated', <2>
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     1: modelVersion1,
     2: modelVersion2,
@@ -167,7 +166,6 @@ That way:
 ```ts
 const myType: SavedObjectsType = {
   name: 'test',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     1: modelVersion1, // valid: start with version 1
     2: modelVersion2, // valid: no gap between versions
@@ -181,7 +179,6 @@ const myType: SavedObjectsType = {
 ```ts
 const myType: SavedObjectsType = {
   name: 'test',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     2: modelVersion2, // invalid: first version must be 1
     4: modelVersion3, // invalid: skipped version 3
@@ -200,7 +197,6 @@ const myType: SavedObjectsType = {
 ```ts
 const myType: SavedObjectsType = {
   name: 'test',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     1: {
       changes: [
@@ -451,7 +447,6 @@ The definition of the type at version 1 would look like:
 const myType: SavedObjectsType = {
   name: 'test',
   namespaceType: 'single',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     // initial (and current) model version
     1: {
@@ -508,7 +503,6 @@ The full type definition after the addition of the new model version:
 const myType: SavedObjectsType = {
   name: 'test',
   namespaceType: 'single',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     1: {
       changes: [],
@@ -597,7 +591,6 @@ the full type definition after the addition of the model version 2 would be:
 const myType: SavedObjectsType = {
   name: 'test',
   namespaceType: 'single',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     1: {
       changes: [
@@ -693,7 +686,6 @@ The full type definition would look like:
 const myType: SavedObjectsType = {
   name: 'test',
   namespaceType: 'single',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     1: {
       changes: [
@@ -766,7 +758,6 @@ The definition of the type at version 1 would look like:
 const myType: SavedObjectsType = {
   name: 'test',
   namespaceType: 'single',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     // initial (and current) model version
     1: {
@@ -831,7 +822,6 @@ The full type definition after the addition of the new model version:
 const myType: SavedObjectsType = {
   name: 'test',
   namespaceType: 'single',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     // initial (and current) model version
     1: {
@@ -899,7 +889,6 @@ The full type definition after the data removal would look like:
 const myType: SavedObjectsType = {
   name: 'test',
   namespaceType: 'single',
-  switchToModelVersionAt: '8.10.0',
   modelVersions: {
     // initial (and current) model version
     1: {
