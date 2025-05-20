@@ -8,7 +8,7 @@
  */
 
 import type { SavedObjectsBulkCreateObject } from '@kbn/core-saved-objects-api-server';
-import type { SavedObjectsType } from '@kbn/core-saved-objects-server';
+import type { SavedObjectMigration, SavedObjectsType } from '@kbn/core-saved-objects-server';
 import type { IndexTypesMap } from '@kbn/core-saved-objects-base-server-internal';
 import type { ElasticsearchClientWrapperFactory } from './elasticsearch_client_wrapper';
 import {
@@ -84,7 +84,15 @@ export const baselineTypes: Array<SavedObjectsType<any>> = [
 
 export const getUpToDateBaselineTypes = (removedTypes: string[]) => [
   ...baselineTypes.filter((type) => !removedTypes.includes(type.name)),
-  // we add a new SO type
+  // we add a few SO types
+  {
+    ...defaultType,
+    modelVersions: undefined,
+    name: 'old',
+    migrations: {
+      '8.8.0': ((doc) => doc) as SavedObjectMigration,
+    },
+  },
   {
     ...defaultType,
     name: 'recent',
