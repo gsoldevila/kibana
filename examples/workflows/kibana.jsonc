@@ -3,10 +3,18 @@
   "id": "@kbn/workflows-plugin-example",
   "owner": "@elastic/workflows-eng",
   "description": "a plugin for One Workflow",
+  "group": "platform",
+  "visilitiby": "private",
   "plugin": {
     "id": "workflowsExample",
     "server": true,
     "browser": true,
-    "requiredPlugins": ["developerExamples", "navigation", "workflowsManagement", "security", "kibanaReact"]
+    "requiredPlugins": [
+      "developerExamples",
+      "navigation",
+      "workflowsManagement",
+      "security",
+      "kibanaReact"
+    ]
   }
 }
