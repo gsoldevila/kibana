@@ -4,7 +4,7 @@
   "owner": "@elastic/workflows-eng",
   "description": "a plugin for One Workflow",
   "group": "platform",
-  "visilitiby": "private",
+  "visibility": "private",
   "plugin": {
     "id": "workflowsExample",
     "server": true,
