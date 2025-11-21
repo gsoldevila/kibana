@@ -17,5 +17,3 @@ xml-formatter
 @tanstack/react-table
 @tanstack/react-virtual
 @storybook/addon-docs
-@inquirer/prompts
-@listr2/prompt-adapter-inquirer

@@ -3685,8 +3685,6 @@
     {
       "groupName": "inquirer",
       "matchDepNames": [
-        "@inquirer/prompts",
-        "@listr2/prompt-adapter-inquirer",
         "@types/inquirer",
         "inquirer"
       ],
