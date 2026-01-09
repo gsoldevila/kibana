@@ -10,12 +10,6 @@
 import { schema } from '@kbn/config-schema';
 import type { SavedObjectsType } from '@kbn/core-saved-objects-server';
 
-const v0 = schema.object({
-  aTextAttribute: schema.string(),
-  aBooleanAttribute: schema.boolean(),
-  anIntegerAttribute: schema.number(),
-});
-
 const v1 = schema.object({
   aTextAttribute: schema.string(),
   aBooleanAttribute: schema.boolean(),
@@ -36,8 +30,8 @@ export const OLD_TYPE_NO_MIGRATIONS: Partial<SavedObjectsType> = {
     1: {
       changes: [],
       schemas: {
-        create: v0,
-        forwardCompatibility: v0.extends({}, { unknowns: 'ignore' }),
+        create: v1,
+        forwardCompatibility: v1.extends({}, { unknowns: 'ignore' }),
       },
     },
   },
