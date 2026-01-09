@@ -12,11 +12,16 @@ import { getKibanaMigratorTestKit } from '@kbn/migrator-test-kit';
 import type { Task, TaskContext } from '../types';
 import { getPreviousVersionType } from '../../migrations';
 import { checkDocuments } from './check_documents';
+import { getVersions } from '../../migrations/versions';
 
 export const testRollback: Task = async (ctx, task) => {
   const { updatedTypes, baselineMappings } = ctx;
+  const rollbackTestableTypes = updatedTypes.filter(({ name }) => {
+    const [_, previous] = getVersions(ctx.to!.typeDefinitions[name]);
+    return previous !== '0.0.0';
+  });
 
-  const previousVersionTypes = updatedTypes.map((type) =>
+  const previousVersionTypes = rollbackTestableTypes.map((type) =>
     getPreviousVersionType({ type, previousMappings: baselineMappings! })
   );
 
@@ -26,13 +31,13 @@ export const testRollback: Task = async (ctx, task) => {
 
   const subtasks: ListrTask<TaskContext>[] = [
     {
-      title: `Run rollback migration on updated types: '${ctx.updatedTypes
+      title: `Run rollback migration on rollback-testable types: '${rollbackTestableTypes
         .map(({ name }) => name)
         .join(', ')}'`,
       task: async () => await performRollback(),
     },
     {
-      title: `Ensure SO API-retrieved SOs match previous version fixtures`,
+      title: `Ensure API-retrieved SOs match previous version fixtures`,
       task: checkDocuments({
         repository: savedObjectsRepository,
         types: previousVersionTypes,

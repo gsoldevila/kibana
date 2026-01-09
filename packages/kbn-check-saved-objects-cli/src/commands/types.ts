@@ -27,6 +27,7 @@ export interface TaskContext {
   from?: MigrationSnapshot;
   to?: MigrationSnapshot;
   updatedTypes: SavedObjectsType<any>[];
+  rollbackTestableTypes: SavedObjectsType<any>[];
   currentRemovedTypes: string[];
   newRemovedTypes: string[];
   baselineMappings?: SavedObjectsTypeMappingDefinitions;
