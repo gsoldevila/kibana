@@ -301,7 +301,7 @@ const myType: SavedObjectsType = {
 
 If you are updating a legacy Saved Object type that lacks an existing model version, you must establish a baseline by creating an initial version, which defines the current, existing shape of the Saved Object.
 
-Use the following example as a template for your initial version:
+While the example below shows the minimal configuration for an initial version, we recommend defining `create` and `forwardCompatibility` schemas that closely match your Saved Object's structure. Doing so ensures you benefit from full **Saved Objects Repository (SOR)** validation during both creation and retrieval.
 
 ```ts
 const myType: SavedObjectsType = {
@@ -310,7 +310,7 @@ const myType: SavedObjectsType = {
     1: {
       changes: [],
       schemas: {
-        create: schema.object(),
+        create: schema.object({}, { unknowns: 'allow' }),
         forwardCompatibility: (attrs) => _.pick([
           'knownField1',
           'knownField2',
