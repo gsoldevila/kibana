@@ -24,6 +24,8 @@ dependsOn:
   - '@kbn/cps-utils'
   - '@kbn/es-query'
   - '@kbn/i18n-react'
+  - '@kbn/core-elasticsearch-server'
+  - '@kbn/spaces-plugin'
 tags:
   - plugin
   - prod
