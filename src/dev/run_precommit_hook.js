@@ -18,7 +18,10 @@ import * as Stylelint from './stylelint';
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
 
+import minimatch from 'minimatch';
+
 import { getFilesForCommit, checkFileCasing } from './precommit_hook';
+import { KEBAB_CASE_PATTERNS } from './precommit_hook/casing_check_config';
 import { checkSemverRanges } from './no_pkg_semver_ranges';
 import { load as yamlLoad } from 'js-yaml';
 import { readFile } from 'fs/promises';
@@ -87,10 +90,18 @@ class FileCasingCheck extends PrecommitCheck {
     const exceptions = Object.values(rawExceptions).flatMap((teamObject) =>
       Object.keys(teamObject)
     );
-    await checkFileCasing(log, files, {
-      packageRootDirs,
-      exceptions,
-    });
+
+    const getExpectedCasing = (relativePath) => {
+      if (packageRootDirs.has(relativePath)) {
+        return 'kebab-case';
+      } else if (KEBAB_CASE_PATTERNS.some((pattern) => minimatch(relativePath, pattern))) {
+        return 'kebab-case';
+      } else {
+        return 'snake_case';
+      }
+    };
+
+    await checkFileCasing(log, files, getExpectedCasing, { exceptions });
   }
 }
 
