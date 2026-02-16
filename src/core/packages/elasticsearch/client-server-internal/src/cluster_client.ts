@@ -42,10 +42,6 @@ import type { AgentFactoryProvider } from './agent_manager';
 
 const noop = () => undefined;
 
-// Re-entry guard: prevents infinite recursion when the project routing resolver
-// makes ES calls (e.g. to read UI settings) via the same scoped client path.
-const resolvingRequests = new WeakSet<ScopeableRequest>();
-
 /** @internal **/
 export class ClusterClient implements ICustomClusterClient {
   private readonly config: ElasticsearchClientConfig;
@@ -161,14 +157,7 @@ export class ClusterClient implements ICustomClusterClient {
     if (!resolver || !isRealRequest(request)) {
       return undefined;
     }
-    let promise: Promise<string | undefined> | null = null;
-    return (): Promise<string | undefined> => {
-      if (promise) return promise;
-      if (resolvingRequests.has(request)) return Promise.resolve(undefined);
-      resolvingRequests.add(request);
-      promise = resolver(request as KibanaRequest).finally(() => resolvingRequests.delete(request));
-      return promise;
-    };
+    return () => resolver(request as KibanaRequest);
   }
 
   private createInternalErrorHandlerAccessor = (

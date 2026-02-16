@@ -8,13 +8,20 @@
  */
 
 import type { CoreSetup, CoreStart, Plugin, PluginInitializerContext } from '@kbn/core/server';
+import type { SpacesPluginSetup } from '@kbn/spaces-plugin/server';
 import { registerRoutes } from './routes';
 import type { CPSConfig } from './config';
 import type { CPSServerSetup } from './types';
 
-const CPS_PROJECT_ROUTING_ALL = '_alias:_origin';
+const DEFAULT_SPACE_ID = 'default';
 
-export class CPSServerPlugin implements Plugin<CPSServerSetup> {
+const getSpaceDefaultNpreName = (spaceId: string): string => `kibana_space_${spaceId}_default`;
+
+interface CPSServerSetupDeps {
+  spaces?: SpacesPluginSetup;
+}
+
+export class CPSServerPlugin implements Plugin<CPSServerSetup, void, CPSServerSetupDeps> {
   private readonly initContext: PluginInitializerContext;
   private readonly isServerless: boolean;
   private readonly config$: CPSConfig;
@@ -25,7 +32,7 @@ export class CPSServerPlugin implements Plugin<CPSServerSetup> {
     this.config$ = initContext.config.get();
   }
 
-  public setup(core: CoreSetup) {
+  public setup(core: CoreSetup, plugins: CPSServerSetupDeps) {
     const { initContext, config$ } = this;
     const { enabled, cpsEnabled } = config$;
 
@@ -36,8 +43,8 @@ export class CPSServerPlugin implements Plugin<CPSServerSetup> {
       }
       if (cpsEnabled) {
         core.elasticsearch.registerProjectRoutingResolver(async (request) => {
-          // TODO use namespace-based named routing expressions (see https://github.com/elastic/kibana/pull/250990/changes#diff-d4c45adb24e34f0646a02ab753e763f13aed939ffb33da72d21f427d3f2c5981R8)
-          return CPS_PROJECT_ROUTING_ALL;
+          const spaceId = plugins.spaces?.spacesService.getSpaceId(request) ?? DEFAULT_SPACE_ID;
+          return getSpaceDefaultNpreName(spaceId);
         });
       }
     }

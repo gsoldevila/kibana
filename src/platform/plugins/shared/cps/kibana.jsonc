@@ -14,7 +14,7 @@
     "configPath": [
       "cps"
     ],
-    "optionalPlugins": [],
+    "optionalPlugins": ["spaces"],
     "requiredPlugins": [],
     "requiredBundles": []
   }
