@@ -12,7 +12,11 @@ import { transportConstructorMock, transportRequestMock } from './create_transpo
 import { errors } from '@elastic/elasticsearch';
 import type { BaseConnectionPool } from '@elastic/elasticsearch';
 import type { InternalUnauthorizedErrorHandler } from './retry_unauthorized';
-import type { ErrorHandlerAccessor, OnRequestHandler } from './create_transport';
+import type {
+  ErrorHandlerAccessor,
+  OnRequestHandler,
+  ProjectRoutingAccessor,
+} from './create_transport';
 import { createTransport } from './create_transport';
 
 const createConnectionPool = () => {
@@ -648,6 +652,126 @@ describe('createTransport', () => {
         requestParams,
         expect.objectContaining({
           querystring: { some_field: 'some_value' },
+        })
+      );
+    });
+  });
+
+  describe('project routing injection', () => {
+    let getProjectRouting: jest.MockedFunction<ProjectRoutingAccessor>;
+
+    const createTransportWithProjectRouting = () => {
+      return createTransport({
+        getUnauthorizedErrorHandler,
+        getExecutionContext,
+        getProjectRouting,
+      });
+    };
+
+    beforeEach(() => {
+      getProjectRouting = jest.fn();
+    });
+
+    it('injects project_routing when getter returns a value and path is CPS-sensitive', async () => {
+      getProjectRouting.mockResolvedValue('_alias:my-project');
+
+      const transportClass = createTransportWithProjectRouting();
+      const transport = new transportClass(baseConstructorParams);
+
+      await transport.request({ method: 'POST', path: '/my-index/_search' }, {});
+
+      expect(transportRequestMock).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          querystring: { project_routing: '_alias:my-project' },
+        })
+      );
+    });
+
+    it('does not inject project_routing when getter returns undefined', async () => {
+      getProjectRouting.mockResolvedValue(undefined);
+
+      const transportClass = createTransportWithProjectRouting();
+      const transport = new transportClass(baseConstructorParams);
+
+      await transport.request({ method: 'POST', path: '/my-index/_search' }, {});
+
+      expect(transportRequestMock).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.not.objectContaining({
+          querystring: expect.objectContaining({ project_routing: expect.anything() }),
+        })
+      );
+    });
+
+    it('does not inject project_routing for non-CPS-sensitive paths', async () => {
+      getProjectRouting.mockResolvedValue('_alias:my-project');
+
+      const transportClass = createTransportWithProjectRouting();
+      const transport = new transportClass(baseConstructorParams);
+
+      await transport.request({ method: 'POST', path: '/my-index/_bulk' }, {});
+
+      expect(transportRequestMock).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.not.objectContaining({
+          querystring: expect.objectContaining({ project_routing: expect.anything() }),
+        })
+      );
+    });
+
+    it('preserves existing querystring values when injecting', async () => {
+      getProjectRouting.mockResolvedValue('_alias:*');
+
+      const transportClass = createTransportWithProjectRouting();
+      const transport = new transportClass(baseConstructorParams);
+
+      await transport.request(
+        { method: 'POST', path: '/_search' },
+        { querystring: { timeout: '30s' } }
+      );
+
+      expect(transportRequestMock).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          querystring: { timeout: '30s', project_routing: '_alias:*' },
+        })
+      );
+    });
+
+    it('does not inject project_routing for PIT-based searches', async () => {
+      getProjectRouting.mockResolvedValue('_alias:my-project');
+
+      const transportClass = createTransportWithProjectRouting();
+      const transport = new transportClass(baseConstructorParams);
+
+      await transport.request(
+        { method: 'POST', path: '/_search', body: { pit: { id: 'abc123' } } },
+        {}
+      );
+
+      expect(getProjectRouting).not.toHaveBeenCalled();
+      expect(transportRequestMock).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.not.objectContaining({
+          querystring: expect.objectContaining({ project_routing: expect.anything() }),
+        })
+      );
+    });
+
+    it('does not inject when getProjectRouting is not provided', async () => {
+      const transportClass = createTransport({
+        getUnauthorizedErrorHandler,
+        getExecutionContext,
+      });
+      const transport = new transportClass(baseConstructorParams);
+
+      await transport.request({ method: 'POST', path: '/_search' }, {});
+
+      expect(transportRequestMock).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.not.objectContaining({
+          querystring: expect.objectContaining({ project_routing: expect.anything() }),
         })
       );
     });

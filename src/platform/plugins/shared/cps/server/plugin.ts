@@ -12,6 +12,8 @@ import { registerRoutes } from './routes';
 import type { CPSConfig } from './config';
 import type { CPSServerSetup } from './types';
 
+const CPS_PROJECT_ROUTING_ALL = '_alias:_origin';
+
 export class CPSServerPlugin implements Plugin<CPSServerSetup> {
   private readonly initContext: PluginInitializerContext;
   private readonly isServerless: boolean;
@@ -25,15 +27,20 @@ export class CPSServerPlugin implements Plugin<CPSServerSetup> {
 
   public setup(core: CoreSetup) {
     const { initContext, config$ } = this;
-    const { cpsEnabled } = config$;
+    const { enabled, cpsEnabled } = config$;
 
     // Register route only for serverless
     if (this.isServerless) {
-      registerRoutes(core, initContext);
+      if (enabled) {
+        registerRoutes(core, initContext);
+      }
+      if (cpsEnabled) {
+        core.elasticsearch.registerProjectRoutingResolver(async (request) => {
+          // TODO use namespace-based named routing expressions (see https://github.com/elastic/kibana/pull/250990/changes#diff-d4c45adb24e34f0646a02ab753e763f13aed939ffb33da72d21f427d3f2c5981R8)
+          return CPS_PROJECT_ROUTING_ALL;
+        });
+      }
     }
-
-    // Set CPS feature flag in Elasticsearch service
-    core.elasticsearch.setCpsFeatureFlag(cpsEnabled);
 
     return {
       getCpsEnabled: () => cpsEnabled,

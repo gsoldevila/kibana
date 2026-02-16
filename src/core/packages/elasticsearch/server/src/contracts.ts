@@ -8,6 +8,7 @@
  */
 
 import type { Observable } from 'rxjs';
+import type { KibanaRequest } from '@kbn/core-http-server';
 import type {
   IClusterClient,
   ICustomClusterClient,
@@ -15,6 +16,15 @@ import type {
   UnauthorizedErrorHandler,
 } from './client';
 import type { IElasticsearchConfig } from './elasticsearch_config';
+
+/**
+ * Resolves the project routing value for a given request.
+ * Used by CPS (Cross-Project Search) to determine which projects
+ * should be searched based on the current space's configuration.
+ *
+ * @public
+ */
+export type ProjectRoutingResolver = (request: KibanaRequest) => Promise<string | undefined>;
 
 /**
  * @public
@@ -99,15 +109,23 @@ export interface ElasticsearchServiceSetup {
   readonly publicBaseUrl?: string;
 
   /**
-   * Sets the CPS feature flag in the Elasticsearch service.
-   * This should only be called from the CPS plugin.
+   * Registers a resolver that provides the `project_routing` value for CPS-sensitive
+   * Elasticsearch requests. The resolver is called per-request and receives the current
+   * {@link KibanaRequest}, allowing it to determine routing based on the request's space.
+   *
+   * Can only be called once. Should only be called from the CPS plugin.
    *
    * @example
    * ```ts
-   * core.elasticsearch.setCpsFeatureFlag(true);
+   * core.elasticsearch.registerProjectRoutingResolver(async (request) => {
+   *   const [coreStart] = await core.getStartServices();
+   *   const soClient = coreStart.savedObjects.getScopedClient(request);
+   *   const uiSettingsClient = coreStart.uiSettings.asScopedToClient(soClient);
+   *   return uiSettingsClient.get<string>('cps:projectRouting');
+   * });
    * ```
    */
-  setCpsFeatureFlag: (enabled: boolean) => void;
+  registerProjectRoutingResolver: (resolver: ProjectRoutingResolver) => void;
 }
 
 /**

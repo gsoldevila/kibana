@@ -23,6 +23,7 @@ import type {
   UnauthorizedErrorHandler,
   ElasticsearchClientConfig,
   ElasticsearchCapabilities,
+  ProjectRoutingResolver,
 } from '@kbn/core-elasticsearch-server';
 import { ClusterClient, AgentManager } from '@kbn/core-elasticsearch-client-server-internal';
 
@@ -66,8 +67,7 @@ export class ElasticsearchService
   private clusterInfo$?: Observable<ClusterInfo>;
   private unauthorizedErrorHandler?: UnauthorizedErrorHandler;
   private agentManager?: AgentManager;
-  // @ts-expect-error - CPS is not yet implemented
-  private cpsEnabled = false;
+  private projectRoutingResolver?: ProjectRoutingResolver;
   private security?: InternalSecurityServiceSetup;
 
   constructor(private readonly coreContext: CoreContext) {
@@ -146,9 +146,11 @@ export class ElasticsearchService
         getAgentsStats: agentManager.getAgentsStats.bind(agentManager),
       },
       publicBaseUrl: config.publicBaseUrl,
-      setCpsFeatureFlag: (enabled) => {
-        this.cpsEnabled = enabled;
-        this.log.info(`CPS feature flag set to ${enabled}`);
+      registerProjectRoutingResolver: (resolver) => {
+        if (this.projectRoutingResolver) {
+          throw new Error('registerProjectRoutingResolver can only be called once.');
+        }
+        this.projectRoutingResolver = resolver;
       },
     };
   }
@@ -244,6 +246,7 @@ export class ElasticsearchService
       getUnauthorizedErrorHandler: () => this.unauthorizedErrorHandler,
       agentFactoryProvider: this.getAgentManager(baseConfig),
       kibanaVersion: this.kibanaVersion,
+      getProjectRoutingResolver: () => this.projectRoutingResolver,
     });
   }
 

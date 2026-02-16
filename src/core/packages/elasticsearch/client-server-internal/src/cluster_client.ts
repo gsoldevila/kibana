@@ -9,7 +9,7 @@
 
 import type { Client } from '@elastic/elasticsearch';
 import type { Logger } from '@kbn/logging';
-import type { Headers, IAuthHeadersStorage } from '@kbn/core-http-server';
+import type { Headers, IAuthHeadersStorage, KibanaRequest } from '@kbn/core-http-server';
 import {
   ensureRawRequest,
   filterHeaders,
@@ -20,8 +20,9 @@ import type {
   ScopeableRequest,
   UnauthorizedErrorHandler,
   ICustomClusterClient,
+  ElasticsearchClientConfig,
+  ProjectRoutingResolver,
 } from '@kbn/core-elasticsearch-server';
-import type { ElasticsearchClientConfig } from '@kbn/core-elasticsearch-server';
 import { HTTPAuthorizationHeader, isUiamCredential } from '@kbn/core-security-server';
 import type { InternalSecurityServiceSetup } from '@kbn/core-security-server-internal';
 import { configureClient } from './configure_client';
@@ -41,6 +42,10 @@ import type { AgentFactoryProvider } from './agent_manager';
 
 const noop = () => undefined;
 
+// Re-entry guard: prevents infinite recursion when the project routing resolver
+// makes ES calls (e.g. to read UI settings) via the same scoped client path.
+const resolvingRequests = new WeakSet<ScopeableRequest>();
+
 /** @internal **/
 export class ClusterClient implements ICustomClusterClient {
   private readonly config: ElasticsearchClientConfig;
@@ -51,6 +56,7 @@ export class ClusterClient implements ICustomClusterClient {
   private readonly getUnauthorizedErrorHandler: () => UnauthorizedErrorHandler | undefined;
   private readonly getExecutionContext: () => string | undefined;
   private readonly onRequest?: OnRequestHandler;
+  private readonly getProjectRoutingResolver?: () => ProjectRoutingResolver | undefined;
   private isClosed = false;
 
   public readonly asInternalUser: Client;
@@ -66,6 +72,7 @@ export class ClusterClient implements ICustomClusterClient {
     agentFactoryProvider,
     kibanaVersion,
     onRequest,
+    getProjectRoutingResolver,
   }: {
     config: ElasticsearchClientConfig;
     logger: Logger;
@@ -77,6 +84,7 @@ export class ClusterClient implements ICustomClusterClient {
     agentFactoryProvider: AgentFactoryProvider;
     kibanaVersion: string;
     onRequest?: OnRequestHandler;
+    getProjectRoutingResolver?: () => ProjectRoutingResolver | undefined;
   }) {
     this.config = config;
     this.authHeaders = authHeaders;
@@ -85,6 +93,7 @@ export class ClusterClient implements ICustomClusterClient {
     this.getExecutionContext = getExecutionContext;
     this.getUnauthorizedErrorHandler = getUnauthorizedErrorHandler;
     this.onRequest = onRequest;
+    this.getProjectRoutingResolver = getProjectRoutingResolver;
 
     this.asInternalUser = configureClient(config, {
       logger,
@@ -112,6 +121,7 @@ export class ClusterClient implements ICustomClusterClient {
         scoped: true,
         getExecutionContext: this.getExecutionContext,
         getUnauthorizedErrorHandler: this.createInternalErrorHandlerAccessor(request),
+        getProjectRouting: this.createProjectRoutingGetter(request),
         onRequest: this.onRequest,
       });
 
@@ -142,6 +152,23 @@ export class ClusterClient implements ICustomClusterClient {
     }
     this.isClosed = true;
     await Promise.all([this.asInternalUser.close(), this.rootScopedClient.close()]);
+  }
+
+  private createProjectRoutingGetter(
+    request: ScopeableRequest
+  ): (() => Promise<string | undefined>) | undefined {
+    const resolver = this.getProjectRoutingResolver?.();
+    if (!resolver || !isRealRequest(request)) {
+      return undefined;
+    }
+    let promise: Promise<string | undefined> | null = null;
+    return (): Promise<string | undefined> => {
+      if (promise) return promise;
+      if (resolvingRequests.has(request)) return Promise.resolve(undefined);
+      resolvingRequests.add(request);
+      promise = resolver(request as KibanaRequest).finally(() => resolvingRequests.delete(request));
+      return promise;
+    };
   }
 
   private createInternalErrorHandlerAccessor = (

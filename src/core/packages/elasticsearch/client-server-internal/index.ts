@@ -28,3 +28,4 @@ export {
   type OnRequestHandler,
   type OnRequestContext,
 } from './src/create_transport';
+export { isCpsSensitivePath } from './src/cps_utils';

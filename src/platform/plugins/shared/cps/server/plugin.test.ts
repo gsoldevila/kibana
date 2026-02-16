@@ -36,9 +36,11 @@ describe('CPSServerPlugin', () => {
       expect(setup.getCpsEnabled()).toBe(true);
     });
 
-    it('should call setCpsFeatureFlag with true', () => {
+    it('should register a projectRoutingResolver', () => {
       plugin.setup(mockCoreSetup);
-      expect(mockCoreSetup.elasticsearch.setCpsFeatureFlag).toHaveBeenCalledWith(true);
+      expect(mockCoreSetup.elasticsearch.registerProjectRoutingResolver).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
     });
   });
 
@@ -54,9 +56,9 @@ describe('CPSServerPlugin', () => {
       expect(setup.getCpsEnabled()).toBe(false);
     });
 
-    it('should call setCpsFeatureFlag with false', () => {
+    it('should not register a projectRoutingResolver', () => {
       plugin.setup(mockCoreSetup);
-      expect(mockCoreSetup.elasticsearch.setCpsFeatureFlag).toHaveBeenCalledWith(false);
+      expect(mockCoreSetup.elasticsearch.registerProjectRoutingResolver).not.toHaveBeenCalled();
     });
   });
 

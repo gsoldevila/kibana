@@ -517,3 +517,32 @@ describe('#stop', () => {
     );
   });
 });
+
+describe('CPS project routing', () => {
+  it('passes a getProjectRoutingResolver that returns the registered resolver', async () => {
+    const resolver = jest.fn();
+    const setup = await elasticsearchService.setup(setupDeps);
+    setup.registerProjectRoutingResolver(resolver);
+
+    const { getProjectRoutingResolver } = MockClusterClient.mock.calls[0][0];
+    expect(getProjectRoutingResolver).toBeDefined();
+    expect(getProjectRoutingResolver()).toBe(resolver);
+  });
+
+  it('returns undefined from getProjectRoutingResolver when no resolver is registered', async () => {
+    await elasticsearchService.setup(setupDeps);
+
+    const { getProjectRoutingResolver } = MockClusterClient.mock.calls[0][0];
+    expect(getProjectRoutingResolver).toBeDefined();
+    expect(getProjectRoutingResolver()).toBeUndefined();
+  });
+
+  it('throws when registerProjectRoutingResolver is called more than once', async () => {
+    const setup = await elasticsearchService.setup(setupDeps);
+    setup.registerProjectRoutingResolver(jest.fn());
+
+    expect(() => setup.registerProjectRoutingResolver(jest.fn())).toThrow(
+      'registerProjectRoutingResolver can only be called once.'
+    );
+  });
+});

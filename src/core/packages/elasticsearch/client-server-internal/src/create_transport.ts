@@ -18,6 +18,7 @@ import {
 import { isUnauthorizedError } from '@kbn/es-errors';
 import type { InternalUnauthorizedErrorHandler } from './retry_unauthorized';
 import { isRetryResult } from './retry_unauthorized';
+import { isCpsSensitivePath } from './cps_utils';
 
 type TransportClass = typeof Transport;
 
@@ -35,15 +36,22 @@ export type OnRequestHandler = (
 
 const noop = () => undefined;
 
+const hasPitInBody = (body: unknown): boolean =>
+  body != null && typeof body === 'object' && 'pit' in (body as Record<string, unknown>);
+
+export type ProjectRoutingAccessor = () => Promise<string | undefined>;
+
 export const createTransport = ({
   scoped = false,
   getExecutionContext = noop,
   getUnauthorizedErrorHandler,
+  getProjectRouting,
   onRequest,
 }: {
   scoped?: boolean;
   getExecutionContext?: () => string | undefined;
   getUnauthorizedErrorHandler?: ErrorHandlerAccessor;
+  getProjectRouting?: ProjectRoutingAccessor;
   onRequest?: OnRequestHandler;
 }): TransportClass => {
   class KibanaTransport extends Transport {
@@ -82,6 +90,19 @@ export const createTransport = ({
         ...this.headers,
         ...options?.headers,
       };
+
+      // inject project_routing for CPS-sensitive endpoints
+      // PIT-based searches are excluded: the PIT captures scope at open time, so
+      // adding project_routing to a search that references a PIT would be incorrect.
+      if (getProjectRouting && isCpsSensitivePath(params.path) && !hasPitInBody(params.body)) {
+        const projectRouting = await getProjectRouting();
+        if (projectRouting) {
+          opts.querystring = {
+            ...(opts.querystring as Record<string, string> | undefined),
+            project_routing: projectRouting,
+          };
+        }
+      }
 
       onRequest?.({ scoped }, params, opts);
 
