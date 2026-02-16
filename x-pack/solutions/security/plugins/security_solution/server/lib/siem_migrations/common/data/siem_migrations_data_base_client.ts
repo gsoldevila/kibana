@@ -89,7 +89,7 @@ export class SiemMigrationsDataBaseClient {
       this.esClient.openPointInTime({ index, keep_alive: keepAlive }).then(({ id }) => id)
     );
 
-    let pitId: string | undefined;
+    let pitId: string;
 
     let currentBatchSearch: Promise<SearchResponse<T>> | undefined;
     /* Returns the next batch of search results */
