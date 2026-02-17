@@ -537,8 +537,8 @@ export class Server {
 
     this.coreApp.start(this.coreStart);
 
-    this.coreStart._plugins = (await this.plugins.start(this.coreStart))
-      .contracts as unknown as Map<string, any>;
+    const { contracts } = await this.plugins.start(this.coreStart);
+    this.coreStart._plugins = contracts;
 
     await this.http.start();
 
