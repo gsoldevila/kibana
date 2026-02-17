@@ -759,7 +759,7 @@ describe('createTransport', () => {
       );
     });
 
-    it('does not override caller-provided project_routing', async () => {
+    it('does not override caller-provided project_routing in options.querystring', async () => {
       getProjectRouting.mockResolvedValue('_alias:resolved');
 
       const transportClass = createTransportWithProjectRouting();
@@ -775,6 +775,26 @@ describe('createTransport', () => {
         expect.any(Object),
         expect.objectContaining({
           querystring: { project_routing: '_alias:caller' },
+        })
+      );
+    });
+
+    it('does not override caller-provided project_routing in params.querystring', async () => {
+      getProjectRouting.mockResolvedValue('_alias:resolved');
+
+      const transportClass = createTransportWithProjectRouting();
+      const transport = new transportClass(baseConstructorParams);
+
+      await transport.request(
+        { method: 'POST', path: '/_search', querystring: { project_routing: '_alias:caller' } },
+        {}
+      );
+
+      expect(getProjectRouting).not.toHaveBeenCalled();
+      expect(transportRequestMock).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.not.objectContaining({
+          querystring: expect.objectContaining({ project_routing: expect.anything() }),
         })
       );
     });

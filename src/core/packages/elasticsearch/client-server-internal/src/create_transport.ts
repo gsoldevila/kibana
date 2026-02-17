@@ -94,16 +94,18 @@ export const createTransport = ({
       // inject project_routing for CPS-sensitive endpoints
       // PIT-based searches are excluded: the PIT captures scope at open time, so
       // adding project_routing to a search that references a PIT would be incorrect.
-      const existingQs = opts.querystring as Record<string, string> | undefined;
+      const paramsQs = params.querystring as Record<string, string> | undefined;
+      const optsQs = opts.querystring as Record<string, string> | undefined;
       if (
         getProjectRouting &&
-        !existingQs?.project_routing &&
+        !paramsQs?.project_routing &&
+        !optsQs?.project_routing &&
         isCpsSensitivePath(params.path) &&
         !hasPitInBody(params.body)
       ) {
         const projectRouting = await getProjectRouting();
         if (projectRouting) {
-          opts.querystring = { ...existingQs, project_routing: projectRouting };
+          opts.querystring = { ...optsQs, project_routing: projectRouting };
         }
       }
 
