@@ -57,7 +57,10 @@ export class CpsRequestHandler {
 
     if (this.cpsEnabled) {
       if (body?.pit != null) {
-        if (body?.project_routing != null) delete body.project_routing;
+        if (body?.project_routing != null) {
+          // The project_routing is set by the openPit API, and thus part of the PIT context.
+          delete body.project_routing;
+        }
         return;
       }
       if (body?.project_routing != null) return;
