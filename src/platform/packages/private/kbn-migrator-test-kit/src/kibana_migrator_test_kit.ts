@@ -49,6 +49,7 @@ import type { ISavedObjectsRepository } from '@kbn/core-saved-objects-api-server
 import { getDocLinks, getDocLinksMeta } from '@kbn/doc-links';
 import type { DocLinksServiceStart } from '@kbn/core-doc-links-server';
 import type { NodeRoles } from '@kbn/core-node-server';
+import type { EncryptedSavedObjectsPluginStart } from '@kbn/encrypted-saved-objects-plugin/server';
 import type { ElasticsearchClientWrapperFactory } from './elasticsearch_client_wrapper';
 import { delay } from './utils';
 
@@ -81,6 +82,7 @@ export interface KibanaMigratorTestKitParams {
   hashToVersionMap?: Record<string, string>;
   logFilePath?: string;
   clientWrapperFactory?: ElasticsearchClientWrapperFactory;
+  encryptedSavedObjects?: EncryptedSavedObjectsPluginStart;
 }
 
 export interface KibanaMigratorTestKit {
@@ -144,6 +146,7 @@ export const getKibanaMigratorTestKit = async ({
   removedTypes = [],
   logFilePath = defaultLogFilePath,
   nodeRoles = defaultNodeRoles,
+  encryptedSavedObjects,
   clientWrapperFactory,
 }: KibanaMigratorTestKitParams = {}): Promise<KibanaMigratorTestKit> => {
   let hasRun = false;
@@ -200,7 +203,12 @@ export const getKibanaMigratorTestKit = async ({
     typeRegistry
       .getAllTypes()
       .filter(({ hidden }) => hidden)
-      .map(({ name }) => name)
+      .map(({ name }) => name),
+    {
+      encryptionExtension: encryptedSavedObjects
+        ? encryptedSavedObjects?.__testCreateExtension(typeRegistry)
+        : undefined,
+    }
   );
 
   return {

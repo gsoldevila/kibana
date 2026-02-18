@@ -5,10 +5,16 @@
  * 2.0.
  */
 
-import nodeCrypto from '@elastic/node-crypto';
+import nodeCrypto, { type Crypto } from '@elastic/node-crypto';
 import { createHash } from 'crypto';
 
-import type { CoreSetup, Logger, Plugin, PluginInitializerContext } from '@kbn/core/server';
+import type {
+  CoreSetup,
+  ISavedObjectTypeRegistry,
+  Logger,
+  Plugin,
+  PluginInitializerContext,
+} from '@kbn/core/server';
 import type { SecurityPluginSetup } from '@kbn/security-plugin/server';
 
 import type { ConfigType } from './config';
@@ -25,7 +31,7 @@ import {
 } from './crypto';
 import { defineRoutes } from './routes';
 import type { ClientInstanciator } from './saved_objects';
-import { setupSavedObjects } from './saved_objects';
+import { SavedObjectsEncryptionExtension, setupSavedObjects } from './saved_objects';
 
 export interface PluginsSetup {
   security?: SecurityPluginSetup;
@@ -44,6 +50,13 @@ export interface EncryptedSavedObjectsPluginSetup {
 export interface EncryptedSavedObjectsPluginStart {
   isEncryptionError: (error: Error) => boolean;
   getClient: ClientInstanciator;
+  /**
+   * This function is exposed for Core migration testing purposes only.
+   */
+  __testCreateExtension: (
+    typeRegistry: ISavedObjectTypeRegistry,
+    typeRegistrationOverrides?: EncryptedSavedObjectTypeRegistration[]
+  ) => SavedObjectsEncryptionExtension;
 }
 
 /**
@@ -55,6 +68,9 @@ export class EncryptedSavedObjectsPlugin
 {
   private readonly logger: Logger;
   private savedObjectsSetup!: ClientInstanciator;
+  private primaryCrypto?: Crypto;
+  private decryptionOnlyCryptos: Crypto[] = [];
+  private typeRegistrations: EncryptedSavedObjectTypeRegistration[] = [];
 
   constructor(private readonly initializerContext: PluginInitializerContext) {
     this.logger = this.initializerContext.logger.get();
@@ -96,6 +112,10 @@ export class EncryptedSavedObjectsPlugin
     const decryptionOnlyCryptos = config.keyRotation.decryptionOnlyKeys.map((decryptionKey) =>
       nodeCrypto({ encryptionKey: decryptionKey })
     );
+
+    this.primaryCrypto = primaryCrypto;
+    this.decryptionOnlyCryptos = decryptionOnlyCryptos;
+
     const service = Object.freeze(
       new EncryptedSavedObjectsService({
         primaryCrypto,
@@ -129,8 +149,10 @@ export class EncryptedSavedObjectsPlugin
 
     return {
       canEncrypt,
-      registerType: (typeRegistration: EncryptedSavedObjectTypeRegistration) =>
-        service.registerType(typeRegistration),
+      registerType: (typeRegistration: EncryptedSavedObjectTypeRegistration) => {
+        this.typeRegistrations.push(typeRegistration);
+        service.registerType(typeRegistration);
+      },
       createMigration: getCreateMigration(
         service,
         (typeRegistration: EncryptedSavedObjectTypeRegistration) => {
@@ -163,6 +185,35 @@ export class EncryptedSavedObjectsPlugin
     return {
       isEncryptionError: (error: Error) => error instanceof EncryptionError,
       getClient: (options = {}) => this.savedObjectsSetup(options),
+      __testCreateExtension: (
+        typeRegistry: ISavedObjectTypeRegistry,
+        typeRegistrationOverrides?: EncryptedSavedObjectTypeRegistration[]
+      ): SavedObjectsEncryptionExtension => {
+        const testService = new EncryptedSavedObjectsService({
+          primaryCrypto: this.primaryCrypto,
+          decryptionOnlyCryptos: this.decryptionOnlyCryptos,
+          logger: this.logger,
+        });
+
+        const registeredTypes = new Set<string>();
+
+        for (const typeRegistration of typeRegistrationOverrides ?? []) {
+          testService.registerType(typeRegistration);
+          registeredTypes.add(typeRegistration.type);
+        }
+
+        for (const typeRegistration of this.typeRegistrations) {
+          if (!registeredTypes.has(typeRegistration.type)) {
+            testService.registerType(typeRegistration);
+          }
+        }
+
+        return new SavedObjectsEncryptionExtension({
+          baseTypeRegistry: typeRegistry,
+          service: testService,
+          getCurrentUser: async () => undefined,
+        });
+      },
     };
   }
 

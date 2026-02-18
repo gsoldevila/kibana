@@ -89,6 +89,7 @@ describe('EncryptedSavedObjects Plugin', () => {
       const startContract = plugin.start();
       expect(startContract).toMatchInlineSnapshot(`
               Object {
+                "__testCreateExtension": [Function],
                 "getClient": [Function],
                 "isEncryptionError": [Function],
               }
@@ -100,6 +101,146 @@ describe('EncryptedSavedObjects Plugin', () => {
           "getDecryptedAsInternalUser": [Function],
         }
       `);
+    });
+
+    describe('__testCreateExtension', () => {
+      it('creates a SavedObjectsEncryptionExtension with the provided type registry', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        plugin.setup(coreMock.createSetup(), { security: securityMock.createSetup() });
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+        const extension = startContract.__testCreateExtension(mockTypeRegistry, []);
+
+        expect(extension).toBeDefined();
+        expect(extension._baseTypeRegistry).toBe(mockTypeRegistry);
+      });
+
+      it('registers type registration overrides to the service', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        plugin.setup(coreMock.createSetup(), { security: securityMock.createSetup() });
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+        const typeRegistration = {
+          type: 'test-type',
+          attributesToEncrypt: new Set(['secret']),
+        };
+
+        const extension = startContract.__testCreateExtension(mockTypeRegistry, [typeRegistration]);
+
+        expect(extension._service.isRegistered('test-type')).toBe(true);
+      });
+
+      it('registers existing type registrations from setup', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        const setupContract = plugin.setup(coreMock.createSetup(), {
+          security: securityMock.createSetup(),
+        });
+
+        setupContract.registerType({
+          type: 'existing-type',
+          attributesToEncrypt: new Set(['password']),
+        });
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        const extension = startContract.__testCreateExtension(mockTypeRegistry, []);
+
+        expect(extension._service.isRegistered('existing-type')).toBe(true);
+      });
+
+      it('skips existing type registrations when override has matching type', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        const setupContract = plugin.setup(coreMock.createSetup(), {
+          security: securityMock.createSetup(),
+        });
+
+        setupContract.registerType({
+          type: 'shared-type',
+          attributesToEncrypt: new Set(['oldSecret']),
+        });
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        const overrideRegistration = {
+          type: 'shared-type',
+          attributesToEncrypt: new Set(['newSecret']),
+        };
+
+        const extension = startContract.__testCreateExtension(mockTypeRegistry, [
+          overrideRegistration,
+        ]);
+
+        expect(extension._service.isRegistered('shared-type')).toBe(true);
+        const registeredTypes = extension._service.getRegisteredTypes();
+        expect(registeredTypes.filter((t) => t === 'shared-type').length).toBe(1);
+      });
+
+      it('registers both overrides and non-conflicting existing types', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        const setupContract = plugin.setup(coreMock.createSetup(), {
+          security: securityMock.createSetup(),
+        });
+
+        setupContract.registerType({
+          type: 'existing-type-1',
+          attributesToEncrypt: new Set(['secret1']),
+        });
+        setupContract.registerType({
+          type: 'existing-type-2',
+          attributesToEncrypt: new Set(['secret2']),
+        });
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        const overrideRegistration = {
+          type: 'override-type',
+          attributesToEncrypt: new Set(['overrideSecret']),
+        };
+
+        const extension = startContract.__testCreateExtension(mockTypeRegistry, [
+          overrideRegistration,
+        ]);
+
+        expect(extension._service.isRegistered('existing-type-1')).toBe(true);
+        expect(extension._service.isRegistered('existing-type-2')).toBe(true);
+        expect(extension._service.isRegistered('override-type')).toBe(true);
+      });
+
+      it('works without encryption key configured', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({}, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        plugin.setup(coreMock.createSetup(), { security: securityMock.createSetup() });
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        const extension = startContract.__testCreateExtension(mockTypeRegistry, []);
+
+        expect(extension).toBeDefined();
+        expect(extension._baseTypeRegistry).toBe(mockTypeRegistry);
+      });
     });
   });
 });

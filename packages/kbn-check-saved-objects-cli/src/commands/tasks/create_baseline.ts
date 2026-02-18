@@ -26,7 +26,10 @@ export const createBaseline: Task = async (ctx, task) => {
     client,
     runMigrations: initSystemIndex,
     savedObjectsRepository,
-  } = await getKibanaMigratorTestKit({ types: previousVersionTypes });
+  } = await getKibanaMigratorTestKit({
+    types: previousVersionTypes,
+    encryptedSavedObjects: ctx.encryptedSavedObjects,
+  });
   const subtasks: ListrTask<TaskContext>[] = [
     {
       title: `Delete pre-existing '${defaultKibanaIndex}' index`,
