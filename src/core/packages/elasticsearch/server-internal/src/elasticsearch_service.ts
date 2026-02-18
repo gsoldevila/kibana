@@ -101,6 +101,7 @@ export class ElasticsearchService
 
     const config = await firstValueFrom(this.config$);
 
+    // TODO we should find a better method to determine whether the underlying ES is CPS-capable.
     const cpsEnabled = this.isServerless
       ? (
           await firstValueFrom(
