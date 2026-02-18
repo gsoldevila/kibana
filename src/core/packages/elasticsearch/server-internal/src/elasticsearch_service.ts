@@ -59,7 +59,7 @@ export class ElasticsearchService
   private readonly log: Logger;
   private readonly config$: Observable<ElasticsearchConfig>;
   private readonly isServerless: boolean;
-  private cpsRequestHandler?: CpsRequestHandler;
+  private cpsRequestHandler!: CpsRequestHandler;
   private stop$ = new Subject<void>();
   private kibanaVersion: string;
   private authHeaders?: IAuthHeadersStorage;
@@ -101,13 +101,14 @@ export class ElasticsearchService
 
     const config = await firstValueFrom(this.config$);
 
-    // TODO: we should use a better strategy to determine whether the underlying ES instance is CPS-capable.
-    if (this.isServerless) {
-      const { cpsEnabled = false } = await firstValueFrom(
-        this.coreContext.configService.atPath<{ cpsEnabled?: boolean }>('cps')
-      ).catch(() => ({ cpsEnabled: false }));
-      this.cpsRequestHandler = new CpsRequestHandler(this.log, cpsEnabled);
-    }
+    const cpsEnabled = this.isServerless
+      ? (
+          await firstValueFrom(
+            this.coreContext.configService.atPath<{ cpsEnabled?: boolean }>('cps')
+          ).catch(() => ({ cpsEnabled: false }))
+        ).cpsEnabled ?? false
+      : false;
+    this.cpsRequestHandler = new CpsRequestHandler(this.log, cpsEnabled);
 
     const agentManager = this.getAgentManager(config);
 
@@ -250,7 +251,7 @@ export class ElasticsearchService
       getUnauthorizedErrorHandler: () => this.unauthorizedErrorHandler,
       agentFactoryProvider: this.getAgentManager(baseConfig),
       kibanaVersion: this.kibanaVersion,
-      ...(this.cpsRequestHandler ? { onRequest: this.cpsRequestHandler.onRequest } : {}),
+      onRequest: this.cpsRequestHandler.onRequest,
     });
   }
 

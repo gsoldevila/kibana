@@ -523,12 +523,21 @@ describe('#stop', () => {
 
 describe('CPS onRequest handler', () => {
   describe('in non-serverless mode', () => {
-    it('does not pass onRequest to ClusterClient', async () => {
+    it('passes onRequest to ClusterClient and strips project_routing when present', async () => {
       await elasticsearchService.setup(setupDeps);
 
       expect(MockClusterClient).toHaveBeenCalledWith(
-        expect.not.objectContaining({ onRequest: expect.anything() })
+        expect.objectContaining({ onRequest: expect.any(Function) })
       );
+
+      const onRequest = MockClusterClient.mock.calls[0][0].onRequest as (
+        ctx: { scoped: boolean },
+        params: { body?: { project_routing?: string } },
+        options: unknown
+      ) => void;
+      const params = { body: { project_routing: 'some-project' } };
+      onRequest({ scoped: false }, params, {});
+      expect(params.body.project_routing).toBeUndefined();
     });
   });
 
@@ -691,18 +700,18 @@ describe('CPS onRequest handler', () => {
         expect(params.body.query).toEqual({ match_all: {} });
       });
 
-      it('does nothing when API does not support project_routing', async () => {
+      it('strips project_routing even when API does not support it', async () => {
         const handler = await setupServerlessEs(false);
         const params = {
           method: 'GET',
           path: '/_bulk',
           meta: { acceptedParams: [] },
-          body: { project_routing: 'should-stay' },
+          body: { project_routing: 'should-be-stripped' },
         };
 
         handler({ scoped: true }, params, {});
 
-        expect(params.body.project_routing).toBe('should-stay');
+        expect(params.body.project_routing).toBeUndefined();
       });
     });
 

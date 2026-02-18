@@ -42,24 +42,25 @@ export class CpsRequestHandler {
   constructor(private readonly log: Logger, private readonly cpsEnabled: boolean) {}
 
   public readonly onRequest: OnRequestHandler = (_ctx, params, _options) => {
+    const body = isPlainObject(params.body) ? (params.body as Record<string, unknown>) : undefined;
+
+    if (!this.cpsEnabled) {
+      if (body?.project_routing != null) delete body.project_routing;
+      return;
+    }
+
     const shouldApply = this.shouldApplyProjectRouting(params.path, params.meta?.acceptedParams);
     if (!shouldApply) return;
 
-    const body = isPlainObject(params.body) ? (params.body as Record<string, unknown>) : undefined;
-
-    if (this.cpsEnabled) {
-      if (body?.pit != null) {
-        if (body?.project_routing != null) {
-          // The project_routing is set by the openPit API, and thus part of the PIT context.
-          delete body.project_routing;
-        }
-        return;
+    if (body?.pit != null) {
+      if (body?.project_routing != null) {
+        // The project_routing is set by the openPit API, and thus part of the PIT context.
+        delete body.project_routing;
       }
-      if (body?.project_routing != null) return;
-      set(params, 'body.project_routing', LOCAL_PROJECT_ROUTING);
-    } else {
-      if (body?.project_routing != null) delete body.project_routing;
+      return;
     }
+    if (body?.project_routing != null) return;
+    set(params, 'body.project_routing', LOCAL_PROJECT_ROUTING);
   };
 
   private shouldApplyProjectRouting(path: string, acceptedParams: string[] | undefined): boolean {
