@@ -108,7 +108,7 @@ export class ElasticsearchService
           ).catch(() => ({ cpsEnabled: false }))
         ).cpsEnabled ?? false
       : false;
-    this.cpsRequestHandler = new CpsRequestHandler(this.log, cpsEnabled);
+    this.cpsRequestHandler = new CpsRequestHandler(cpsEnabled);
 
     const agentManager = this.getAgentManager(config);
 
@@ -251,7 +251,7 @@ export class ElasticsearchService
       getUnauthorizedErrorHandler: () => this.unauthorizedErrorHandler,
       agentFactoryProvider: this.getAgentManager(baseConfig),
       kibanaVersion: this.kibanaVersion,
-      onRequest: this.cpsRequestHandler.onRequest,
+      onRequest: this.cpsRequestHandler?.onRequest,
     });
   }
 
