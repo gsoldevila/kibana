@@ -89,7 +89,10 @@ beforeEach(() => {
       verificationMode: 'none',
     },
   });
-  configService.atPath.mockReturnValue(mockConfig$);
+  configService.atPath.mockImplementation((path) => {
+    if (path === 'elasticsearch') return mockConfig$;
+    return new BehaviorSubject({});
+  });
 
   const logger = loggingSystemMock.create();
   coreContext = { coreId: Symbol(), env, logger, configService: configService as any };
@@ -519,30 +522,13 @@ describe('#stop', () => {
 });
 
 describe('CPS onRequest handler', () => {
-  it('always passes the onRequest handler to ClusterClient', async () => {
-    await elasticsearchService.setup(setupDeps);
-
-    expect(MockClusterClient).toHaveBeenCalledWith(
-      expect.objectContaining({
-        onRequest: expect.any(Function),
-      })
-    );
-  });
-
   describe('in non-serverless mode', () => {
-    it('is a no-op for CPS-sensitive paths', async () => {
-      const setupContract = await elasticsearchService.setup(setupDeps);
-      setupContract.setCpsFeatureFlag(true);
-      const handler = MockClusterClient.mock.calls[0][0].onRequest;
-      const params: any = {
-        method: 'GET',
-        path: '/_search',
-        meta: { acceptedParams: ['project_routing'] },
-      };
+    it('does not pass onRequest to ClusterClient', async () => {
+      await elasticsearchService.setup(setupDeps);
 
-      handler({ scoped: true }, params, {});
-
-      expect(params.body?.project_routing).toBeUndefined();
+      expect(MockClusterClient).toHaveBeenCalledWith(
+        expect.not.objectContaining({ onRequest: expect.anything() })
+      );
     });
   });
 
@@ -556,8 +542,13 @@ describe('CPS onRequest handler', () => {
 
     const setupServerlessEs = async (cpsEnabled: boolean) => {
       MockClusterClient.mockClear();
-      const setupContract = await serverlessElasticsearchService.setup(setupDeps);
-      setupContract.setCpsFeatureFlag(cpsEnabled);
+      configService.atPath.mockImplementation((path) => {
+        if (path === 'elasticsearch') return mockConfig$;
+        if (path === 'cps') return new BehaviorSubject({ cpsEnabled });
+        return new BehaviorSubject({});
+      });
+      serverlessElasticsearchService = new ElasticsearchService(serverlessCoreContext);
+      await serverlessElasticsearchService.setup(setupDeps);
       return MockClusterClient.mock.calls[0][0].onRequest as (
         ctx: { scoped: boolean },
         params: any,
@@ -577,7 +568,6 @@ describe('CPS onRequest handler', () => {
         logger: serverlessLogger,
         configService: configService as any,
       };
-      serverlessElasticsearchService = new ElasticsearchService(serverlessCoreContext);
     });
 
     afterEach(async () => {

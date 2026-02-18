@@ -37,19 +37,11 @@ const isCpsSensitivePath = (path: string): boolean =>
 
 /** @internal */
 export class CpsRequestHandler {
-  private cpsEnabled = false;
   private lastDirectRequestWarning = 0;
 
-  constructor(private readonly log: Logger, private readonly isServerless: boolean) {}
-
-  public setCpsFeatureFlag(enabled: boolean) {
-    this.cpsEnabled = enabled;
-    this.log.info(`CPS feature flag set to ${enabled}`);
-  }
+  constructor(private readonly log: Logger, private readonly cpsEnabled: boolean) {}
 
   public readonly onRequest: OnRequestHandler = (_ctx, params, _options) => {
-    if (!this.isServerless) return;
-
     const shouldApply = this.shouldApplyProjectRouting(params.path, params.meta?.acceptedParams);
     if (!shouldApply) return;
 
