@@ -58,7 +58,8 @@ export class ElasticsearchService
 {
   private readonly log: Logger;
   private readonly config$: Observable<ElasticsearchConfig>;
-  private readonly cpsRequestHandler: CpsRequestHandler;
+  private readonly isServerless: boolean;
+  private cpsRequestHandler?: CpsRequestHandler;
   private stop$ = new Subject<void>();
   private kibanaVersion: string;
   private authHeaders?: IAuthHeadersStorage;
@@ -73,10 +74,7 @@ export class ElasticsearchService
   constructor(private readonly coreContext: CoreContext) {
     this.kibanaVersion = coreContext.env.packageInfo.version;
     this.log = coreContext.logger.get('elasticsearch-service');
-    this.cpsRequestHandler = new CpsRequestHandler(
-      this.log,
-      coreContext.env.packageInfo.buildFlavor === 'serverless'
-    );
+    this.isServerless = coreContext.env.packageInfo.buildFlavor === 'serverless';
     this.config$ = coreContext.configService
       .atPath<ElasticsearchConfigType>('elasticsearch')
       .pipe(map((rawConfig) => new ElasticsearchConfig(rawConfig)));
@@ -102,6 +100,14 @@ export class ElasticsearchService
     this.log.debug('Setting up elasticsearch service');
 
     const config = await firstValueFrom(this.config$);
+
+    // TODO: we should use a better strategy to determine whether the underlying ES instance is CPS-capable.
+    if (this.isServerless) {
+      const { cpsEnabled = false } = await firstValueFrom(
+        this.coreContext.configService.atPath<{ cpsEnabled?: boolean }>('cps')
+      ).catch(() => ({ cpsEnabled: false }));
+      this.cpsRequestHandler = new CpsRequestHandler(this.log, cpsEnabled);
+    }
 
     const agentManager = this.getAgentManager(config);
 
@@ -150,7 +156,6 @@ export class ElasticsearchService
         getAgentsStats: agentManager.getAgentsStats.bind(agentManager),
       },
       publicBaseUrl: config.publicBaseUrl,
-      setCpsFeatureFlag: (enabled) => this.cpsRequestHandler.setCpsFeatureFlag(enabled),
     };
   }
 
@@ -245,7 +250,7 @@ export class ElasticsearchService
       getUnauthorizedErrorHandler: () => this.unauthorizedErrorHandler,
       agentFactoryProvider: this.getAgentManager(baseConfig),
       kibanaVersion: this.kibanaVersion,
-      onRequest: this.cpsRequestHandler.onRequest,
+      ...(this.cpsRequestHandler ? { onRequest: this.cpsRequestHandler.onRequest } : {}),
     });
   }
 
