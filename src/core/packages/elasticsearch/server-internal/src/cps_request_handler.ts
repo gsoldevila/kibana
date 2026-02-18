@@ -9,13 +9,37 @@
 
 import { set } from '@kbn/safer-lodash-set';
 import { isPlainObject } from 'lodash';
+import type { Logger } from '@kbn/logging';
 import type { OnRequestHandler } from '@kbn/core-elasticsearch-client-server-internal';
 
 const LOCAL_PROJECT_ROUTING = '_alias:_origin';
+const ONE_HOUR = 3_600_000;
+
+const CPS_SENSITIVE_SUFFIXES = [
+  '/_search',
+  '/_async_search',
+  '/_msearch',
+  '/_query',
+  '/_field_caps',
+  '/_search/template',
+  '/_msearch/template',
+  '/_eql/search',
+  '/_sql',
+  '/_pit',
+  '/_count',
+];
+
+const CPS_SENSITIVE_SEGMENTS = ['/_query/async', '/_resolve/index/', '/_mvt/', '/_cat/count'];
+
+const isCpsSensitivePath = (path: string): boolean =>
+  CPS_SENSITIVE_SUFFIXES.some((suffix) => path.endsWith(suffix)) ||
+  CPS_SENSITIVE_SEGMENTS.some((segment) => path.includes(segment));
 
 /** @internal */
 export class CpsRequestHandler {
-  constructor(private readonly cpsEnabled: boolean) {}
+  private lastDirectRequestWarning = 0;
+
+  constructor(private readonly log: Logger, private readonly cpsEnabled: boolean) {}
 
   public readonly onRequest: OnRequestHandler = (_ctx, params, _options) => {
     const body = isPlainObject(params.body) ? (params.body as Record<string, unknown>) : undefined;
@@ -39,7 +63,22 @@ export class CpsRequestHandler {
     set(params, 'body.project_routing', LOCAL_PROJECT_ROUTING);
   };
 
-  private shouldApplyProjectRouting(_path: string, acceptedParams: string[] | undefined): boolean {
-    return acceptedParams?.includes('project_routing') ?? false;
+  private shouldApplyProjectRouting(path: string, acceptedParams: string[] | undefined): boolean {
+    if (acceptedParams) {
+      return acceptedParams.includes('project_routing');
+    }
+    const isSensitive = isCpsSensitivePath(path);
+    if (isSensitive) {
+      const now = Date.now();
+      if (now - this.lastDirectRequestWarning >= ONE_HOUR) {
+        this.lastDirectRequestWarning = now;
+        this.log.warn(
+          `Direct transport.request() call to CPS-sensitive path [${path}] detected. ` +
+            `Prefer using the high-level Elasticsearch client API so that project_routing ` +
+            `metadata is handled automatically.`
+        );
+      }
+    }
+    return isSensitive;
   }
 }

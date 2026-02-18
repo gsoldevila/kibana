@@ -714,5 +714,94 @@ describe('CPS onRequest handler', () => {
         expect(params.body.project_routing).toBeUndefined();
       });
     });
+
+    describe('fallback for direct transport.request() calls (no acceptedParams)', () => {
+      it('injects project_routing when path is CPS-sensitive and CPS is enabled', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = { method: 'POST', path: '/_query' };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.body?.project_routing).toBe(LOCAL_PROJECT_ROUTING);
+      });
+
+      it('does not inject when path is not CPS-sensitive', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = { method: 'POST', path: '/_bulk' };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.body?.project_routing).toBeUndefined();
+      });
+
+      it('strips project_routing when CPS is disabled and path is CPS-sensitive', async () => {
+        const handler = await setupServerlessEs(false);
+        const params: any = {
+          method: 'POST',
+          path: '/_query',
+          body: { project_routing: 'should-be-removed' },
+        };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.body.project_routing).toBeUndefined();
+      });
+
+      it('logs a warning on first CPS-sensitive direct call', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = { method: 'POST', path: '/_query' };
+
+        handler({ scoped: true }, params, {});
+
+        const warnMessages = loggingSystemMock.collect(serverlessLogger).warn.flat();
+        expect(warnMessages).toEqual(
+          expect.arrayContaining([expect.stringContaining('Direct transport.request()')])
+        );
+      });
+
+      it('debounces the warning to at most once per hour', async () => {
+        const handler = await setupServerlessEs(true);
+
+        handler({ scoped: true }, { method: 'POST', path: '/_query' }, {});
+        handler({ scoped: true }, { method: 'POST', path: '/_search' }, {});
+        handler({ scoped: true }, { method: 'POST', path: '/_msearch' }, {});
+
+        const warnMessages = loggingSystemMock
+          .collect(serverlessLogger)
+          .warn.flat()
+          .filter((msg) => typeof msg === 'string' && msg.includes('Direct transport.request()'));
+        expect(warnMessages).toHaveLength(1);
+      });
+
+      it('does not log a warning for non-CPS-sensitive paths', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = { method: 'POST', path: '/_bulk' };
+
+        handler({ scoped: true }, params, {});
+
+        const warnMessages = loggingSystemMock
+          .collect(serverlessLogger)
+          .warn.flat()
+          .filter((msg) => typeof msg === 'string' && msg.includes('Direct transport.request()'));
+        expect(warnMessages).toHaveLength(0);
+      });
+
+      it('does not log a warning when acceptedParams is present', async () => {
+        const handler = await setupServerlessEs(true);
+        const params = {
+          method: 'POST',
+          path: '/_search',
+          meta: { acceptedParams: ['project_routing'] },
+        };
+
+        handler({ scoped: true }, params, {});
+
+        const warnMessages = loggingSystemMock
+          .collect(serverlessLogger)
+          .warn.flat()
+          .filter((msg) => typeof msg === 'string' && msg.includes('Direct transport.request()'));
+        expect(warnMessages).toHaveLength(0);
+      });
+    });
   });
 });
