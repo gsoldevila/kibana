@@ -555,67 +555,48 @@ describe('CPS onRequest handler', () => {
       await serverlessElasticsearchService?.stop();
     });
 
-    describe('onRequest handler behavior', () => {
-      type OnRequestHandler = (ctx: { scoped: boolean }, params: any, options?: any) => void;
-      let onRequestHandler: OnRequestHandler;
-      const LOCAL_PROJECT_ROUTING = '_alias:_origin';
+    const LOCAL_PROJECT_ROUTING = '_alias:_origin';
 
-      const setCpsEnabled = (enabled: boolean) => {
-        // Access private property for testing
-        (serverlessElasticsearchService as any).cpsEnabled = enabled;
-      };
+    const setupServerlessEs = async (cpsEnabled: boolean) => {
+      MockClusterClient.mockClear();
+      const setupContract = await serverlessElasticsearchService.setup(setupDeps);
+      setupContract.setCpsFeatureFlag(cpsEnabled);
+      return MockClusterClient.mock.calls[0][0].onRequest as (
+        ctx: { scoped: boolean },
+        params: any,
+        options: any
+      ) => void;
+    };
 
-      beforeEach(async () => {
-        MockClusterClient.mockClear();
-        await serverlessElasticsearchService.setup(setupDeps);
-        onRequestHandler = MockClusterClient.mock.calls[0][0].onRequest;
-      });
-
-      it('injects project_routing for unscoped requests', () => {
-        const options: any = {};
+    describe('when CPS is enabled', () => {
+      it('injects default project_routing into body', async () => {
+        const handler = await setupServerlessEs(true);
         const params = {
           method: 'GET',
           path: '/_search',
           meta: { acceptedParams: ['project_routing'] },
         };
 
-        setCpsEnabled(true);
+        handler({ scoped: false }, params, {});
 
-        onRequestHandler({ scoped: false }, params, options);
-
-        expect((params as any).body?.project_routing).toBe(LOCAL_PROJECT_ROUTING);
+        expect((params as any).body.project_routing).toBe(LOCAL_PROJECT_ROUTING);
       });
 
-      it('does not inject project_routing when CPS is disabled', () => {
-        const options: any = {};
-        const params = {
-          method: 'GET',
-          path: '/_search',
-          meta: { acceptedParams: ['project_routing'] },
-        };
-
-        onRequestHandler({ scoped: true }, params as any, options);
-
-        expect((params as any).body?.project_routing).toBeUndefined();
-      });
-
-      it('does not inject project_routing when API does not support it', () => {
-        const options: any = {};
-        const params = {
+      it('does not inject when API does not support project_routing', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = {
           method: 'GET',
           path: '/_cat/indices',
           meta: { acceptedParams: [] },
         };
 
-        setCpsEnabled(true);
+        handler({ scoped: true }, params, {});
 
-        onRequestHandler({ scoped: true }, params, options);
-
-        expect((params as any).body?.project_routing).toBeUndefined();
+        expect(params.body?.project_routing).toBeUndefined();
       });
 
-      it('does not inject project_routing when it is already set', () => {
-        const options: any = {};
+      it('does not override project_routing already present in body', async () => {
+        const handler = await setupServerlessEs(true);
         const params = {
           method: 'GET',
           path: '/_search',
@@ -623,62 +604,146 @@ describe('CPS onRequest handler', () => {
           body: { project_routing: 'custom-value' },
         };
 
-        setCpsEnabled(true);
+        handler({ scoped: true }, params, {});
 
-        onRequestHandler({ scoped: true }, params, options);
-
-        expect((params as any).body?.project_routing).toBe('custom-value');
+        expect(params.body.project_routing).toBe('custom-value');
       });
 
-      it('does not inject project_routing for PIT requests', () => {
-        const options: any = {};
-        const params = {
+      it('does not override project_routing already present in params.querystring', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = {
+          method: 'GET',
+          path: '/_search',
+          meta: { acceptedParams: ['project_routing'] },
+          querystring: { project_routing: 'qs-value' },
+        };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.body?.project_routing).toBeUndefined();
+        expect(params.querystring.project_routing).toBe('qs-value');
+      });
+
+      it('does not override project_routing already present in options.querystring', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = {
+          method: 'GET',
+          path: '/_search',
+          meta: { acceptedParams: ['project_routing'] },
+        };
+        const options = { querystring: { project_routing: 'opts-value' } };
+
+        handler({ scoped: true }, params, options);
+
+        expect(params.body?.project_routing).toBeUndefined();
+        expect(options.querystring.project_routing).toBe('opts-value');
+      });
+
+      it('does not inject project_routing for PIT-based searches', async () => {
+        const handler = await setupServerlessEs(true);
+        const params: any = {
           method: 'POST',
           path: '/_search',
           body: { pit: { id: 'abc123' } },
           meta: { acceptedParams: ['project_routing'] },
         };
 
-        setCpsEnabled(true);
+        handler({ scoped: true }, params, {});
 
-        onRequestHandler({ scoped: true }, params, options);
-
-        expect((params as any).body?.project_routing).toBeUndefined();
+        expect(params.body.project_routing).toBeUndefined();
       });
 
-      it('injects project_routing when all conditions are met', () => {
-        const options: any = {};
+      it('preserves existing body fields when injecting', async () => {
+        const handler = await setupServerlessEs(true);
         const params = {
           method: 'GET',
           path: '/_search',
           meta: { acceptedParams: ['project_routing'] },
-          body: { project_routing: LOCAL_PROJECT_ROUTING },
+          body: { query: { match_all: {} } },
         };
 
-        setCpsEnabled(true);
-
-        onRequestHandler({ scoped: true }, params, options);
-
-        expect(params.body.project_routing).toBe(LOCAL_PROJECT_ROUTING);
-      });
-
-      it('preserves existing param body when injecting project_routing', () => {
-        const options: any = {};
-        const params = {
-          method: 'GET',
-          path: '/_search',
-          meta: { acceptedParams: ['project_routing'] },
-          body: { field1: 'value1', project_routing: LOCAL_PROJECT_ROUTING },
-        };
-
-        setCpsEnabled(true);
-
-        onRequestHandler({ scoped: true }, params, options);
+        handler({ scoped: true }, params, {});
 
         expect(params.body).toEqual({
-          field1: 'value1',
+          query: { match_all: {} },
           project_routing: LOCAL_PROJECT_ROUTING,
         });
+      });
+    });
+
+    describe('when CPS is disabled', () => {
+      it('does not inject project_routing', async () => {
+        const handler = await setupServerlessEs(false);
+        const params: any = {
+          method: 'GET',
+          path: '/_search',
+          meta: { acceptedParams: ['project_routing'] },
+        };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.body?.project_routing).toBeUndefined();
+      });
+
+      it('strips project_routing from body', async () => {
+        const handler = await setupServerlessEs(false);
+        const params = {
+          method: 'GET',
+          path: '/_search',
+          meta: { acceptedParams: ['project_routing'] },
+          body: { query: { match_all: {} }, project_routing: 'should-be-removed' },
+        };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.body.project_routing).toBeUndefined();
+        expect(params.body.query).toEqual({ match_all: {} });
+      });
+
+      it('strips project_routing from params.querystring', async () => {
+        const handler = await setupServerlessEs(false);
+        const params = {
+          method: 'GET',
+          path: '/_search',
+          meta: { acceptedParams: ['project_routing'] },
+          querystring: { project_routing: 'should-be-removed', timeout: '30s' },
+        };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.querystring.project_routing).toBeUndefined();
+        expect(params.querystring.timeout).toBe('30s');
+      });
+
+      it('strips project_routing from options.querystring', async () => {
+        const handler = await setupServerlessEs(false);
+        const params: any = {
+          method: 'GET',
+          path: '/_search',
+          meta: { acceptedParams: ['project_routing'] },
+        };
+        const options = {
+          querystring: { project_routing: 'should-be-removed', timeout: '30s' },
+        };
+
+        handler({ scoped: true }, params, options);
+
+        expect(options.querystring.project_routing).toBeUndefined();
+        expect(options.querystring.timeout).toBe('30s');
+      });
+
+      it('does nothing when API does not support project_routing', async () => {
+        const handler = await setupServerlessEs(false);
+        const params = {
+          method: 'GET',
+          path: '/_bulk',
+          meta: { acceptedParams: [] },
+          body: { project_routing: 'should-stay' },
+        };
+
+        handler({ scoped: true }, params, {});
+
+        expect(params.body.project_routing).toBe('should-stay');
       });
     });
   });

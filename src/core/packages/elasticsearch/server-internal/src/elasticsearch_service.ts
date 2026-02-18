@@ -266,22 +266,33 @@ export class ElasticsearchService
 
   private getOnRequestHandler(): OnRequestHandler | undefined {
     if (!this.isServerless) return undefined;
+    const LOCAL_PROJECT_ROUTING = '_alias:_origin';
 
-    return (ctx, params, options) => {
-      // Note: this.cpsEnabled may be set at a later point in time
-      if (!this.cpsEnabled) return;
-      const body = params.body;
-      if (
-        isPlainObject(body) &&
-        ((body as Record<string, unknown>).project_routing != null ||
-          (body as Record<string, unknown>).pit != null)
-      )
-        return;
-
+    return (_ctx, params, options) => {
       const acceptedParams = params.meta?.acceptedParams;
       const apiSupportsProjectRouting = acceptedParams?.includes('project_routing') ?? false;
       if (!apiSupportsProjectRouting) return;
-      set(params, 'body.project_routing', '_alias:_origin');
+
+      const body = isPlainObject(params.body)
+        ? (params.body as Record<string, unknown>)
+        : undefined;
+      const paramsQs =
+        params.querystring != null && typeof params.querystring !== 'string'
+          ? (params.querystring as Record<string, unknown>)
+          : undefined;
+      const optsQs = options.querystring as Record<string, unknown> | undefined;
+
+      if (this.cpsEnabled) {
+        if (body?.pit != null) return;
+        if (body?.project_routing != null) return;
+        if (paramsQs?.project_routing != null) return;
+        if (optsQs?.project_routing != null) return;
+        set(params, 'body.project_routing', LOCAL_PROJECT_ROUTING);
+      } else {
+        if (body?.project_routing != null) delete body.project_routing;
+        if (paramsQs?.project_routing != null) delete paramsQs.project_routing;
+        if (optsQs?.project_routing != null) delete optsQs.project_routing;
+      }
     };
   }
 }
