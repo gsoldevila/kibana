@@ -108,7 +108,7 @@ export class ElasticsearchService
           ).catch(() => ({ cpsEnabled: false }))
         ).cpsEnabled ?? false
       : false;
-    this.cpsRequestHandler = new CpsRequestHandler(cpsEnabled);
+    this.cpsRequestHandler = new CpsRequestHandler(this.log, cpsEnabled);
 
     const agentManager = this.getAgentManager(config);
 
