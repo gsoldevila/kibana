@@ -20,26 +20,35 @@ export class CpsRequestHandler {
   public readonly onRequest: OnRequestHandler = (_ctx, params, _options) => {
     const body = isPlainObject(params.body) ? (params.body as Record<string, unknown>) : undefined;
 
-    if (!this.cpsEnabled) {
-      if (body?.project_routing != null) delete body.project_routing;
-      return;
+    if (this.cpsEnabled) {
+      if (this.shouldApplyProjectRouting(params.meta?.acceptedParams))
+        if (body?.pit) {
+          // The project_routing is set by the openPit API, and thus part of the PIT context.
+          this.stripProjectRouting(body);
+        } else {
+          this.injectProjectRouting(params, body);
+        }
+    } else {
+      this.stripProjectRouting(body);
     }
-
-    const shouldApply = this.shouldApplyProjectRouting(params.path, params.meta?.acceptedParams);
-    if (!shouldApply) return;
-
-    if (body?.pit != null) {
-      if (body?.project_routing != null) {
-        // The project_routing is set by the openPit API, and thus part of the PIT context.
-        delete body.project_routing;
-      }
-      return;
-    }
-    if (body?.project_routing != null) return;
-    set(params, 'body.project_routing', LOCAL_PROJECT_ROUTING);
   };
 
-  private shouldApplyProjectRouting(_path: string, acceptedParams: string[] | undefined): boolean {
-    return acceptedParams?.includes('project_routing') ?? false;
+  private stripProjectRouting(body: Record<string, unknown> | undefined): void {
+    if (body?.project_routing != null) {
+      delete body.project_routing;
+    }
+  }
+
+  private injectProjectRouting(
+    params: Parameters<OnRequestHandler>[1],
+    body: Record<string, unknown> | undefined
+  ): void {
+    if (!body?.project_routing) {
+      set(params, 'body.project_routing', LOCAL_PROJECT_ROUTING);
+    }
+  }
+
+  private shouldApplyProjectRouting(acceptedParams: string[] | undefined): boolean {
+    return Boolean(acceptedParams?.includes('project_routing'));
   }
 }
