@@ -7,19 +7,27 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { KibanaRequest } from '@kbn/core-http-server';
+import type { ScopeableRequest } from '@kbn/core-elasticsearch-server';
 import { DEFAULT_SPACE_ID, getSpaceIdFromPath } from '@kbn/spaces-utils';
 
 /**
- * Get the NPRE for a given space ID or request
- * @param spaceIdOrRequest - The space ID or request
+ * Get the NPRE for a given space ID or request.
+ *
+ * When a {@link ScopeableRequest} is provided, the space is extracted from the
+ * URL pathname. Requests without a `url` property (e.g. `FakeRequest`) fall
+ * back to the default space.
+ *
+ * @param spaceIdOrRequest - The space ID string, or a {@link ScopeableRequest}
  * @returns The NPRE
  */
-export function getSpaceNPRE(spaceIdOrRequest: string | KibanaRequest): string {
-  const spaceId =
-    typeof spaceIdOrRequest === 'string'
-      ? spaceIdOrRequest || DEFAULT_SPACE_ID
-      : getSpaceIdFromPath(spaceIdOrRequest.url.pathname).spaceId;
-
-  return `kibana_space_${spaceId}_default`;
+export function getSpaceNPRE(spaceIdOrRequest: string | ScopeableRequest): string {
+  if (typeof spaceIdOrRequest === 'string') {
+    return `kibana_space_${spaceIdOrRequest || DEFAULT_SPACE_ID}_default`;
+  } else {
+    const spaceId =
+      'url' in spaceIdOrRequest
+        ? getSpaceIdFromPath(spaceIdOrRequest.url.pathname).spaceId
+        : DEFAULT_SPACE_ID;
+    return `kibana_space_${spaceId}_default`;
+  }
 }

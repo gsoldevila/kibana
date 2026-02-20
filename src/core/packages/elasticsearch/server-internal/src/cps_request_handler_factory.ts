@@ -7,7 +7,6 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { KibanaRequest } from '@kbn/core-http-server';
 import type { OnRequestHandlerFactory } from '@kbn/core-elasticsearch-client-server-internal';
 import { getSpaceNPRE, PROJECT_ROUTING_ORIGIN, PROJECT_ROUTING_ALL } from '@kbn/cps-server-utils';
 import { getCpsRequestHandler } from './cps_request_handler';
@@ -26,12 +25,10 @@ export function getRequestHandlerFactory(cpsEnabled: boolean): OnRequestHandlerF
     switch (opts.searchRouting) {
       case 'origin-only':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ORIGIN);
+      case 'space-default':
+        return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(request));
       case 'all':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ALL);
-      case 'space-default': {
-        const npre = 'url' in request ? getSpaceNPRE(request as KibanaRequest) : getSpaceNPRE('');
-        return getCpsRequestHandler(cpsEnabled, npre);
-      }
     }
   };
 }
