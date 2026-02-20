@@ -24,6 +24,7 @@ import type {
 import type { ElasticsearchClientConfig } from '@kbn/core-elasticsearch-server';
 import { HTTPAuthorizationHeader, isUiamCredential } from '@kbn/core-security-server';
 import type { InternalSecurityServiceSetup } from '@kbn/core-security-server-internal';
+import type { AsScopedOptions } from '@kbn/core-elasticsearch-server';
 import { configureClient } from './configure_client';
 import { ScopedClusterClient } from './scoped_cluster_client';
 import {
@@ -41,6 +42,17 @@ import type { AgentFactoryProvider } from './agent_manager';
 
 const noop = () => undefined;
 
+/**
+ * A factory that produces an {@link OnRequestHandler} for a given request context.
+ * Pass `null` for the request to signal the internal-user context (origin-only routing).
+ *
+ * @internal
+ */
+export type OnRequestHandlerFactory = (
+  request: ScopeableRequest | null,
+  opts: AsScopedOptions
+) => OnRequestHandler;
+
 /** @internal **/
 export class ClusterClient implements ICustomClusterClient {
   private readonly config: ElasticsearchClientConfig;
@@ -50,7 +62,7 @@ export class ClusterClient implements ICustomClusterClient {
   private readonly kibanaVersion: string;
   private readonly getUnauthorizedErrorHandler: () => UnauthorizedErrorHandler | undefined;
   private readonly getExecutionContext: () => string | undefined;
-  private readonly onRequest?: OnRequestHandler;
+  private readonly onRequestHandlerFactory: OnRequestHandlerFactory;
   private isClosed = false;
 
   public readonly asInternalUser: Client;
@@ -65,7 +77,7 @@ export class ClusterClient implements ICustomClusterClient {
     getUnauthorizedErrorHandler = noop,
     agentFactoryProvider,
     kibanaVersion,
-    onRequest,
+    onRequestHandlerFactory,
   }: {
     config: ElasticsearchClientConfig;
     logger: Logger;
@@ -76,7 +88,7 @@ export class ClusterClient implements ICustomClusterClient {
     getUnauthorizedErrorHandler?: () => UnauthorizedErrorHandler | undefined;
     agentFactoryProvider: AgentFactoryProvider;
     kibanaVersion: string;
-    onRequest?: OnRequestHandler;
+    onRequestHandlerFactory: OnRequestHandlerFactory;
   }) {
     this.config = config;
     this.authHeaders = authHeaders;
@@ -84,7 +96,9 @@ export class ClusterClient implements ICustomClusterClient {
     this.kibanaVersion = kibanaVersion;
     this.getExecutionContext = getExecutionContext;
     this.getUnauthorizedErrorHandler = getUnauthorizedErrorHandler;
-    this.onRequest = onRequest;
+    this.onRequestHandlerFactory = onRequestHandlerFactory;
+
+    const internalUserOnRequest = onRequestHandlerFactory(null, { searchRouting: 'origin-only' });
 
     this.asInternalUser = configureClient(config, {
       logger,
@@ -92,7 +106,7 @@ export class ClusterClient implements ICustomClusterClient {
       getExecutionContext,
       agentFactoryProvider,
       kibanaVersion,
-      onRequest,
+      onRequest: internalUserOnRequest,
     });
     this.rootScopedClient = configureClient(config, {
       scoped: true,
@@ -101,11 +115,11 @@ export class ClusterClient implements ICustomClusterClient {
       getExecutionContext,
       agentFactoryProvider,
       kibanaVersion,
-      onRequest,
+      onRequest: internalUserOnRequest,
     });
   }
 
-  asScoped(request: ScopeableRequest) {
+  asScoped(request: ScopeableRequest, opts: AsScopedOptions = { searchRouting: 'origin-only' }) {
     const createScopedClient = () => {
       const scopedHeaders = this.getScopedHeaders(request);
 
@@ -113,7 +127,7 @@ export class ClusterClient implements ICustomClusterClient {
         scoped: true,
         getExecutionContext: this.getExecutionContext,
         getUnauthorizedErrorHandler: this.createInternalErrorHandlerAccessor(request),
-        onRequest: this.onRequest,
+        onRequest: this.onRequestHandlerFactory(request, opts),
       });
 
       return this.rootScopedClient.child({

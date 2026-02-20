@@ -12,6 +12,18 @@ import type { ScopeableRequest } from './scopeable_request';
 import type { IScopedClusterClient } from './scoped_cluster_client';
 
 /**
+ * Options for the `asScoped` method.
+ *
+ * @public
+ */
+export interface AsScopedOptions {
+  /**
+   * The behavior for automatically injecting 'project_routing' into requests.
+   */
+  searchRouting: 'origin-only' | 'space-default' | 'all';
+}
+
+/**
  * Represents an Elasticsearch cluster API client created by the platform.
  * It allows to call API on behalf of the internal Kibana user and
  * the actual user that is derived from the request headers (via `asScoped(...)`).
@@ -26,7 +38,7 @@ export interface IClusterClient {
   /**
    * Creates a {@link IScopedClusterClient | scoped cluster client} bound to given {@link ScopeableRequest | request}
    */
-  asScoped: (request: ScopeableRequest) => IScopedClusterClient;
+  asScoped: (request: ScopeableRequest, opts?: AsScopedOptions) => IScopedClusterClient;
 }
 
 /**

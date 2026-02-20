@@ -8,7 +8,7 @@
  */
 
 export type { ElasticsearchClient, ElasticsearchRequestLoggingOptions } from './client';
-export type { IClusterClient, ICustomClusterClient } from './cluster_client';
+export type { IClusterClient, ICustomClusterClient, AsScopedOptions } from './cluster_client';
 export type { ScopeableRequest, FakeRequest } from './scopeable_request';
 export type { IScopedClusterClient } from './scoped_cluster_client';
 export type {

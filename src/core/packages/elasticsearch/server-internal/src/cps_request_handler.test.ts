@@ -8,94 +8,136 @@
  */
 
 import type { TransportRequestParams } from '@elastic/elasticsearch';
+import { PROJECT_ROUTING_ORIGIN, PROJECT_ROUTING_ALL } from '@kbn/cps-server-utils';
 import { CpsRequestHandler } from './cps_request_handler';
-
-const LOCAL_PROJECT_ROUTING = '_alias:_origin';
 
 describe('CpsRequestHandler', () => {
   describe('when CPS is enabled', () => {
-    const onRequest = new CpsRequestHandler(true).onRequest;
+    const handler = new CpsRequestHandler(true);
 
-    it('injects default project_routing into body', () => {
-      const params: TransportRequestParams = {
-        method: 'GET',
-        path: '/_search',
-        meta: { name: 'search', acceptedParams: ['project_routing'] },
-      };
-      onRequest({ scoped: false }, params, {});
+    describe('createHandler', () => {
+      it('uses the provided projectRouting value when injecting', () => {
+        const onRequest = handler.createHandler(PROJECT_ROUTING_ORIGIN);
+        const params: TransportRequestParams = {
+          method: 'GET',
+          path: '/_search',
+          meta: { name: 'search', acceptedParams: ['project_routing'] },
+          body: { query: { match_all: {} } },
+        };
+
+        onRequest({ scoped: true }, params, {});
+
+        expect(params.body).toEqual({
+          query: { match_all: {} },
+          project_routing: PROJECT_ROUTING_ORIGIN,
+        });
+      });
+
+      it('uses a custom projectRouting value (e.g. space-based NPRE)', () => {
+        const spaceNpre = 'kibana_space_my-space_default';
+        const onRequest = handler.createHandler(spaceNpre);
+        const params: TransportRequestParams = {
+          method: 'GET',
+          path: '/_search',
+          meta: { name: 'search', acceptedParams: ['project_routing'] },
+          body: {},
+        };
+
+        onRequest({ scoped: true }, params, {});
+
+        expect((params.body as Record<string, unknown>)?.project_routing).toBe(spaceNpre);
+      });
+
+      it('uses PROJECT_ROUTING_ALL when provided', () => {
+        const onRequest = handler.createHandler(PROJECT_ROUTING_ALL);
+        const params: TransportRequestParams = {
+          method: 'GET',
+          path: '/_search',
+          meta: { name: 'search', acceptedParams: ['project_routing'] },
+          body: {},
+        };
+
+        onRequest({ scoped: true }, params, {});
+
+        expect((params.body as Record<string, unknown>)?.project_routing).toBe(PROJECT_ROUTING_ALL);
+      });
     });
 
-    it('does not inject when API does not support project_routing', () => {
-      const params: TransportRequestParams = {
-        method: 'GET',
-        path: '/_cat/indices',
-        meta: { name: 'cat/indices', acceptedParams: [] },
-      };
+    describe('injection behavior', () => {
+      const onRequest = handler.createHandler(PROJECT_ROUTING_ORIGIN);
 
-      onRequest({ scoped: true }, params, {});
+      it('does not inject when API does not support project_routing', () => {
+        const params: TransportRequestParams = {
+          method: 'GET',
+          path: '/_cat/indices',
+          meta: { name: 'cat/indices', acceptedParams: [] },
+        };
 
-      expect(params.body).toBeUndefined();
-    });
+        onRequest({ scoped: true }, params, {});
 
-    it('does not override project_routing already present in body', () => {
-      const params: TransportRequestParams = {
-        method: 'GET',
-        path: '/_search',
-        meta: { name: 'search', acceptedParams: ['project_routing'] },
-        body: { project_routing: 'custom-value' },
-      };
+        expect(params.body).toBeUndefined();
+      });
 
-      onRequest({ scoped: true }, params, {});
+      it('does not override project_routing already present in body', () => {
+        const params: TransportRequestParams = {
+          method: 'GET',
+          path: '/_search',
+          meta: { name: 'search', acceptedParams: ['project_routing'] },
+          body: { project_routing: 'custom-value' },
+        };
 
-      expect((params.body as Record<string, unknown>)?.project_routing).toBe('custom-value');
-    });
+        onRequest({ scoped: true }, params, {});
 
-    it('does not inject project_routing for PIT-based searches', () => {
-      const params: TransportRequestParams = {
-        method: 'POST',
-        path: '/_search',
-        body: { pit: { id: 'abc123' } },
-        meta: { name: 'search', acceptedParams: ['project_routing'] },
-      };
+        expect((params.body as Record<string, unknown>)?.project_routing).toBe('custom-value');
+      });
 
-      onRequest({ scoped: true }, params, {});
+      it('does not inject project_routing for PIT-based searches', () => {
+        const params: TransportRequestParams = {
+          method: 'POST',
+          path: '/_search',
+          body: { pit: { id: 'abc123' } },
+          meta: { name: 'search', acceptedParams: ['project_routing'] },
+        };
 
-      expect((params.body as Record<string, unknown>)?.project_routing).toBeUndefined();
-    });
+        onRequest({ scoped: true }, params, {});
 
-    it('strips project_routing from body for PIT-based searches', () => {
-      const params: TransportRequestParams = {
-        method: 'POST',
-        path: '/_search',
-        body: { pit: { id: 'abc123' }, project_routing: 'should-be-removed' },
-        meta: { name: 'search', acceptedParams: ['project_routing'] },
-      };
+        expect((params.body as Record<string, unknown>)?.project_routing).toBeUndefined();
+      });
 
-      onRequest({ scoped: true }, params, {});
+      it('strips project_routing from body for PIT-based searches', () => {
+        const params: TransportRequestParams = {
+          method: 'POST',
+          path: '/_search',
+          body: { pit: { id: 'abc123' }, project_routing: 'should-be-removed' },
+          meta: { name: 'search', acceptedParams: ['project_routing'] },
+        };
 
-      expect((params.body as Record<string, unknown>)?.project_routing).toBeUndefined();
-      expect((params.body as Record<string, unknown>)?.pit).toEqual({ id: 'abc123' });
-    });
+        onRequest({ scoped: true }, params, {});
 
-    it('preserves existing body fields when injecting', () => {
-      const params: TransportRequestParams = {
-        method: 'GET',
-        path: '/_search',
-        meta: { name: 'search', acceptedParams: ['project_routing'] },
-        body: { query: { match_all: {} } },
-      };
+        expect((params.body as Record<string, unknown>)?.project_routing).toBeUndefined();
+        expect((params.body as Record<string, unknown>)?.pit).toEqual({ id: 'abc123' });
+      });
 
-      onRequest({ scoped: true }, params, {});
+      it('preserves existing body fields when injecting', () => {
+        const params: TransportRequestParams = {
+          method: 'GET',
+          path: '/_search',
+          meta: { name: 'search', acceptedParams: ['project_routing'] },
+          body: { query: { match_all: {} } },
+        };
 
-      expect(params.body).toEqual({
-        query: { match_all: {} },
-        project_routing: LOCAL_PROJECT_ROUTING,
+        onRequest({ scoped: true }, params, {});
+
+        expect(params.body).toEqual({
+          query: { match_all: {} },
+          project_routing: PROJECT_ROUTING_ORIGIN,
+        });
       });
     });
   });
 
   describe('when CPS is disabled', () => {
-    const onRequest = new CpsRequestHandler(false).onRequest;
+    const onRequest = new CpsRequestHandler(false).createHandler(PROJECT_ROUTING_ORIGIN);
 
     it('does not inject project_routing', () => {
       const params: TransportRequestParams = {

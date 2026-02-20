@@ -13,6 +13,7 @@ export type {
   IScopedClusterClient,
   IClusterClient,
   ICustomClusterClient,
+  AsScopedOptions,
   ScopeableRequest,
   UnauthorizedErrorHandlerResult,
   UnauthorizedErrorHandler,

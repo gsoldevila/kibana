@@ -54,6 +54,8 @@ export const elasticsearch = new ElasticsearchService(logger, kibanaPackageJson.
           dnsCacheTtlInSeconds: config?.dnsCacheTtl?.asSeconds() ?? 0,
         }),
         kibanaVersion: kibanaPackageJson.version,
+        // CPS routing is not applicable for the CLI setup client
+        onRequestHandlerFactory: () => () => {},
       });
     },
   },

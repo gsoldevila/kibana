@@ -10,6 +10,11 @@
 import type { KibanaRequest } from '@kbn/core-http-server';
 import { DEFAULT_SPACE_ID, getSpaceIdFromPath } from '@kbn/spaces-utils';
 
+/**
+ * Get the NPRE for a given space ID or request
+ * @param spaceIdOrRequest - The space ID or request
+ * @returns The NPRE
+ */
 export function getSpaceNPRE(spaceIdOrRequest: string | KibanaRequest): string {
   const spaceId =
     typeof spaceIdOrRequest === 'string'
