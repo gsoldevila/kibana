@@ -175,7 +175,6 @@ describe('configureClient', () => {
 
   it('passes `onRequest` handler to `createTransport`', () => {
     const getExecutionContext = jest.fn();
-    const onRequest = jest.fn();
 
     configureClient(config, {
       logger,
