@@ -7,13 +7,11 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { FakeRequest, ScopeableRequest } from '@kbn/core-elasticsearch-server';
+import type { KibanaRequest } from '@kbn/core-http-server';
 import { getSpaceNPRE } from './get_space_npre';
 
 const mockKibanaRequest = (pathname: string) =>
-  ({ url: new URL(`http://localhost:5601${pathname}`) } as unknown as ScopeableRequest);
-
-const mockFakeRequest = (headers: FakeRequest['headers'] = {}): FakeRequest => ({ headers });
+  ({ url: new URL(`http://localhost:5601${pathname}`) } as unknown as KibanaRequest);
 
 describe('getSpaceNPRE', () => {
   describe('when called with a spaceId string', () => {
@@ -40,17 +38,12 @@ describe('getSpaceNPRE', () => {
     it('returns the default space NPRE when the request URL has no space segment', () => {
       expect(getSpaceNPRE(mockKibanaRequest('/api/foo'))).toBe('kibana_space_default_default');
     });
-  });
 
-  describe('when called with a FakeRequest (no url)', () => {
-    it('falls back to the default space NPRE', () => {
-      expect(getSpaceNPRE(mockFakeRequest({ authorization: 'Bearer tok' }))).toBe(
-        'kibana_space_default_default'
+    it('throws when the request has no url (e.g. a FakeRequest passed at runtime)', () => {
+      const badRequest = { headers: {} } as unknown as KibanaRequest;
+      expect(() => getSpaceNPRE(badRequest)).toThrow(
+        'Cannot determine space NPRE: the KibanaRequest is missing a URL.'
       );
-    });
-
-    it('falls back to the default space NPRE for an empty FakeRequest', () => {
-      expect(getSpaceNPRE(mockFakeRequest())).toBe('kibana_space_default_default');
     });
   });
 });

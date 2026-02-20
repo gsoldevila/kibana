@@ -18,16 +18,15 @@ import { getCpsRequestHandler } from './cps_request_handler';
  * @internal
  */
 export function getRequestHandlerFactory(cpsEnabled: boolean): OnRequestHandlerFactory {
-  return (opts) => {
-    switch (opts.searchRouting) {
+  return ({ searchRouting }) => {
+    switch (searchRouting) {
       case 'origin-only':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ORIGIN);
       case 'all':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ALL);
-      case 'space-default':
-        // TypeScript narrows `opts` to the `{ request: ScopeableRequest; ... }` branch here,
-        // so `opts.request` is guaranteed to be present.
-        return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(opts.request));
+      default:
+        // searchRouting is a KibanaRequest — derive the NPRE from its URL.
+        return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(searchRouting));
     }
   };
 }

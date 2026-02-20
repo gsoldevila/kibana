@@ -312,10 +312,8 @@ describe('ClusterClient', () => {
       client = scopedClusterClient.asCurrentUser;
 
       expect(mockOnRequestHandlerFactory).toHaveBeenCalledTimes(1);
-      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({
-        request,
-        searchRouting: opts.searchRouting,
-      });
+      // When searchRouting is 'space-default', the KibanaRequest itself becomes the searchRouting value.
+      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({ searchRouting: request });
       expect(createTransportMock).toHaveBeenCalledWith(
         expect.objectContaining({ onRequest: mockOnRequestHandler })
       );

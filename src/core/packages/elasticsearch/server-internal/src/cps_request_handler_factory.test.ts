@@ -35,8 +35,7 @@ describe('getRequestHandlerFactory', () => {
   describe("searchRouting: 'origin-only'", () => {
     it('injects PROJECT_ROUTING_ORIGIN when CPS is enabled', () => {
       const factory = getRequestHandlerFactory(true);
-      const request = httpServerMock.createKibanaRequest();
-      const handler = factory({ request, searchRouting: 'origin-only' });
+      const handler = factory({ searchRouting: 'origin-only' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -46,8 +45,7 @@ describe('getRequestHandlerFactory', () => {
 
     it('strips project_routing when CPS is disabled', () => {
       const factory = getRequestHandlerFactory(false);
-      const request = httpServerMock.createKibanaRequest();
-      const handler = factory({ request, searchRouting: 'origin-only' });
+      const handler = factory({ searchRouting: 'origin-only' });
       const params = makeSearchParams({ project_routing: 'should-be-removed' });
 
       handler({ scoped: true }, params, {});
@@ -59,8 +57,7 @@ describe('getRequestHandlerFactory', () => {
   describe("searchRouting: 'all'", () => {
     it('injects PROJECT_ROUTING_ALL when CPS is enabled', () => {
       const factory = getRequestHandlerFactory(true);
-      const request = httpServerMock.createKibanaRequest();
-      const handler = factory({ request, searchRouting: 'all' });
+      const handler = factory({ searchRouting: 'all' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -73,7 +70,7 @@ describe('getRequestHandlerFactory', () => {
     it('injects the space NPRE derived from a KibanaRequest', () => {
       const factory = getRequestHandlerFactory(true);
       const request = httpServerMock.createKibanaRequest({ path: '/s/my-space/app/discover' });
-      const handler = factory({ request, searchRouting: 'space-default' });
+      const handler = factory({ searchRouting: request });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -81,17 +78,6 @@ describe('getRequestHandlerFactory', () => {
       expect((params.body as Record<string, unknown>).project_routing).toBe(
         getSpaceNPRE('my-space')
       );
-    });
-
-    it('falls back to the default space NPRE for a FakeRequest', () => {
-      const factory = getRequestHandlerFactory(true);
-      const request = { headers: { authorization: 'Bearer tok' } };
-      const handler = factory({ request, searchRouting: 'space-default' });
-      const params = makeSearchParams();
-
-      handler({ scoped: true }, params, {});
-
-      expect((params.body as Record<string, unknown>).project_routing).toBe(getSpaceNPRE(''));
     });
   });
 });

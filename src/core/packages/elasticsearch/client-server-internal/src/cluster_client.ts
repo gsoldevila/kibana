@@ -9,7 +9,7 @@
 
 import type { Client } from '@elastic/elasticsearch';
 import type { Logger } from '@kbn/logging';
-import type { Headers, IAuthHeadersStorage } from '@kbn/core-http-server';
+import type { Headers, IAuthHeadersStorage, KibanaRequest } from '@kbn/core-http-server';
 import {
   ensureRawRequest,
   filterHeaders,
@@ -46,14 +46,9 @@ const noop = () => undefined;
  * A factory that produces an {@link OnRequestHandler}, which can be bound to a request context.
  * @internal
  */
-export type OnRequestHandlerFactory = (
-  opts:
-    | { searchRouting: 'origin-only' }
-    | {
-        request: ScopeableRequest;
-        searchRouting: 'origin-only' | 'space-default' | 'all';
-      }
-) => OnRequestHandler;
+export type OnRequestHandlerFactory = (opts: {
+  searchRouting: 'origin-only' | 'all' | KibanaRequest;
+}) => OnRequestHandler;
 
 /** @internal **/
 export class ClusterClient implements ICustomClusterClient {
@@ -124,12 +119,17 @@ export class ClusterClient implements ICustomClusterClient {
   asScoped(request: ScopeableRequest, opts: AsScopedOptions = { searchRouting: 'origin-only' }) {
     const createScopedClient = () => {
       const scopedHeaders = this.getScopedHeaders(request);
+      const { searchRouting } = opts;
 
       const transportClass = createTransport({
         scoped: true,
         getExecutionContext: this.getExecutionContext,
         getUnauthorizedErrorHandler: this.createInternalErrorHandlerAccessor(request),
-        onRequest: this.onRequestHandlerFactory({ request, searchRouting: opts.searchRouting }),
+        onRequest: this.onRequestHandlerFactory(
+          searchRouting === 'space-default'
+            ? { searchRouting: request as KibanaRequest }
+            : { searchRouting }
+        ),
       });
 
       return this.rootScopedClient.child({
