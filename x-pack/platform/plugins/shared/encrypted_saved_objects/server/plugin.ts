@@ -23,7 +23,7 @@ import {
   getCreateMigration,
 } from './create_migration';
 import { type CreateEsoModelVersionFn, getCreateEsoModelVersion } from './create_model_version';
-import type { EncryptedSavedObjectTypeRegistration } from './crypto';
+import type { AttributeToEncrypt, EncryptedSavedObjectTypeRegistration } from './crypto';
 import {
   EncryptedSavedObjectsService,
   EncryptionError,
@@ -53,11 +53,31 @@ export interface EncryptedSavedObjectsPluginStart {
   /**
    * This function is exposed for Core migration testing purposes only.
    */
-  __testCreateExtension: (
+  __testCreateDangerousExtension: (
     typeRegistry: ISavedObjectTypeRegistry,
     typeRegistrationOverrides?: EncryptedSavedObjectTypeRegistration[]
   ) => SavedObjectsEncryptionExtension;
 }
+
+/**
+ * Transforms an EncryptedSavedObjectTypeRegistration so that all attributes in
+ * `attributesToEncrypt` have `dangerouslyExposeValue: true`. This is only used
+ * for the test-only extension where decrypted values must be readable.
+ */
+const dangerouslyExposeAttributes = (
+  registration: EncryptedSavedObjectTypeRegistration
+): EncryptedSavedObjectTypeRegistration => {
+  const exposedAttributes = new Set<string | AttributeToEncrypt>(
+    [...registration.attributesToEncrypt].map((attr) => {
+      const key = typeof attr === 'string' ? attr : attr.key;
+      return { key, dangerouslyExposeValue: true };
+    })
+  );
+  return {
+    ...registration,
+    attributesToEncrypt: exposedAttributes,
+  };
+};
 
 /**
  * Represents EncryptedSavedObjects Plugin instance that will be managed by the Kibana plugin system.
@@ -185,7 +205,7 @@ export class EncryptedSavedObjectsPlugin
     return {
       isEncryptionError: (error: Error) => error instanceof EncryptionError,
       getClient: (options = {}) => this.savedObjectsSetup(options),
-      __testCreateExtension: (
+      __testCreateDangerousExtension: (
         typeRegistry: ISavedObjectTypeRegistry,
         typeRegistrationOverrides?: EncryptedSavedObjectTypeRegistration[]
       ): SavedObjectsEncryptionExtension => {
@@ -198,13 +218,13 @@ export class EncryptedSavedObjectsPlugin
         const registeredTypes = new Set<string>();
 
         for (const typeRegistration of typeRegistrationOverrides ?? []) {
-          testService.registerType(typeRegistration);
+          testService.registerType(dangerouslyExposeAttributes(typeRegistration));
           registeredTypes.add(typeRegistration.type);
         }
 
         for (const typeRegistration of this.typeRegistrations) {
           if (!registeredTypes.has(typeRegistration.type)) {
-            testService.registerType(typeRegistration);
+            testService.registerType(dangerouslyExposeAttributes(typeRegistration));
           }
         }
 

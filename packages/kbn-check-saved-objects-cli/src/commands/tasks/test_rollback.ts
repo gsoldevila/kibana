@@ -21,7 +21,7 @@ export const testRollback: Task = async (ctx, task) => {
   );
 
   const { runMigrations: performRollback, savedObjectsRepository } = await getKibanaMigratorTestKit(
-    { types: previousVersionTypes }
+    { types: previousVersionTypes, encryptedSavedObjects: ctx.encryptedSavedObjects }
   );
 
   const subtasks: ListrTask<TaskContext>[] = [

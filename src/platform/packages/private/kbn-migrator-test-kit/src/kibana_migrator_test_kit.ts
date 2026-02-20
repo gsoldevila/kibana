@@ -49,7 +49,10 @@ import type { ISavedObjectsRepository } from '@kbn/core-saved-objects-api-server
 import { getDocLinks, getDocLinksMeta } from '@kbn/doc-links';
 import type { DocLinksServiceStart } from '@kbn/core-doc-links-server';
 import type { NodeRoles } from '@kbn/core-node-server';
-import type { EncryptedSavedObjectsPluginStart } from '@kbn/encrypted-saved-objects-plugin/server';
+import type {
+  EncryptedSavedObjectsPluginStart,
+  EncryptedSavedObjectTypeRegistration,
+} from '@kbn/encrypted-saved-objects-plugin/server';
 import type { ElasticsearchClientWrapperFactory } from './elasticsearch_client_wrapper';
 import { delay } from './utils';
 
@@ -83,6 +86,7 @@ export interface KibanaMigratorTestKitParams {
   logFilePath?: string;
   clientWrapperFactory?: ElasticsearchClientWrapperFactory;
   encryptedSavedObjects?: EncryptedSavedObjectsPluginStart;
+  encryptionOverrides?: EncryptedSavedObjectTypeRegistration[];
 }
 
 export interface KibanaMigratorTestKit {
@@ -146,8 +150,9 @@ export const getKibanaMigratorTestKit = async ({
   removedTypes = [],
   logFilePath = defaultLogFilePath,
   nodeRoles = defaultNodeRoles,
-  encryptedSavedObjects,
   clientWrapperFactory,
+  encryptedSavedObjects,
+  encryptionOverrides,
 }: KibanaMigratorTestKitParams = {}): Promise<KibanaMigratorTestKit> => {
   let hasRun = false;
   const loggingSystem = new LoggingSystem();
@@ -193,6 +198,12 @@ export const getKibanaMigratorTestKit = async ({
     }
   };
 
+  const encryptionExtension = encryptedSavedObjects
+    ? encryptedSavedObjects?.__testCreateDangerousExtension(typeRegistry, encryptionOverrides)
+    : undefined;
+
+  // console.log('****** encryptionExtension:', JSON.stringify(encryptionExtension, null, 2));
+
   const savedObjectsRepository = SavedObjectsRepository.createRepository(
     migrator,
     typeRegistry,
@@ -205,9 +216,7 @@ export const getKibanaMigratorTestKit = async ({
       .filter(({ hidden }) => hidden)
       .map(({ name }) => name),
     {
-      encryptionExtension: encryptedSavedObjects
-        ? encryptedSavedObjects?.__testCreateExtension(typeRegistry)
-        : undefined,
+      encryptionExtension,
     }
   );
 

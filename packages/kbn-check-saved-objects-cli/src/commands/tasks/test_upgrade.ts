@@ -15,6 +15,7 @@ import { checkDocuments } from './check_documents';
 export const testUpgrade: Task = async (ctx, task) => {
   const { runMigrations, savedObjectsRepository } = await getKibanaMigratorTestKit({
     types: ctx.updatedTypes,
+    encryptedSavedObjects: ctx.encryptedSavedObjects,
   });
 
   const subtasks: ListrTask<TaskContext>[] = [

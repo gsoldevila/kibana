@@ -9,6 +9,7 @@ import { coreMock, loggingSystemMock } from '@kbn/core/server/mocks';
 import { securityMock } from '@kbn/security-plugin/server/mocks';
 
 import { ConfigSchema } from './config';
+import { EncryptedSavedObjectsService } from './crypto';
 import { EncryptedSavedObjectsPlugin } from './plugin';
 
 describe('EncryptedSavedObjects Plugin', () => {
@@ -89,7 +90,7 @@ describe('EncryptedSavedObjects Plugin', () => {
       const startContract = plugin.start();
       expect(startContract).toMatchInlineSnapshot(`
               Object {
-                "__testCreateExtension": [Function],
+                "__testCreateDangerousExtension": [Function],
                 "getClient": [Function],
                 "isEncryptionError": [Function],
               }
@@ -113,7 +114,7 @@ describe('EncryptedSavedObjects Plugin', () => {
 
         const startContract = plugin.start();
         const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
-        const extension = startContract.__testCreateExtension(mockTypeRegistry, []);
+        const extension = startContract.__testCreateDangerousExtension(mockTypeRegistry, []);
 
         expect(extension).toBeDefined();
         expect(extension._baseTypeRegistry).toBe(mockTypeRegistry);
@@ -133,7 +134,9 @@ describe('EncryptedSavedObjects Plugin', () => {
           attributesToEncrypt: new Set(['secret']),
         };
 
-        const extension = startContract.__testCreateExtension(mockTypeRegistry, [typeRegistration]);
+        const extension = startContract.__testCreateDangerousExtension(mockTypeRegistry, [
+          typeRegistration,
+        ]);
 
         expect(extension._service.isRegistered('test-type')).toBe(true);
       });
@@ -155,7 +158,7 @@ describe('EncryptedSavedObjects Plugin', () => {
         const startContract = plugin.start();
         const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
 
-        const extension = startContract.__testCreateExtension(mockTypeRegistry, []);
+        const extension = startContract.__testCreateDangerousExtension(mockTypeRegistry, []);
 
         expect(extension._service.isRegistered('existing-type')).toBe(true);
       });
@@ -182,7 +185,7 @@ describe('EncryptedSavedObjects Plugin', () => {
           attributesToEncrypt: new Set(['newSecret']),
         };
 
-        const extension = startContract.__testCreateExtension(mockTypeRegistry, [
+        const extension = startContract.__testCreateDangerousExtension(mockTypeRegistry, [
           overrideRegistration,
         ]);
 
@@ -217,7 +220,7 @@ describe('EncryptedSavedObjects Plugin', () => {
           attributesToEncrypt: new Set(['overrideSecret']),
         };
 
-        const extension = startContract.__testCreateExtension(mockTypeRegistry, [
+        const extension = startContract.__testCreateDangerousExtension(mockTypeRegistry, [
           overrideRegistration,
         ]);
 
@@ -236,10 +239,159 @@ describe('EncryptedSavedObjects Plugin', () => {
         const startContract = plugin.start();
         const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
 
-        const extension = startContract.__testCreateExtension(mockTypeRegistry, []);
+        const extension = startContract.__testCreateDangerousExtension(mockTypeRegistry, []);
 
         expect(extension).toBeDefined();
         expect(extension._baseTypeRegistry).toBe(mockTypeRegistry);
+      });
+
+      it('dangerously exposes string attributes from overrides', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        plugin.setup(coreMock.createSetup(), { security: securityMock.createSetup() });
+
+        const registerTypeSpy = jest.spyOn(EncryptedSavedObjectsService.prototype, 'registerType');
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        startContract.__testCreateDangerousExtension(mockTypeRegistry, [
+          {
+            type: 'test-type',
+            attributesToEncrypt: new Set(['secret', 'apiKey']),
+          },
+        ]);
+
+        const registeredArgs = registerTypeSpy.mock.calls.find(([reg]) => reg.type === 'test-type');
+        expect(registeredArgs).toBeDefined();
+        const registeredAttrs = [...registeredArgs![0].attributesToEncrypt];
+        expect(registeredAttrs).toEqual(
+          expect.arrayContaining([
+            { key: 'secret', dangerouslyExposeValue: true },
+            { key: 'apiKey', dangerouslyExposeValue: true },
+          ])
+        );
+
+        registerTypeSpy.mockRestore();
+      });
+
+      it('dangerously exposes object attributes without dangerouslyExposeValue from overrides', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        plugin.setup(coreMock.createSetup(), { security: securityMock.createSetup() });
+
+        const registerTypeSpy = jest.spyOn(EncryptedSavedObjectsService.prototype, 'registerType');
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        startContract.__testCreateDangerousExtension(mockTypeRegistry, [
+          {
+            type: 'test-type',
+            attributesToEncrypt: new Set([{ key: 'token' }, { key: 'password' }]),
+          },
+        ]);
+
+        const registeredArgs = registerTypeSpy.mock.calls.find(([reg]) => reg.type === 'test-type');
+        expect(registeredArgs).toBeDefined();
+        const registeredAttrs = [...registeredArgs![0].attributesToEncrypt];
+        expect(registeredAttrs).toEqual(
+          expect.arrayContaining([
+            { key: 'token', dangerouslyExposeValue: true },
+            { key: 'password', dangerouslyExposeValue: true },
+          ])
+        );
+
+        registerTypeSpy.mockRestore();
+      });
+
+      it('dangerously exposes attributes from existing setup registrations', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        const setupContract = plugin.setup(coreMock.createSetup(), {
+          security: securityMock.createSetup(),
+        });
+
+        setupContract.registerType({
+          type: 'existing-type',
+          attributesToEncrypt: new Set(['secret']),
+        });
+
+        const registerTypeSpy = jest.spyOn(EncryptedSavedObjectsService.prototype, 'registerType');
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        startContract.__testCreateDangerousExtension(mockTypeRegistry, []);
+
+        const registeredArgs = registerTypeSpy.mock.calls.find(
+          ([reg]) => reg.type === 'existing-type'
+        );
+        expect(registeredArgs).toBeDefined();
+        const registeredAttrs = [...registeredArgs![0].attributesToEncrypt];
+        expect(registeredAttrs).toEqual([{ key: 'secret', dangerouslyExposeValue: true }]);
+
+        registerTypeSpy.mockRestore();
+      });
+
+      it('preserves dangerouslyExposeValue when already set to true', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        plugin.setup(coreMock.createSetup(), { security: securityMock.createSetup() });
+
+        const registerTypeSpy = jest.spyOn(EncryptedSavedObjectsService.prototype, 'registerType');
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        startContract.__testCreateDangerousExtension(mockTypeRegistry, [
+          {
+            type: 'test-type',
+            attributesToEncrypt: new Set([{ key: 'token', dangerouslyExposeValue: true }]),
+          },
+        ]);
+
+        const registeredArgs = registerTypeSpy.mock.calls.find(([reg]) => reg.type === 'test-type');
+        expect(registeredArgs).toBeDefined();
+        const registeredAttrs = [...registeredArgs![0].attributesToEncrypt];
+        expect(registeredAttrs).toEqual([{ key: 'token', dangerouslyExposeValue: true }]);
+
+        registerTypeSpy.mockRestore();
+      });
+
+      it('sets dangerouslyExposeValue to true if it was already set to false', () => {
+        const mockInitializerContext = coreMock.createPluginInitializerContext(
+          ConfigSchema.validate({ encryptionKey: 'z'.repeat(32) }, { dist: true })
+        );
+        const plugin = new EncryptedSavedObjectsPlugin(mockInitializerContext);
+        plugin.setup(coreMock.createSetup(), { security: securityMock.createSetup() });
+
+        const registerTypeSpy = jest.spyOn(EncryptedSavedObjectsService.prototype, 'registerType');
+
+        const startContract = plugin.start();
+        const mockTypeRegistry = { isNamespaceAgnostic: jest.fn() } as any;
+
+        startContract.__testCreateDangerousExtension(mockTypeRegistry, [
+          {
+            type: 'test-type',
+            attributesToEncrypt: new Set([{ key: 'token', dangerouslyExposeValue: false }]),
+          },
+        ]);
+
+        const registeredArgs = registerTypeSpy.mock.calls.find(([reg]) => reg.type === 'test-type');
+        expect(registeredArgs).toBeDefined();
+        const registeredAttrs = [...registeredArgs![0].attributesToEncrypt];
+        expect(registeredAttrs).toEqual([{ key: 'token', dangerouslyExposeValue: true }]);
+
+        registerTypeSpy.mockRestore();
       });
     });
   });

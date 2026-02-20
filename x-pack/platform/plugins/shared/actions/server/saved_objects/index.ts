@@ -29,6 +29,7 @@ import {
   actionTaskParamsModelVersions,
   connectorModelVersions,
   connectorTokenModelVersions,
+  connectorTokenTypeRegistrationV2,
 } from './model_versions';
 
 export function setupSavedObjects(
@@ -124,18 +125,8 @@ export function setupSavedObjects(
     management: {
       importableAndExportable: false,
     },
-    modelVersions: connectorTokenModelVersions,
+    modelVersions: connectorTokenModelVersions(encryptedSavedObjects),
   });
 
-  encryptedSavedObjects.registerType({
-    type: CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
-    attributesToEncrypt: new Set(['token']),
-    attributesToIncludeInAAD: new Set([
-      'connectorId',
-      'tokenType',
-      'expiresAt',
-      'createdAt',
-      'updatedAt',
-    ]),
-  });
+  encryptedSavedObjects.registerType(connectorTokenTypeRegistrationV2);
 }
