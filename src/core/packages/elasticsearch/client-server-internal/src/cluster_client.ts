@@ -43,14 +43,16 @@ import type { AgentFactoryProvider } from './agent_manager';
 const noop = () => undefined;
 
 /**
- * A factory that produces an {@link OnRequestHandler} for a given request context.
- * Pass `null` for the request to signal the internal-user context (origin-only routing).
- *
+ * A factory that produces an {@link OnRequestHandler}, which can be bound to a request context.
  * @internal
  */
 export type OnRequestHandlerFactory = (
-  request: ScopeableRequest | null,
-  opts: AsScopedOptions
+  opts:
+    | { searchRouting: 'origin-only' }
+    | {
+        request: ScopeableRequest;
+        searchRouting: 'origin-only' | 'space-default' | 'all';
+      }
 ) => OnRequestHandler;
 
 /** @internal **/
@@ -98,7 +100,7 @@ export class ClusterClient implements ICustomClusterClient {
     this.getUnauthorizedErrorHandler = getUnauthorizedErrorHandler;
     this.onRequestHandlerFactory = onRequestHandlerFactory;
 
-    const internalUserOnRequest = onRequestHandlerFactory(null, { searchRouting: 'origin-only' });
+    const internalUserOnRequest = onRequestHandlerFactory({ searchRouting: 'origin-only' });
 
     this.asInternalUser = configureClient(config, {
       logger,
@@ -127,7 +129,7 @@ export class ClusterClient implements ICustomClusterClient {
         scoped: true,
         getExecutionContext: this.getExecutionContext,
         getUnauthorizedErrorHandler: this.createInternalErrorHandlerAccessor(request),
-        onRequest: this.onRequestHandlerFactory(request, opts),
+        onRequest: this.onRequestHandlerFactory({ request, searchRouting: opts.searchRouting }),
       });
 
       return this.rootScopedClient.child({

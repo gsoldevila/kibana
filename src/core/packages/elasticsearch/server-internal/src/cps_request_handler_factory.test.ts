@@ -9,11 +9,7 @@
 
 import type { TransportRequestParams } from '@elastic/elasticsearch';
 import { httpServerMock } from '@kbn/core-http-server-mocks';
-import {
-  PROJECT_ROUTING_ORIGIN,
-  PROJECT_ROUTING_ALL,
-  getSpaceNPRE,
-} from '@kbn/cps-server-utils';
+import { PROJECT_ROUTING_ORIGIN, PROJECT_ROUTING_ALL, getSpaceNPRE } from '@kbn/cps-server-utils';
 import { getRequestHandlerFactory } from './cps_request_handler_factory';
 
 const makeSearchParams = (body?: Record<string, unknown>): TransportRequestParams => ({
@@ -24,10 +20,10 @@ const makeSearchParams = (body?: Record<string, unknown>): TransportRequestParam
 });
 
 describe('getRequestHandlerFactory', () => {
-  describe('null request (internal user)', () => {
-    it('injects PROJECT_ROUTING_ORIGIN regardless of cpsEnabled', () => {
+  describe('without request (internal user)', () => {
+    it('injects PROJECT_ROUTING_ORIGIN when searchRouting is origin-only', () => {
       const factory = getRequestHandlerFactory(true);
-      const handler = factory(null, { searchRouting: 'origin-only' });
+      const handler = factory({ searchRouting: 'origin-only' });
       const params = makeSearchParams();
 
       handler({ scoped: false }, params, {});
@@ -40,7 +36,7 @@ describe('getRequestHandlerFactory', () => {
     it('injects PROJECT_ROUTING_ORIGIN when CPS is enabled', () => {
       const factory = getRequestHandlerFactory(true);
       const request = httpServerMock.createKibanaRequest();
-      const handler = factory(request, { searchRouting: 'origin-only' });
+      const handler = factory({ request, searchRouting: 'origin-only' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -51,7 +47,7 @@ describe('getRequestHandlerFactory', () => {
     it('strips project_routing when CPS is disabled', () => {
       const factory = getRequestHandlerFactory(false);
       const request = httpServerMock.createKibanaRequest();
-      const handler = factory(request, { searchRouting: 'origin-only' });
+      const handler = factory({ request, searchRouting: 'origin-only' });
       const params = makeSearchParams({ project_routing: 'should-be-removed' });
 
       handler({ scoped: true }, params, {});
@@ -64,7 +60,7 @@ describe('getRequestHandlerFactory', () => {
     it('injects PROJECT_ROUTING_ALL when CPS is enabled', () => {
       const factory = getRequestHandlerFactory(true);
       const request = httpServerMock.createKibanaRequest();
-      const handler = factory(request, { searchRouting: 'all' });
+      const handler = factory({ request, searchRouting: 'all' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -77,7 +73,7 @@ describe('getRequestHandlerFactory', () => {
     it('injects the space NPRE derived from a KibanaRequest', () => {
       const factory = getRequestHandlerFactory(true);
       const request = httpServerMock.createKibanaRequest({ path: '/s/my-space/app/discover' });
-      const handler = factory(request, { searchRouting: 'space-default' });
+      const handler = factory({ request, searchRouting: 'space-default' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -89,8 +85,8 @@ describe('getRequestHandlerFactory', () => {
 
     it('falls back to the default space NPRE for a FakeRequest', () => {
       const factory = getRequestHandlerFactory(true);
-      const fakeRequest = { headers: { authorization: 'Bearer tok' } };
-      const handler = factory(fakeRequest, { searchRouting: 'space-default' });
+      const request = { headers: { authorization: 'Bearer tok' } };
+      const handler = factory({ request, searchRouting: 'space-default' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});

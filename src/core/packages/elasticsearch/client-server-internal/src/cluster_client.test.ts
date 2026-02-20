@@ -284,9 +284,9 @@ describe('ClusterClient', () => {
         onRequestHandlerFactory: mockOnRequestHandlerFactory,
       });
 
-      // Factory called twice: once for asInternalUser, once for rootScopedClient
-      expect(mockOnRequestHandlerFactory).toHaveBeenCalledTimes(2);
-      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith(null, {
+      // Factory called once; the same handler is shared by asInternalUser and rootScopedClient
+      expect(mockOnRequestHandlerFactory).toHaveBeenCalledTimes(1);
+      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({
         searchRouting: 'origin-only',
       });
     });
@@ -312,7 +312,10 @@ describe('ClusterClient', () => {
       client = scopedClusterClient.asCurrentUser;
 
       expect(mockOnRequestHandlerFactory).toHaveBeenCalledTimes(1);
-      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith(request, opts);
+      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({
+        request,
+        searchRouting: opts.searchRouting,
+      });
       expect(createTransportMock).toHaveBeenCalledWith(
         expect.objectContaining({ onRequest: mockOnRequestHandler })
       );

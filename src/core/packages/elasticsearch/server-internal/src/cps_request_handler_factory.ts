@@ -18,17 +18,16 @@ import { getCpsRequestHandler } from './cps_request_handler';
  * @internal
  */
 export function getRequestHandlerFactory(cpsEnabled: boolean): OnRequestHandlerFactory {
-  return (request, opts) => {
-    if (!request) {
-      return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ORIGIN);
-    }
+  return (opts) => {
     switch (opts.searchRouting) {
       case 'origin-only':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ORIGIN);
-      case 'space-default':
-        return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(request));
       case 'all':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ALL);
+      case 'space-default':
+        // TypeScript narrows `opts` to the `{ request: ScopeableRequest; ... }` branch here,
+        // so `opts.request` is guaranteed to be present.
+        return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(opts.request));
     }
   };
 }

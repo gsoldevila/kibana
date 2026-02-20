@@ -17,6 +17,13 @@ import { DEFAULT_SPACE_ID, getSpaceIdFromPath } from '@kbn/spaces-utils';
  * URL pathname. Requests without a `url` property (e.g. `FakeRequest`) fall
  * back to the default space.
  *
+ * **Assumption**: this function assumes that the server base path is `/` (the
+ * default). If Kibana is configured with a custom `server.basePath`, the base
+ * path prefix will not be stripped before matching the space segment, causing
+ * the function to always fall back to the default space. CPS is a
+ * Serverless-only feature and Serverless deployments always run at the root
+ * path, so this is not a practical concern today.
+ *
  * @param spaceIdOrRequest - The space ID string, or a {@link ScopeableRequest}
  * @returns The NPRE
  */
