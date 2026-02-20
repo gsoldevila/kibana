@@ -9,7 +9,7 @@
 
 import type { ListrTask } from 'listr2';
 import { getKibanaMigratorTestKit } from '@kbn/migrator-test-kit';
-import type { Task, TaskContext } from '../types';
+import { encryptionOverrides, type Task, type TaskContext } from '../types';
 import { getPreviousVersionType } from '../../migrations';
 import { checkDocuments } from './check_documents';
 
@@ -21,7 +21,11 @@ export const testRollback: Task = async (ctx, task) => {
   );
 
   const { runMigrations: performRollback, savedObjectsRepository } = await getKibanaMigratorTestKit(
-    { types: previousVersionTypes, encryptedSavedObjects: ctx.encryptedSavedObjects }
+    {
+      types: previousVersionTypes,
+      encryptedSavedObjects: ctx.encryptedSavedObjects,
+      encryptionOverrides,
+    }
   );
 
   const subtasks: ListrTask<TaskContext>[] = [

@@ -12,7 +12,10 @@ import type { SavedObjectsType } from '@kbn/core-saved-objects-server';
 import type { SavedObjectsTypeMappingDefinitions } from '@kbn/core-saved-objects-base-server-internal';
 import type { TestElasticsearchUtils } from '@kbn/core-test-helpers-kbn-server';
 import type { Root } from '@kbn/core-root-server-internal';
-import type { EncryptedSavedObjectsPluginStart } from '@kbn/encrypted-saved-objects-plugin/server';
+import type {
+  EncryptedSavedObjectsPluginStart,
+  EncryptedSavedObjectTypeRegistration,
+} from '@kbn/encrypted-saved-objects-plugin/server';
 import type { MigrationSnapshot } from '../types';
 import type { TypeVersionFixtures } from '../migrations/fixtures/types';
 
@@ -39,3 +42,17 @@ export interface TaskContext {
   test: boolean; // whether the script is running with TEST data
   fix: boolean;
 }
+
+export const encryptionOverrides: EncryptedSavedObjectTypeRegistration[] = [
+  {
+    type: 'connector_token',
+    attributesToEncrypt: new Set(['token']),
+    attributesToIncludeInAAD: new Set([
+      'connectorId',
+      'tokenType',
+      'expiresAt',
+      'createdAt',
+      'updatedAt',
+    ]),
+  },
+];

@@ -10,7 +10,7 @@
 import type { ListrTask } from 'listr2';
 import { defaultKibanaIndex, getKibanaMigratorTestKit } from '@kbn/migrator-test-kit';
 import type { SavedObjectsBulkCreateObject } from '@kbn/core-saved-objects-api-server';
-import type { Task, TaskContext } from '../types';
+import { encryptionOverrides, type Task, type TaskContext } from '../types';
 import { getPreviousVersionType } from '../../migrations';
 import { checkDocuments } from './check_documents';
 import type { FixtureTemplate } from '../../migrations/fixtures';
@@ -29,19 +29,7 @@ export const createBaseline: Task = async (ctx, task) => {
   } = await getKibanaMigratorTestKit({
     types: previousVersionTypes,
     encryptedSavedObjects: ctx.encryptedSavedObjects,
-    encryptionOverrides: [
-      {
-        type: 'connector_token',
-        attributesToEncrypt: new Set(['token']),
-        attributesToIncludeInAAD: new Set([
-          'connectorId',
-          'tokenType',
-          'expiresAt',
-          'createdAt',
-          'updatedAt',
-        ]),
-      },
-    ],
+    encryptionOverrides,
   });
   const subtasks: ListrTask<TaskContext>[] = [
     {
