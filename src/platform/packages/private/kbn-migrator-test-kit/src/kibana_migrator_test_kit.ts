@@ -202,8 +202,6 @@ export const getKibanaMigratorTestKit = async ({
     ? encryptedSavedObjects?.__testCreateDangerousExtension(typeRegistry, encryptionOverrides)
     : undefined;
 
-  // console.log('****** encryptionExtension:', JSON.stringify(encryptionExtension, null, 2));
-
   const savedObjectsRepository = SavedObjectsRepository.createRepository(
     migrator,
     typeRegistry,
