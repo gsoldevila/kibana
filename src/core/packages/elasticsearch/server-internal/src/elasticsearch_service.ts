@@ -17,7 +17,7 @@ import type {
   InternalExecutionContextSetup,
   IExecutionContext,
 } from '@kbn/core-execution-context-server-internal';
-import type { IAuthHeadersStorage, KibanaRequest } from '@kbn/core-http-server';
+import type { IAuthHeadersStorage } from '@kbn/core-http-server';
 import type { InternalHttpServiceSetup } from '@kbn/core-http-server-internal';
 import type {
   UnauthorizedErrorHandler,
@@ -29,7 +29,6 @@ import {
   AgentManager,
   type OnRequestHandlerFactory,
 } from '@kbn/core-elasticsearch-client-server-internal';
-import { getSpaceNPRE, PROJECT_ROUTING_ORIGIN, PROJECT_ROUTING_ALL } from '@kbn/cps-server-utils';
 
 import type { InternalSecurityServiceSetup } from '@kbn/core-security-server-internal';
 import { registerAnalyticsContextProvider } from './register_analytics_context_provider';
@@ -48,7 +47,7 @@ import { isInlineScriptingEnabled } from './is_scripting_enabled';
 import { mergeConfig } from './merge_config';
 import { type ClusterInfo, getClusterInfo$ } from './get_cluster_info';
 import { getElasticsearchCapabilities } from './get_capabilities';
-import { CpsRequestHandler } from './cps_request_handler';
+import { getRequestHandlerFactory } from './cps_request_handler_factory';
 
 export interface SetupDeps {
   analytics: AnalyticsServiceSetup;
@@ -64,7 +63,6 @@ export class ElasticsearchService
   private readonly log: Logger;
   private readonly config$: Observable<ElasticsearchConfig>;
   private readonly isServerless: boolean;
-  private cpsRequestHandler!: CpsRequestHandler;
   private onRequestHandlerFactory!: OnRequestHandlerFactory;
   private stop$ = new Subject<void>();
   private kibanaVersion: string;
@@ -115,22 +113,7 @@ export class ElasticsearchService
           ).catch(() => ({ cpsEnabled: false }))
         ).cpsEnabled ?? false
       : false;
-    this.cpsRequestHandler = new CpsRequestHandler(cpsEnabled);
-    this.onRequestHandlerFactory = (request, opts) => {
-      if (!request) {
-        return this.cpsRequestHandler.createHandler(PROJECT_ROUTING_ORIGIN);
-      }
-      switch (opts.searchRouting) {
-        case 'origin-only':
-          return this.cpsRequestHandler.createHandler(PROJECT_ROUTING_ORIGIN);
-        case 'all':
-          return this.cpsRequestHandler.createHandler(PROJECT_ROUTING_ALL);
-        case 'space-default': {
-          const npre = 'url' in request ? getSpaceNPRE(request as KibanaRequest) : getSpaceNPRE('');
-          return this.cpsRequestHandler.createHandler(npre);
-        }
-      }
-    };
+    this.onRequestHandlerFactory = getRequestHandlerFactory(cpsEnabled);
 
     const agentManager = this.getAgentManager(config);
 

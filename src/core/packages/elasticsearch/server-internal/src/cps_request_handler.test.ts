@@ -9,62 +9,58 @@
 
 import type { TransportRequestParams } from '@elastic/elasticsearch';
 import { PROJECT_ROUTING_ORIGIN, PROJECT_ROUTING_ALL } from '@kbn/cps-server-utils';
-import { CpsRequestHandler } from './cps_request_handler';
+import { getCpsRequestHandler } from './cps_request_handler';
 
-describe('CpsRequestHandler', () => {
+describe('getCpsRequestHandler', () => {
   describe('when CPS is enabled', () => {
-    const handler = new CpsRequestHandler(true);
+    it('uses the provided projectRouting value when injecting', () => {
+      const onRequest = getCpsRequestHandler(true, PROJECT_ROUTING_ORIGIN);
+      const params: TransportRequestParams = {
+        method: 'GET',
+        path: '/_search',
+        meta: { name: 'search', acceptedParams: ['project_routing'] },
+        body: { query: { match_all: {} } },
+      };
 
-    describe('createHandler', () => {
-      it('uses the provided projectRouting value when injecting', () => {
-        const onRequest = handler.createHandler(PROJECT_ROUTING_ORIGIN);
-        const params: TransportRequestParams = {
-          method: 'GET',
-          path: '/_search',
-          meta: { name: 'search', acceptedParams: ['project_routing'] },
-          body: { query: { match_all: {} } },
-        };
+      onRequest({ scoped: true }, params, {});
 
-        onRequest({ scoped: true }, params, {});
-
-        expect(params.body).toEqual({
-          query: { match_all: {} },
-          project_routing: PROJECT_ROUTING_ORIGIN,
-        });
-      });
-
-      it('uses a custom projectRouting value (e.g. space-based NPRE)', () => {
-        const spaceNpre = 'kibana_space_my-space_default';
-        const onRequest = handler.createHandler(spaceNpre);
-        const params: TransportRequestParams = {
-          method: 'GET',
-          path: '/_search',
-          meta: { name: 'search', acceptedParams: ['project_routing'] },
-          body: {},
-        };
-
-        onRequest({ scoped: true }, params, {});
-
-        expect((params.body as Record<string, unknown>)?.project_routing).toBe(spaceNpre);
-      });
-
-      it('uses PROJECT_ROUTING_ALL when provided', () => {
-        const onRequest = handler.createHandler(PROJECT_ROUTING_ALL);
-        const params: TransportRequestParams = {
-          method: 'GET',
-          path: '/_search',
-          meta: { name: 'search', acceptedParams: ['project_routing'] },
-          body: {},
-        };
-
-        onRequest({ scoped: true }, params, {});
-
-        expect((params.body as Record<string, unknown>)?.project_routing).toBe(PROJECT_ROUTING_ALL);
+      expect(params.body).toEqual({
+        query: { match_all: {} },
+        project_routing: PROJECT_ROUTING_ORIGIN,
       });
     });
 
+    it('uses a custom projectRouting value (e.g. space-based NPRE)', () => {
+      const spaceNpre = 'kibana_space_my-space_default';
+      const onRequest = getCpsRequestHandler(true, spaceNpre);
+      const params: TransportRequestParams = {
+        method: 'GET',
+        path: '/_search',
+        meta: { name: 'search', acceptedParams: ['project_routing'] },
+        body: {},
+      };
+
+      onRequest({ scoped: true }, params, {});
+
+      expect((params.body as Record<string, unknown>)?.project_routing).toBe(spaceNpre);
+    });
+
+    it('uses PROJECT_ROUTING_ALL when provided', () => {
+      const onRequest = getCpsRequestHandler(true, PROJECT_ROUTING_ALL);
+      const params: TransportRequestParams = {
+        method: 'GET',
+        path: '/_search',
+        meta: { name: 'search', acceptedParams: ['project_routing'] },
+        body: {},
+      };
+
+      onRequest({ scoped: true }, params, {});
+
+      expect((params.body as Record<string, unknown>)?.project_routing).toBe(PROJECT_ROUTING_ALL);
+    });
+
     describe('injection behavior', () => {
-      const onRequest = handler.createHandler(PROJECT_ROUTING_ORIGIN);
+      const onRequest = getCpsRequestHandler(true, PROJECT_ROUTING_ORIGIN);
 
       it('does not inject when API does not support project_routing', () => {
         const params: TransportRequestParams = {
@@ -137,7 +133,7 @@ describe('CpsRequestHandler', () => {
   });
 
   describe('when CPS is disabled', () => {
-    const onRequest = new CpsRequestHandler(false).createHandler(PROJECT_ROUTING_ORIGIN);
+    const onRequest = getCpsRequestHandler(false, PROJECT_ROUTING_ORIGIN);
 
     it('does not inject project_routing', () => {
       const params: TransportRequestParams = {
