@@ -55,7 +55,8 @@ export class SiemDashboardMigrationsService {
     assert(currentUser, 'Current user must be authenticated');
     assert(this.esClusterClient, 'ES client not available, please call setup first');
 
-    const esScopedClient = this.esClusterClient.asScoped(request);
+    // TODO REVIEW
+    const esScopedClient = this.esClusterClient.asScoped(request, { projectRouting: 'space' });
     const dataClient = this.dataService.createClient({
       spaceId,
       currentUser,
