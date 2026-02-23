@@ -37,11 +37,13 @@ export const checkIfEntityDiscoveryAPIKeyIsValid = async (
   if (!isValid) return false;
 
   // this fake kibana request is how you get an API key-scoped client...
+  // TODO REVIEW
   const esClient = server.core.elasticsearch.client.asScoped(
     getFakeKibanaRequest({
       id: apiKey.id,
       api_key: apiKey.apiKey,
-    })
+    }),
+    { projectRouting: 'origin-only' }
   ).asCurrentUser;
 
   server.logger.debug('validating API key has runtime privileges for entity discovery');

@@ -20,7 +20,8 @@ export const getClientsFromAPIKey = ({
   server: EntityManagerServerSetup;
 }): { clusterClient: IScopedClusterClient; soClient: SavedObjectsClientContract } => {
   const fakeRequest = getFakeKibanaRequest({ id: apiKey.id, api_key: apiKey.apiKey });
-  const clusterClient = server.core.elasticsearch.client.asScoped(fakeRequest);
+  // TODO REVIEW
+  const clusterClient = server.core.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
   const soClient = server.core.savedObjects.getScopedClient(fakeRequest, {
     includedHiddenTypes: [EntityDiscoveryApiKeyType.name],
   });

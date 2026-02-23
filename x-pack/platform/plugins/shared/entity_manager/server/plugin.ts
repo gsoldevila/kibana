@@ -105,7 +105,8 @@ export class EntityManagerServerPlugin
     request: KibanaRequest;
     coreStart: CoreStart;
   }) {
-    const clusterClient = coreStart.elasticsearch.client.asScoped(request);
+    // TODO REVIEW
+    const clusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
     const soClient = coreStart.savedObjects.getScopedClient(request);
     return new EntityClient({
       clusterClient,
