@@ -333,7 +333,8 @@ export class CasePlugin
 
       return this.clientFactory.create({
         request,
-        scopedClusterClient: client.asScoped(request).asCurrentUser,
+        // TODO REVIEW
+        scopedClusterClient: client.asScoped(request, { projectRouting: 'space' }).asCurrentUser,
         internalClusterClient: client.asInternalUser,
         savedObjectsService: core.savedObjects,
       });
