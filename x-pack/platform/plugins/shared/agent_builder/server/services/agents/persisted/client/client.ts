@@ -60,7 +60,8 @@ export const createClient = async ({
   toolsService: ToolsServiceStart;
   logger: Logger;
 }): Promise<AgentClient> => {
-  const scopedClient = elasticsearch.client.asScoped(request);
+  // TODO REVIEW
+  const scopedClient = elasticsearch.client.asScoped(request, { projectRouting: 'space' });
   const user = await getUserFromRequest({
     request,
     security,

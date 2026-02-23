@@ -70,7 +70,8 @@ export const createAgentHandlerContext = async <TParams = Record<string, unknown
     spaceId,
     logger,
     modelProvider,
-    esClient: elasticsearch.client.asScoped(request),
+    // TODO REVIEW
+    esClient: elasticsearch.client.asScoped(request, { projectRouting: 'space' }),
     savedObjectsClient: savedObjects.getScopedClient(request),
     runner: manager.getRunner(),
     toolRegistry,

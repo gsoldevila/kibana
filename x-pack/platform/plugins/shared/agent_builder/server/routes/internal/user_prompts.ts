@@ -47,7 +47,8 @@ export function registerInternalUserPromptsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [coreStart] = await coreSetup.getStartServices();
-      const esClient = coreStart.elasticsearch.client.asScoped(request).asInternalUser;
+      // TODO REVIEW
+      const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asInternalUser;
       const authUser = coreStart.security.authc.getCurrentUser(request);
 
       if (!authUser) {
@@ -93,7 +94,8 @@ export function registerInternalUserPromptsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [coreStart] = await coreSetup.getStartServices();
-      const esClient = coreStart.elasticsearch.client.asScoped(request).asInternalUser;
+      // TODO REVIEW
+      const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asInternalUser;
       const authUser = coreStart.security.authc.getCurrentUser(request);
 
       if (!authUser) {
@@ -136,7 +138,8 @@ export function registerInternalUserPromptsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [coreStart] = await coreSetup.getStartServices();
-      const esClient = coreStart.elasticsearch.client.asScoped(request).asInternalUser;
+      // TODO REVIEW
+      const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asInternalUser;
       const authUser = coreStart.security.authc.getCurrentUser(request);
 
       if (!authUser) {
@@ -180,7 +183,8 @@ export function registerInternalUserPromptsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [coreStart] = await coreSetup.getStartServices();
-      const esClient = coreStart.elasticsearch.client.asScoped(request).asInternalUser;
+      // TODO REVIEW
+      const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asInternalUser;
       const authUser = coreStart.security.authc.getCurrentUser(request);
 
       if (!authUser) {
@@ -221,7 +225,8 @@ export function registerInternalUserPromptsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [coreStart] = await coreSetup.getStartServices();
-      const esClient = coreStart.elasticsearch.client.asScoped(request).asInternalUser;
+      // TODO REVIEW
+      const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asInternalUser;
       const authUser = coreStart.security.authc.getCurrentUser(request);
 
       if (!authUser) {
@@ -264,7 +269,8 @@ export function registerInternalUserPromptsRoutes({
     },
     wrapHandler(async (ctx, request, response) => {
       const [coreStart] = await coreSetup.getStartServices();
-      const esClient = coreStart.elasticsearch.client.asScoped(request).asInternalUser;
+      // TODO REVIEW
+      const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asInternalUser;
       const authUser = coreStart.security.authc.getCurrentUser(request);
 
       if (!authUser) {

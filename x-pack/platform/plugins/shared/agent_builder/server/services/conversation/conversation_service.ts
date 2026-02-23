@@ -42,7 +42,8 @@ export class ConversationServiceImpl implements ConversationService {
   }
 
   async getScopedClient({ request }: { request: KibanaRequest }): Promise<ConversationClient> {
-    const scopedClient = this.elasticsearch.client.asScoped(request);
+    // TODO REVIEW
+    const scopedClient = this.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
     const user = await getUserFromRequest({
       request,
       security: this.security,

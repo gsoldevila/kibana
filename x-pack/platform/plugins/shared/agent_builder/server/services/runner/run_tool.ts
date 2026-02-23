@@ -225,7 +225,8 @@ export const createToolHandlerContext = async <TParams = Record<string, unknown>
     request,
     spaceId,
     logger,
-    esClient: elasticsearch.client.asScoped(request),
+    // TODO REVIEW
+    esClient: elasticsearch.client.asScoped(request, { projectRouting: 'space' }),
     savedObjectsClient: savedObjects.getScopedClient(request),
     modelProvider,
     runner: manager.getRunner(),
