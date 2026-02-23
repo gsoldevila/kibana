@@ -39,8 +39,8 @@ export interface AsScopedOptions {
    *   all connected projects.
    *
    * **Important**: This option only takes effect in CPS-enabled Serverless environments. In all
-   * other environments (stateful, non-CPS Serverless), any `project_routing` params are 
-   * stripped from requests to avoid Elasticsearch rejections and to preserve traditional 
+   * other environments (stateful, non-CPS Serverless), any `project_routing` params are
+   * stripped from requests to avoid Elasticsearch rejections and to preserve traditional
    * single-cluster routing behavior.
    */
   projectRouting: 'origin-only' | 'space' | 'all';
