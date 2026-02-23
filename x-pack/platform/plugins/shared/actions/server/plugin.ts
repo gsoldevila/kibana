@@ -510,7 +510,8 @@ export class ActionsPlugin
         unsecuredSavedObjectsClient,
         actionTypeRegistry: actionTypeRegistry!,
         kibanaIndices: core.savedObjects.getAllIndices(),
-        scopedClusterClient: core.elasticsearch.client.asScoped(request),
+        // TODO REVIEW
+        scopedClusterClient: core.elasticsearch.client.asScoped(request, { projectRouting: 'space' }),
         inMemoryConnectors: this.inMemoryConnectors,
         request,
         spaceId,
@@ -748,7 +749,8 @@ export class ActionsPlugin
     return (request) => {
       return {
         savedObjectsClient: getScopedClient(request),
-        scopedClusterClient: elasticsearch.client.asScoped(request).asCurrentUser,
+        // TODO REVIEW
+        scopedClusterClient: elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser,
         connectorTokenClient: new ConnectorTokenClient({
           unsecuredSavedObjectsClient: unsecuredSavedObjectsClient(request),
           encryptedSavedObjectsClient,

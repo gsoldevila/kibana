@@ -167,7 +167,8 @@ export class RuleRegistryPlugin
         return plugins.alerting.getAlertingAuthorizationWithRequest(request);
       },
       async getEsClientScoped(request: KibanaRequest) {
-        return core.elasticsearch.client.asScoped(request).asCurrentUser;
+        // TODO REVIEW
+        return core.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser;
       },
       securityPluginSetup: security,
       ruleDataService,

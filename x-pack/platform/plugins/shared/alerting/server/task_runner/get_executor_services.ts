@@ -65,7 +65,8 @@ export const getExecutorServices = (opts: GetExecutorServicesOpts): ExecutorServ
     requestTimeout: getEsRequestTimeout(logger, ruleTaskTimeout),
   };
 
-  const scopedClusterClient = context.elasticsearch.client.asScoped(fakeRequest);
+  // TODO REVIEW
+  const scopedClusterClient = context.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
   const wrappedScopedClusterClient = createWrappedScopedClusterClientFactory({
     ...wrappedClientOptions,
     scopedClusterClient,

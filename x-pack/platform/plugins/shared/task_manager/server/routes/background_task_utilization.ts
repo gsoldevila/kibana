@@ -144,7 +144,8 @@ export function backgroundTaskUtilizationRoute(
         if (usageCounter && routeOption.isAuthenticated) {
           const clusterClient = await getClusterClient();
           const hasPrivilegesResponse = await clusterClient
-            .asScoped(req)
+            // TODO REVIEW
+            .asScoped(req, { projectRouting: 'space' })
             .asCurrentUser.security.hasPrivileges({
               application: [
                 {

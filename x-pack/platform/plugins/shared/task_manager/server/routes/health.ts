@@ -167,7 +167,8 @@ export function healthRoute(params: HealthRouteParams): {
       if (usageCounter) {
         const clusterClient = await getClusterClient();
         const hasPrivilegesResponse = await clusterClient
-          .asScoped(req)
+          // TODO REVIEW
+          .asScoped(req, { projectRouting: 'space' })
           .asCurrentUser.security.hasPrivileges({
             application: [
               {

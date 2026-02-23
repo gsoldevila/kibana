@@ -81,7 +81,8 @@ export class CsvSearchSourceExportType extends ExportType<
     const dataPluginStart = this.startDeps.data;
     const fieldFormatsRegistry = await getFieldFormats().fieldFormatServiceFactory(uiSettings);
 
-    const es = this.startDeps.esClient.asScoped(request);
+    // TODO REVIEW
+    const es = this.startDeps.esClient.asScoped(request, { projectRouting: 'space' });
     const searchSourceStart = await dataPluginStart.search.searchSource.asScoped(request);
 
     const clients = {

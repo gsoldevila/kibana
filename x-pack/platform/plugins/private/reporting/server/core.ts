@@ -440,7 +440,8 @@ export class ReportingCore {
     const { savedObjects } = await this.getPluginStartDeps();
     const savedObjectsClient = savedObjects.getScopedClient(request);
     const { indexPatterns } = await this.getDataService();
-    const { asCurrentUser: esClient } = (await this.getEsClient()).asScoped(request);
+    // TODO REVIEW
+    const { asCurrentUser: esClient } = (await this.getEsClient()).asScoped(request, { projectRouting: 'space' });
     const dataViews = await indexPatterns.dataViewsServiceFactory(savedObjectsClient, esClient);
 
     return dataViews;

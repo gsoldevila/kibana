@@ -133,7 +133,8 @@ export class CsvV2ExportType extends ExportType<
       const columns = params.columns as string[] | undefined;
       const timeFieldName = await locatorClient.timeFieldNameFromLocator(params);
       const filters = await locatorClient.filtersFromLocator(params);
-      const es = this.startDeps.esClient.asScoped(request);
+      // TODO REVIEW
+      const es = this.startDeps.esClient.asScoped(request, { projectRouting: 'space' });
 
       const clients = { uiSettings, data, es };
 
@@ -159,7 +160,8 @@ export class CsvV2ExportType extends ExportType<
     const columns = await locatorClient.columnsFromLocator(params);
     const searchSource = await locatorClient.searchSourceFromLocator(params);
 
-    const es = this.startDeps.esClient.asScoped(request);
+    // TODO REVIEW
+    const es = this.startDeps.esClient.asScoped(request, { projectRouting: 'space' });
     const searchSourceStart = await dataPluginStart.search.searchSource.asScoped(request);
 
     const clients = { uiSettings, data, es };
