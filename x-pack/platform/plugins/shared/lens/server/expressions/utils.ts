@@ -54,7 +54,8 @@ export const getDatatableUtilitiesFactory =
     }
 
     const [{ elasticsearch, savedObjects }, { data }] = await core.getStartServices();
-    const elasticsearchClient = elasticsearch.client.asScoped(kibanaRequest).asCurrentUser;
+    // TODO REVIEW
+    const elasticsearchClient = elasticsearch.client.asScoped(kibanaRequest, { projectRouting: 'space' }).asCurrentUser;
     const savedObjectsClient = savedObjects.getScopedClient(kibanaRequest);
     const { datatableUtilities } = data;
 
