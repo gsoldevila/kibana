@@ -290,7 +290,8 @@ export class SearchService {
       asScoped: this.asScoped,
       searchSource: {
         asScoped: async (request: KibanaRequest) => {
-          const esClient = elasticsearch.client.asScoped(request);
+          // TODO REVIEW
+          const esClient = elasticsearch.client.asScoped(request, { projectRouting: 'space' });
           const savedObjectsClient = savedObjects.getScopedClient(request);
           const scopedIndexPatterns = await indexPatterns.dataViewsServiceFactory(
             savedObjectsClient,
@@ -539,7 +540,8 @@ export class SearchService {
       const deps = {
         searchSessionsClient,
         savedObjectsClient,
-        esClient: elasticsearch.client.asScoped(request),
+        // TODO REVIEW
+        esClient: elasticsearch.client.asScoped(request, { projectRouting: 'space' }),
         uiSettingsClient: new CachedUiSettingsClient(
           uiSettings.asScopedToClient(savedObjectsClient)
         ),

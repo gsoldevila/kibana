@@ -463,7 +463,8 @@ export class SearchSessionService implements ISearchSessionService {
         includedHiddenTypes: [SEARCH_SESSION_TYPE],
       });
 
-      const asCurrentUserElasticsearchClient = elasticsearch.client.asScoped(request).asCurrentUser;
+      // TODO REVIEW
+      const asCurrentUserElasticsearchClient = elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser;
 
       const deps = {
         savedObjectsClient,

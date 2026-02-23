@@ -40,7 +40,8 @@ export function getEql({
       const savedObjectsClient = core.savedObjects.getScopedClient(request);
       const dataViews = await indexPatterns.dataViewsServiceFactory(
         savedObjectsClient,
-        core.elasticsearch.client.asScoped(request).asCurrentUser,
+        // TODO REVIEW
+        core.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser,
         request
       );
       return {

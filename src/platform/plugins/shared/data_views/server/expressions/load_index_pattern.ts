@@ -86,7 +86,8 @@ export function getIndexPatternLoad({
       return {
         indexPatterns: await dataViewsServiceFactory(
           savedObjects.getScopedClient(request),
-          elasticsearch.client.asScoped(request).asCurrentUser,
+          // TODO REVIEW
+          elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser,
           request
         ),
       };

@@ -106,7 +106,8 @@ export function getEsaggs({
     getStartDependencies: async (request: KibanaRequest) => {
       const [{ elasticsearch, savedObjects }, , self] = await getStartServices();
       const { indexPatterns, search } = self;
-      const esClient = elasticsearch.client.asScoped(request);
+      // TODO REVIEW
+      const esClient = elasticsearch.client.asScoped(request, { projectRouting: 'space' });
       const savedObjectsClient = savedObjects.getScopedClient(request);
 
       return {

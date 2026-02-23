@@ -75,7 +75,8 @@ export class DataSearchTestPlugin
       async (context, req, res) => {
         const [{ savedObjects, elasticsearch }, { data }] = await core.getStartServices();
         const service = await data.search.searchSource.asScoped(req);
-        const clusterClient = elasticsearch.client.asScoped(req).asCurrentUser;
+        // TODO REVIEW
+        const clusterClient = elasticsearch.client.asScoped(req, { projectRouting: 'space' }).asCurrentUser;
         const savedObjectsClient = savedObjects.getScopedClient(req);
 
         // Since the index pattern ID can change on each test run, we need
