@@ -112,7 +112,8 @@ const getClient = async (deps: ApiKeyManagerDependencies) => {
   if (!apiKey) {
     // In serverless environments, API key creation may fail, so we use the existing request context
     if (deps.request) {
-      const clusterClient = deps.core.elasticsearch.client.asScoped(deps.request);
+      // TODO REVIEW
+      const clusterClient = deps.core.elasticsearch.client.asScoped(deps.request, { projectRouting: 'space' });
       const soClient = deps.core.savedObjects.getScopedClient(deps.request, {
         includedHiddenTypes: [monitoringEntitySourceType.name],
       });
@@ -129,7 +130,8 @@ const getClient = async (deps: ApiKeyManagerDependencies) => {
     api_key: apiKey.apiKey,
   });
 
-  const clusterClient = deps.core.elasticsearch.client.asScoped(fakeRequest);
+  // TODO REVIEW
+  const clusterClient = deps.core.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
 
   const soClient = deps.core.savedObjects.getScopedClient(fakeRequest, {
     includedHiddenTypes: [monitoringEntitySourceType.name],
