@@ -96,7 +96,8 @@ export class InferencePlugin
           regexWorker: this.regexWorker!,
           actions: pluginsStart.actions,
           logger: this.logger.get('client'),
-          esClient: core.elasticsearch.client.asScoped(options.request).asCurrentUser,
+          // TODO REVIEW
+          esClient: core.elasticsearch.client.asScoped(options.request, { projectRouting: 'space' }).asCurrentUser,
         }) as T extends InferenceBoundClientCreateOptions ? BoundInferenceClient : InferenceClient;
       },
 
@@ -109,7 +110,8 @@ export class InferencePlugin
           actions: pluginsStart.actions,
           anonymizationRulesPromise: createAnonymizationRulesPromise(options.request),
           regexWorker: this.regexWorker!,
-          esClient: core.elasticsearch.client.asScoped(options.request).asCurrentUser,
+          // TODO REVIEW
+          esClient: core.elasticsearch.client.asScoped(options.request, { projectRouting: 'space' }).asCurrentUser,
           logger: this.logger,
         });
       },
