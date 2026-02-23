@@ -102,7 +102,8 @@ export const getApiKeyManager = ({
       id: apiKey.id,
       api_key: apiKey.apiKey,
     });
-    const clusterClient = core.elasticsearch.client.asScoped(fakeRequest);
+    // TODO REVIEW
+    const clusterClient = core.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
     const soClient = core.savedObjects.getScopedClient(fakeRequest, {
       includedHiddenTypes: [EntityDiscoveryApiKeyType.name],
     });

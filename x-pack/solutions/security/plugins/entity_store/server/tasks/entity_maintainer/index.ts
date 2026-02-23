@@ -113,7 +113,8 @@ export function registerEntityMaintainerTask({
                 setup,
                 run,
                 abortController,
-                esClient: start.elasticsearch.client.asScoped(fakeRequest).asCurrentUser,
+                // TODO REVIEW
+                esClient: start.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' }).asCurrentUser,
               });
             },
           }),

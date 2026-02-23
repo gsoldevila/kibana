@@ -28,7 +28,8 @@ export async function createLogsExtractionClient({
 }): Promise<LogsExtractionClientFactoryResult> {
   const [coreStart, pluginsStart] = await core.getStartServices();
 
-  const clusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest);
+  // TODO REVIEW
+  const clusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
   const soClient = coreStart.savedObjects.getScopedClient(fakeRequest);
   const internalUserClient = coreStart.elasticsearch.client.asInternalUser;
 
