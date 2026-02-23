@@ -68,7 +68,7 @@ describe('ES Client - custom user-agent', () => {
       logger,
       kibanaVersion,
       agentFactoryProvider,
-      onRequest: getRequestHandlerFactory(false)({ searchRouting: 'origin-only' }),
+      onRequest: getRequestHandlerFactory(false)({ projectRouting: 'origin-only' }),
     });
 
     let userAgentHeader: string | undefined;
