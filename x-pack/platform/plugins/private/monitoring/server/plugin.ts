@@ -382,7 +382,8 @@ export class MonitoringPlugin
                     callWithRequest: async (_req: any, endpoint: EndpointTypes, params: any) => {
                       const client =
                         name === 'monitoring'
-                          ? cluster.asScoped(req).asCurrentUser
+                          // TODO REVIEW
+                          ? cluster.asScoped(req, { projectRouting: 'space' }).asCurrentUser
                           : coreContext.elasticsearch.client.asCurrentUser;
                       return await Globals.app.getLegacyClusterShim(client, endpoint, params);
                     },
