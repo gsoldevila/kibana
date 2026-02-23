@@ -184,7 +184,8 @@ export class SLOPlugin
           const soClient = coreStart.savedObjects.getScopedClient(request, {
             includedHiddenTypes: [SO_SLO_TEMPLATE_TYPE],
           });
-          const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request);
+          // TODO REVIEW
+          const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
 
           const [dataViewsService, rulesClient, { id: spaceId }, racClient] = await Promise.all([
             pluginsStart.dataViews.dataViewsServiceFactory(
@@ -300,7 +301,8 @@ export class SLOPlugin
           request,
           soClient: core.savedObjects.getScopedClient(request),
           esClient: internalEsClient,
-          scopedClusterClient: core.elasticsearch.client.asScoped(request),
+          // TODO REVIEW
+          scopedClusterClient: core.elasticsearch.client.asScoped(request, { projectRouting: 'space' }),
           spaceId,
           logger: this.logger,
         });

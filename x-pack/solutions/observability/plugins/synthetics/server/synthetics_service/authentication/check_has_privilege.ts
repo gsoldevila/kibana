@@ -16,8 +16,9 @@ export const checkHasPrivileges = (
   apiKey: { id: string; apiKey: string }
 ) => {
   const { indices: index, cluster } = getServiceApiKeyPrivileges(server.isElasticsearchServerless);
+  // TODO REVIEW
   return server.coreStart.elasticsearch.client
-    .asScoped(getFakeKibanaRequest({ id: apiKey.id, api_key: apiKey.apiKey }))
+    .asScoped(getFakeKibanaRequest({ id: apiKey.id, api_key: apiKey.apiKey }), { projectRouting: 'origin-only' })
     .asCurrentUser.security.hasPrivileges({
       index,
       cluster,

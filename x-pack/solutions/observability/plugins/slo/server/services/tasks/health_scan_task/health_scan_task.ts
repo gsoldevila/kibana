@@ -85,7 +85,8 @@ export class HealthScanTask {
               }
 
               const [coreStart] = await core.getStartServices();
-              const scopedClusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest);
+              // TODO REVIEW
+              const scopedClusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
               const soClient = new SavedObjectsClient(
                 coreStart.savedObjects.createInternalRepository()
               );

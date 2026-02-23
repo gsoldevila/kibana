@@ -59,7 +59,8 @@ export class BulkDeleteTask {
 
               const [coreStart, pluginStart] = await core.getStartServices();
 
-              const scopedClusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest);
+              // TODO REVIEW
+              const scopedClusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
               const scopedSoClient = coreStart.savedObjects.getScopedClient(fakeRequest);
               const rulesClient = await pluginStart.alerting.getRulesClientWithRequest(fakeRequest);
 

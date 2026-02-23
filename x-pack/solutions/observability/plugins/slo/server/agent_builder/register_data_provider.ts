@@ -45,7 +45,8 @@ export function registerDataProviders({
         request,
         soClient: coreStart.savedObjects.getScopedClient(request),
         esClient: coreStart.elasticsearch.client.asInternalUser,
-        scopedClusterClient: coreStart.elasticsearch.client.asScoped(request),
+        // TODO REVIEW
+        scopedClusterClient: coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }),
         spaceId,
         logger,
       });
