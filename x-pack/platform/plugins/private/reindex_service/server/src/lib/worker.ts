@@ -229,7 +229,8 @@ export class ReindexWorker {
 
   private getCredentialScopedReindexService = (credential: Credential) => {
     const fakeRequest: FakeRequest = { headers: credential };
-    const scopedClusterClient = this.clusterClient.asScoped(fakeRequest);
+    // TODO REVIEW
+    const scopedClusterClient = this.clusterClient.asScoped(fakeRequest, { projectRouting: 'origin-only' });
     const callAsCurrentUser = scopedClusterClient.asCurrentUser;
     const actions = reindexActionsFactory(
       this.client,
