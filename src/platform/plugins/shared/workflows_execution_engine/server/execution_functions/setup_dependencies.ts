@@ -109,7 +109,8 @@ export async function setupDependencies(
   });
 
   const esClient: ElasticsearchClient =
-    coreStart.elasticsearch.client.asScoped(fakeRequest).asCurrentUser;
+    // TODO REVIEW
+    coreStart.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' }).asCurrentUser;
 
   const workflowTaskManager = new WorkflowTaskManager(taskManager);
 

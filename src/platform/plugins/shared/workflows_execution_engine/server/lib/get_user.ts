@@ -37,7 +37,8 @@ export async function getAuthenticatedUser(
   // This is a workaround here: https://elastic.slack.com/archives/C6R17GU7R/p1712694768074839
   if (request.headers.authorization) {
     try {
-      const scopedClient = clusterClient.asScoped(request);
+      // TODO REVIEW
+      const scopedClient = clusterClient.asScoped(request, { projectRouting: 'origin-only' });
       const authResponse = await scopedClient.asCurrentUser.security.authenticate();
       if (authResponse.username) {
         return authResponse.username;
