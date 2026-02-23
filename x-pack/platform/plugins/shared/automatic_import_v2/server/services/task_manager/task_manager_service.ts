@@ -195,7 +195,8 @@ export class TaskManagerService {
       // Get core services and plugins
       const [coreStart, pluginsStart] = await core.getStartServices();
 
-      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request);
+      // TODO REVIEW
+      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
       const esClient = scopedClusterClient.asCurrentUser;
 
       const model = await pluginsStart.inference.getChatModel({
