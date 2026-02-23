@@ -288,7 +288,8 @@ export class UserProfileService {
     request: UserProfileGetCurrentParams['request']
   ): Promise<string | undefined> {
     try {
-      const response = await clusterClient.asScoped(request).asCurrentUser.security.getApiKey({
+      // TODO REVIEW
+      const response = await clusterClient.asScoped(request, { projectRouting: 'space' }).asCurrentUser.security.getApiKey({
         with_profile_uid: true,
       });
 

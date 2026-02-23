@@ -122,13 +122,15 @@ export function initRoutes(
 
       let scopedClient;
       if (request.body.client === 'start-contract') {
-        scopedClient = (await core.getStartServices())[0].elasticsearch.client.asScoped(request);
+        // TODO REVIEW
+        scopedClient = (await core.getStartServices())[0].elasticsearch.client.asScoped(request, { projectRouting: 'space' });
       } else if (request.body.client === 'request-context') {
         scopedClient = (await context.core).elasticsearch.client;
       } else {
         scopedClient = (await core.getStartServices())[0].elasticsearch
           .createClient('custom')
-          .asScoped(request);
+          // TODO REVIEW
+          .asScoped(request, { projectRouting: 'space' });
       }
 
       await scopedClient.asCurrentUser.security.authenticate();

@@ -271,9 +271,11 @@ export const plugin: PluginInitializer<void, void, PluginSetupDependencies> = as
             const [{ elasticsearch }] = await core.getStartServices();
 
             // Get scoped client with UIAM headers
-            const scopedClient = elasticsearch.client.asScoped({
-              headers: { authorization: `ApiKey ${request.body.apiKey}` },
-            });
+            // TODO REVIEW
+            const scopedClient = elasticsearch.client.asScoped(
+              { headers: { authorization: `ApiKey ${request.body.apiKey}` } },
+              { projectRouting: 'origin-only' }
+            );
 
             if (!scopedClient) {
               return response.badRequest({

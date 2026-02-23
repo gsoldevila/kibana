@@ -106,7 +106,8 @@ export function checkPrivilegesFactory(
         { requireLoginAction }
       );
 
-      const clusterClient = (await getClusterClient()).asScoped(request);
+      // TODO REVIEW
+      const clusterClient = (await getClusterClient()).asScoped(request, { projectRouting: 'space' });
       const hasPrivilegesResponse = await clusterClient.asCurrentUser.security.hasPrivileges({
         cluster: privileges.elasticsearch?.cluster as estypes.SecurityClusterPrivilege[],
         index: Object.entries(privileges.elasticsearch?.index ?? {}).map(

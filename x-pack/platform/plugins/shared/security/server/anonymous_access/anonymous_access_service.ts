@@ -138,8 +138,9 @@ export class AnonymousAccessService {
    */
   private async canAuthenticateAnonymousServiceAccount(clusterClient: IClusterClient) {
     try {
+      // TODO REVIEW
       await clusterClient
-        .asScoped(this.createFakeAnonymousRequest({ authenticateRequest: true }))
+        .asScoped(this.createFakeAnonymousRequest({ authenticateRequest: true }), { projectRouting: 'origin-only' })
         .asCurrentUser.security.authenticate();
     } catch (err) {
       this.logger.warn(

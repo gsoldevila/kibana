@@ -160,7 +160,8 @@ export class APIKeys implements NativeAPIKeysType {
       return null;
     }
     const { type, expiration, name, metadata } = createParams;
-    const scopedClusterClient = this.clusterClient.asScoped(request);
+    // TODO REVIEW
+    const scopedClusterClient = this.clusterClient.asScoped(request, { projectRouting: 'space' });
 
     this.logger.debug('Trying to create an API key');
 
@@ -215,7 +216,8 @@ export class APIKeys implements NativeAPIKeysType {
     }
 
     const { type, id, metadata } = updateParams;
-    const scopedClusterClient = this.clusterClient.asScoped(request);
+    // TODO REVIEW
+    const scopedClusterClient = this.clusterClient.asScoped(request, { projectRouting: 'space' });
 
     this.logger.debug('Trying to edit an API key');
 
@@ -338,7 +340,8 @@ export class APIKeys implements NativeAPIKeysType {
     let result: InvalidateAPIKeyResult;
     try {
       // User needs `manage_api_key` privilege to use this API
-      result = await this.clusterClient.asScoped(request).asCurrentUser.security.invalidateApiKey({
+      // TODO REVIEW
+      result = await this.clusterClient.asScoped(request, { projectRouting: 'space' }).asCurrentUser.security.invalidateApiKey({
         ids: params.ids,
       });
       this.logger.debug(
@@ -398,7 +401,8 @@ export class APIKeys implements NativeAPIKeysType {
 
     this.logger.debug(`Trying to validate an API key`);
     try {
-      await this.clusterClient.asScoped(fakeRequest).asCurrentUser.security.authenticate();
+      // TODO REVIEW
+      await this.clusterClient.asScoped(fakeRequest, { projectRouting: 'origin-only' }).asCurrentUser.security.authenticate();
       this.logger.debug(`API key was validated successfully`);
       return true;
     } catch (e) {
