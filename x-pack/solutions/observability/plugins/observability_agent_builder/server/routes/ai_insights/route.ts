@@ -147,7 +147,8 @@ export function getObservabilityAgentBuilderAiInsightsRouteRepository(): ServerR
       const connectorId = await getDefaultConnectorId({ coreStart, inference, request });
       const inferenceClient = inference.getClient({ request });
       const connector = await inference.getConnectorById(connectorId, request);
-      const esClient = coreStart.elasticsearch.client.asScoped(request);
+      // TODO REVIEW
+      const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
 
       const result = await getLogAiInsights({
         core,

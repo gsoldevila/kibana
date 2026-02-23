@@ -37,7 +37,8 @@ export async function buildApmResources({
   const savedObjectsClient = new SavedObjectsClient(
     coreStart.savedObjects.createInternalRepository()
   );
-  const esClient = coreStart.elasticsearch.client.asScoped(request).asCurrentUser;
+  // TODO REVIEW
+  const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser;
   const indices = await plugins.apmDataAccess.getApmIndices(savedObjectsClient);
 
   const apmEventClient = new APMEventClient({

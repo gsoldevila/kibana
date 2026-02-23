@@ -115,7 +115,8 @@ async function fetchAlertContext({
   const alertStart = moment(alertDoc?.['kibana.alert.start']).toISOString();
 
   const [coreStart] = await core.getStartServices();
-  const esClient = coreStart.elasticsearch.client.asScoped(request);
+  // TODO REVIEW
+  const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
 
   const results = await runSignalFetchers(
     {

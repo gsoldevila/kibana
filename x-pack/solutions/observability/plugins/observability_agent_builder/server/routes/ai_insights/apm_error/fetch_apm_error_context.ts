@@ -54,7 +54,8 @@ export async function fetchApmErrorContext({
   const parsedEnd = parseDatemath(end, { roundUp: true });
 
   const [coreStart] = await core.getStartServices();
-  const esClient = coreStart.elasticsearch.client.asScoped(request);
+  // TODO REVIEW
+  const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
 
   const errorDetails = await dataRegistry.getData('apmErrorDetails', {
     request,

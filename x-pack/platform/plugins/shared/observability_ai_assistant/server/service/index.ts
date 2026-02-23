@@ -101,7 +101,8 @@ export class ObservabilityAIAssistantService {
     const inferenceClient = plugins.inference.getClient({ request });
 
     const { asInternalUser } = coreStart.elasticsearch.client;
-    const { asCurrentUser } = coreStart.elasticsearch.client.asScoped(request);
+    // TODO REVIEW
+    const { asCurrentUser } = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
     const analytics = coreStart.analytics;
 
     const kbService = new KnowledgeBaseService({

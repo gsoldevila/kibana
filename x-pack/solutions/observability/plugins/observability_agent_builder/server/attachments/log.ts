@@ -58,7 +58,8 @@ export function createLogAttachmentType({
             handler: async (_args, context) => {
               try {
                 const [coreStart] = await core.getStartServices();
-                const esClient = coreStart.elasticsearch.client.asScoped(context.request);
+                // TODO REVIEW
+                const esClient = coreStart.elasticsearch.client.asScoped(context.request, { projectRouting: 'space' });
 
                 const logEntry = await getLogDocumentById({
                   esClient: esClient.asCurrentUser,

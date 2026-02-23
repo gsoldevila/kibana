@@ -98,7 +98,8 @@ export class ObservabilityAIAssistantAppPlugin
         }),
         core: Promise.resolve({
           elasticsearch: {
-            client: coreStart.elasticsearch.client.asScoped(request),
+            // TODO REVIEW
+            client: coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }),
           },
           uiSettings: {
             client: coreStart.uiSettings.asScopedToClient(savedObjectsClient),
