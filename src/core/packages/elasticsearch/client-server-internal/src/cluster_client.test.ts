@@ -304,7 +304,7 @@ describe('ClusterClient', () => {
         onRequestHandlerFactory: mockOnRequestHandlerFactory,
       });
       const request = httpServerMock.createKibanaRequest();
-      const opts = { searchRouting: 'space-default' as const };
+      const opts = { searchRouting: 'space' as const };
 
       mockOnRequestHandlerFactory.mockClear();
 
@@ -312,7 +312,7 @@ describe('ClusterClient', () => {
       client = scopedClusterClient.asCurrentUser;
 
       expect(mockOnRequestHandlerFactory).toHaveBeenCalledTimes(1);
-      // When searchRouting is 'space-default', the KibanaRequest itself becomes the searchRouting value.
+      // When searchRouting is 'space', the request itself becomes the searchRouting value.
       expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({ searchRouting: request });
       expect(createTransportMock).toHaveBeenCalledWith(
         expect.objectContaining({ onRequest: mockOnRequestHandler })

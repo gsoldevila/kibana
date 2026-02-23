@@ -25,7 +25,7 @@ export function getRequestHandlerFactory(cpsEnabled: boolean): OnRequestHandlerF
       case 'all':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ALL);
       default:
-        // searchRouting is a KibanaRequest — derive the NPRE from its URL.
+        // searchRouting is a ScopeableUrlRequest - derive the NPRE from its URL.
         return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(searchRouting));
     }
   };

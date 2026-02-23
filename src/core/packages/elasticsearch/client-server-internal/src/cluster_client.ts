@@ -9,7 +9,7 @@
 
 import type { Client } from '@elastic/elasticsearch';
 import type { Logger } from '@kbn/logging';
-import type { Headers, IAuthHeadersStorage, KibanaRequest } from '@kbn/core-http-server';
+import type { Headers, IAuthHeadersStorage } from '@kbn/core-http-server';
 import {
   ensureRawRequest,
   filterHeaders,
@@ -18,13 +18,18 @@ import {
 } from '@kbn/core-http-router-server-internal';
 import type {
   ScopeableRequest,
+  ScopeableUrlRequest,
   UnauthorizedErrorHandler,
   ICustomClusterClient,
+  IScopedClusterClient,
+  ElasticsearchClientConfig,
+  AsScopedOptions,
+  OriginOnlyRouting,
+  SpaceNPRERouting,
+  AllProjectsRouting,
 } from '@kbn/core-elasticsearch-server';
-import type { ElasticsearchClientConfig } from '@kbn/core-elasticsearch-server';
 import { HTTPAuthorizationHeader, isUiamCredential } from '@kbn/core-security-server';
 import type { InternalSecurityServiceSetup } from '@kbn/core-security-server-internal';
-import type { AsScopedOptions } from '@kbn/core-elasticsearch-server';
 import { configureClient } from './configure_client';
 import { ScopedClusterClient } from './scoped_cluster_client';
 import {
@@ -47,7 +52,7 @@ const noop = () => undefined;
  * @internal
  */
 export type OnRequestHandlerFactory = (opts: {
-  searchRouting: 'origin-only' | 'all' | KibanaRequest;
+  searchRouting: 'origin-only' | 'all' | ScopeableUrlRequest;
 }) => OnRequestHandler;
 
 /** @internal **/
@@ -116,6 +121,11 @@ export class ClusterClient implements ICustomClusterClient {
     });
   }
 
+  asScoped(request: ScopeableUrlRequest, opts: SpaceNPRERouting): IScopedClusterClient;
+  asScoped(
+    request: ScopeableRequest,
+    opts?: OriginOnlyRouting | AllProjectsRouting
+  ): IScopedClusterClient;
   asScoped(request: ScopeableRequest, opts: AsScopedOptions = { searchRouting: 'origin-only' }) {
     const createScopedClient = () => {
       const scopedHeaders = this.getScopedHeaders(request);
@@ -127,7 +137,7 @@ export class ClusterClient implements ICustomClusterClient {
         getUnauthorizedErrorHandler: this.createInternalErrorHandlerAccessor(request),
         onRequest: this.onRequestHandlerFactory(
           searchRouting === 'space'
-            ? { searchRouting: request as KibanaRequest }
+            ? { searchRouting: request as ScopeableUrlRequest }
             : { searchRouting }
         ),
       });
