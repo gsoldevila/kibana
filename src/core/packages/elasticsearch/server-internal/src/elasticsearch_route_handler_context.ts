@@ -28,7 +28,8 @@ export class CoreElasticsearchRouteHandlerContext implements ElasticsearchReques
 
   public get client() {
     if (this.#client == null) {
-      this.#client = this.elasticsearchStart.client.asScoped(this.request);
+      // TODO REVIEW
+      this.#client = this.elasticsearchStart.client.asScoped(this.request, { projectRouting: 'space' });
     }
     return this.#client;
   }

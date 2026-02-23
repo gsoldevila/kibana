@@ -358,7 +358,8 @@ export class SavedObjectsService
         req: KibanaRequest,
         includedHiddenTypes?: string[],
         extensions?: SavedObjectsExtensions
-      ) => createRepository(client.asScoped(req).asCurrentUser, includedHiddenTypes, extensions),
+      // TODO REVIEW
+      ) => createRepository(client.asScoped(req, { projectRouting: 'space' }).asCurrentUser, includedHiddenTypes, extensions),
     };
 
     const clientProvider = new SavedObjectsClientProvider({
