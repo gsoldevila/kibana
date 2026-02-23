@@ -270,7 +270,8 @@ function getRequestItemsProvider(
 
     let mlSavedObjectService;
     if (isCoreKibanaRequest(request)) {
-      scopedClient = clusterClient.asScoped(request);
+      // TODO REVIEW
+      scopedClient = clusterClient.asScoped(request, { projectRouting: 'space' });
       mlSavedObjectService = getSobSavedObjectService(scopedClient);
       const auditLogger = new MlAuditLogger(auditService, request);
       mlClient = getMlClient(scopedClient, mlSavedObjectService, auditLogger, mlLicense);
