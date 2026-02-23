@@ -33,7 +33,7 @@ export interface AsScopedOptions {
    * - `'space'`: Requests are routed to the Named Project Routing Expression (NPRE) configured for
    *   the current Kibana space. Requires a {@link ScopeableUrlRequest} to be passed to `asScoped`
    *   so that the space can be extracted from the URL pathname. Use this when the scope of the
-   *   search should match the data boundaries of the active space.
+   *   query should match the data boundaries of the active space.
    * - `'all'`: Requests are broadcast to all CPS-connected Elasticsearch instances. This is the
    *   broadest option and is appropriate when the intent is to search or aggregate data across
    *   all connected projects.
@@ -42,7 +42,7 @@ export interface AsScopedOptions {
    * other environments (stateful, non-CPS Serverless), the `project_routing` header is stripped
    * from requests, preserving traditional single-cluster routing behavior.
    */
-  searchRouting: 'origin-only' | 'space' | 'all';
+  projectRouting: 'origin-only' | 'space' | 'all';
 }
 
 /**
@@ -51,7 +51,7 @@ export interface AsScopedOptions {
  * @public
  */
 export interface OriginOnlyRouting extends AsScopedOptions {
-  searchRouting: 'origin-only';
+  projectRouting: 'origin-only';
 }
 
 /**
@@ -61,7 +61,7 @@ export interface OriginOnlyRouting extends AsScopedOptions {
  * @public
  */
 export interface SpaceNPRERouting extends AsScopedOptions {
-  searchRouting: 'space';
+  projectRouting: 'space';
 }
 
 /**
@@ -70,7 +70,7 @@ export interface SpaceNPRERouting extends AsScopedOptions {
  * @public
  */
 export interface AllProjectsRouting extends AsScopedOptions {
-  searchRouting: 'all';
+  projectRouting: 'all';
 }
 
 /**
@@ -101,7 +101,7 @@ export interface IClusterClient {
    * @param request - A {@link ScopeableUrlRequest} whose URL is used to extract the active space
    *   for space-level CPS routing. Accepts both a real {@link KibanaRequest} (the typical caller
    *   from route handlers) and a synthetic {@link UrlRequest}.
-   * @param opts - {@link SpaceNPRERouting} options with `searchRouting` set to `'space'`.
+   * @param opts - {@link SpaceNPRERouting} options with `projectRouting` set to `'space'`.
    */
   asScoped(request: ScopeableUrlRequest, opts: SpaceNPRERouting): IScopedClusterClient;
   /**

@@ -18,15 +18,15 @@ import { getCpsRequestHandler } from './cps_request_handler';
  * @internal
  */
 export function getRequestHandlerFactory(cpsEnabled: boolean): OnRequestHandlerFactory {
-  return ({ searchRouting }) => {
-    switch (searchRouting) {
+  return ({ projectRouting }) => {
+    switch (projectRouting) {
       case 'origin-only':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ORIGIN);
       case 'all':
         return getCpsRequestHandler(cpsEnabled, PROJECT_ROUTING_ALL);
       default:
-        // searchRouting is a ScopeableUrlRequest - derive the NPRE from its URL.
-        return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(searchRouting));
+        // projectRouting is a ScopeableUrlRequest - derive the NPRE from its URL.
+        return getCpsRequestHandler(cpsEnabled, getSpaceNPRE(projectRouting));
     }
   };
 }

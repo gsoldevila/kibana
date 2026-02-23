@@ -21,9 +21,9 @@ const makeSearchParams = (body?: Record<string, unknown>): TransportRequestParam
 
 describe('getRequestHandlerFactory', () => {
   describe('without request (internal user)', () => {
-    it('injects PROJECT_ROUTING_ORIGIN when searchRouting is origin-only', () => {
+    it('injects PROJECT_ROUTING_ORIGIN when projectRouting is origin-only', () => {
       const factory = getRequestHandlerFactory(true);
-      const handler = factory({ searchRouting: 'origin-only' });
+      const handler = factory({ projectRouting: 'origin-only' });
       const params = makeSearchParams();
 
       handler({ scoped: false }, params, {});
@@ -32,10 +32,10 @@ describe('getRequestHandlerFactory', () => {
     });
   });
 
-  describe("searchRouting: 'origin-only'", () => {
+  describe("projectRouting: 'origin-only'", () => {
     it('injects PROJECT_ROUTING_ORIGIN when CPS is enabled', () => {
       const factory = getRequestHandlerFactory(true);
-      const handler = factory({ searchRouting: 'origin-only' });
+      const handler = factory({ projectRouting: 'origin-only' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -45,7 +45,7 @@ describe('getRequestHandlerFactory', () => {
 
     it('strips project_routing when CPS is disabled', () => {
       const factory = getRequestHandlerFactory(false);
-      const handler = factory({ searchRouting: 'origin-only' });
+      const handler = factory({ projectRouting: 'origin-only' });
       const params = makeSearchParams({ project_routing: 'should-be-removed' });
 
       handler({ scoped: true }, params, {});
@@ -54,10 +54,10 @@ describe('getRequestHandlerFactory', () => {
     });
   });
 
-  describe("searchRouting: 'all'", () => {
+  describe("projectRouting: 'all'", () => {
     it('injects PROJECT_ROUTING_ALL when CPS is enabled', () => {
       const factory = getRequestHandlerFactory(true);
-      const handler = factory({ searchRouting: 'all' });
+      const handler = factory({ projectRouting: 'all' });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});
@@ -66,11 +66,11 @@ describe('getRequestHandlerFactory', () => {
     });
   });
 
-  describe("searchRouting: 'space-default'", () => {
+  describe("projectRouting: 'space'", () => {
     it('injects the space NPRE derived from a KibanaRequest', () => {
       const factory = getRequestHandlerFactory(true);
       const request = httpServerMock.createKibanaRequest({ path: '/s/my-space/app/discover' });
-      const handler = factory({ searchRouting: request });
+      const handler = factory({ projectRouting: request });
       const params = makeSearchParams();
 
       handler({ scoped: true }, params, {});

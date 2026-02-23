@@ -52,7 +52,7 @@ const noop = () => undefined;
  * @internal
  */
 export type OnRequestHandlerFactory = (opts: {
-  searchRouting: 'origin-only' | 'all' | ScopeableUrlRequest;
+  projectRouting: 'origin-only' | 'all' | ScopeableUrlRequest;
 }) => OnRequestHandler;
 
 /** @internal **/
@@ -100,7 +100,7 @@ export class ClusterClient implements ICustomClusterClient {
     this.getUnauthorizedErrorHandler = getUnauthorizedErrorHandler;
     this.onRequestHandlerFactory = onRequestHandlerFactory;
 
-    const internalUserOnRequest = onRequestHandlerFactory({ searchRouting: 'origin-only' });
+    const internalUserOnRequest = onRequestHandlerFactory({ projectRouting: 'origin-only' });
 
     this.asInternalUser = configureClient(config, {
       logger,
@@ -126,19 +126,19 @@ export class ClusterClient implements ICustomClusterClient {
     request: ScopeableRequest,
     opts?: OriginOnlyRouting | AllProjectsRouting
   ): IScopedClusterClient;
-  asScoped(request: ScopeableRequest, opts: AsScopedOptions = { searchRouting: 'origin-only' }) {
+  asScoped(request: ScopeableRequest, opts: AsScopedOptions = { projectRouting: 'origin-only' }) {
     const createScopedClient = () => {
       const scopedHeaders = this.getScopedHeaders(request);
-      const { searchRouting } = opts;
+      const { projectRouting } = opts;
 
       const transportClass = createTransport({
         scoped: true,
         getExecutionContext: this.getExecutionContext,
         getUnauthorizedErrorHandler: this.createInternalErrorHandlerAccessor(request),
         onRequest: this.onRequestHandlerFactory(
-          searchRouting === 'space'
-            ? { searchRouting: request as ScopeableUrlRequest }
-            : { searchRouting }
+          projectRouting === 'space'
+            ? { projectRouting: request as ScopeableUrlRequest }
+            : { projectRouting }
         ),
       });
 

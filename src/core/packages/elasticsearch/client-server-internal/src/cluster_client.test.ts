@@ -287,7 +287,7 @@ describe('ClusterClient', () => {
       // Factory called once; the same handler is shared by asInternalUser and rootScopedClient
       expect(mockOnRequestHandlerFactory).toHaveBeenCalledTimes(1);
       expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({
-        searchRouting: 'origin-only',
+        projectRouting: 'origin-only',
       });
     });
 
@@ -304,7 +304,7 @@ describe('ClusterClient', () => {
         onRequestHandlerFactory: mockOnRequestHandlerFactory,
       });
       const request = httpServerMock.createKibanaRequest();
-      const opts = { searchRouting: 'space' as const };
+      const opts = { projectRouting: 'space' as const };
 
       mockOnRequestHandlerFactory.mockClear();
 
@@ -312,8 +312,8 @@ describe('ClusterClient', () => {
       client = scopedClusterClient.asCurrentUser;
 
       expect(mockOnRequestHandlerFactory).toHaveBeenCalledTimes(1);
-      // When searchRouting is 'space', the request itself becomes the searchRouting value.
-      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({ searchRouting: request });
+      // When projectRouting is 'space', the request itself becomes the projectRouting value.
+      expect(mockOnRequestHandlerFactory).toHaveBeenCalledWith({ projectRouting: request });
       expect(createTransportMock).toHaveBeenCalledWith(
         expect.objectContaining({ onRequest: mockOnRequestHandler })
       );
