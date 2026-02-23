@@ -40,7 +40,8 @@ export async function buildApmToolResources({
   esClient?: IScopedClusterClient;
 }): Promise<ApmToolResources> {
   const [coreStart, pluginStart] = await core.getStartServices();
-  const esScoped = esClient ?? coreStart.elasticsearch.client.asScoped(request);
+  // TODO REVIEW
+  const esScoped = esClient ?? coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
   const soClient = coreStart.savedObjects.getScopedClient(request, { includedHiddenTypes: [] });
   const uiSettingsClient = coreStart.uiSettings.asScopedToClient(soClient);
 
