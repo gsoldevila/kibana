@@ -40,7 +40,7 @@ describe('getSpaceNPRE', () => {
     it('throws when the request has no url (e.g. a FakeRequest passed at runtime)', () => {
       const badRequest = { headers: {} } as unknown as { url: URL };
       expect(() => getSpaceNPRE(badRequest)).toThrow(
-        'Cannot determine space NPRE: the KibanaRequest is missing a URL.'
+        `Cannot determine space NPRE: the Request object is missing a 'url' property.`
       );
     });
   });

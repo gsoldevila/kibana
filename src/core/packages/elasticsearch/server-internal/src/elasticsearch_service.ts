@@ -63,7 +63,7 @@ export class ElasticsearchService
   private readonly log: Logger;
   private readonly config$: Observable<ElasticsearchConfig>;
   private readonly isServerless: boolean;
-  private onRequestHandlerFactory!: OnRequestHandlerFactory;
+  private onRequestHandlerFactory: OnRequestHandlerFactory;
   private stop$ = new Subject<void>();
   private kibanaVersion: string;
   private authHeaders?: IAuthHeadersStorage;
@@ -82,6 +82,8 @@ export class ElasticsearchService
     this.config$ = coreContext.configService
       .atPath<ElasticsearchConfigType>('elasticsearch')
       .pipe(map((rawConfig) => new ElasticsearchConfig(rawConfig)));
+    // cli / preboot / interactive startup => non-CPS mode (strip project_routing params)
+    this.onRequestHandlerFactory = getRequestHandlerFactory(false);
   }
 
   public async preboot(): Promise<InternalElasticsearchServicePreboot> {
