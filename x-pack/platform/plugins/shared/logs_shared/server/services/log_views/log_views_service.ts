@@ -77,7 +77,8 @@ export class LogViewsService {
       },
       getScopedClient(request: KibanaRequest) {
         const savedObjectsClient = savedObjects.getScopedClient(request);
-        const elasticsearchClient = elasticsearch.client.asScoped(request).asCurrentUser;
+        // TODO REVIEW
+        const elasticsearchClient = elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser;
         const logSourcesService =
           logsDataAccess.services.logSourcesServiceFactory.getScopedLogSourcesService(request);
         return this.getClient(savedObjectsClient, elasticsearchClient, logSourcesService, request);
