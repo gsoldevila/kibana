@@ -126,7 +126,7 @@ export class ClusterClient implements ICustomClusterClient {
         getExecutionContext: this.getExecutionContext,
         getUnauthorizedErrorHandler: this.createInternalErrorHandlerAccessor(request),
         onRequest: this.onRequestHandlerFactory(
-          searchRouting === 'space-default'
+          searchRouting === 'space'
             ? { searchRouting: request as KibanaRequest }
             : { searchRouting }
         ),

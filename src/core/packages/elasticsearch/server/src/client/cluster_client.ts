@@ -18,9 +18,31 @@ import type { IScopedClusterClient } from './scoped_cluster_client';
  */
 export interface AsScopedOptions {
   /**
-   * The behavior for automatically injecting 'project_routing' into requests.
+   * Controls how `project_routing` is automatically injected into Elasticsearch requests made
+   * through the scoped client.
+   *
+   * **Background**: Cross-Project Search (CPS) is a Serverless feature that allows Kibana to
+   * transparently orchestrate searches across multiple Elastic projects. Kibana itself does not
+   * execute the cross-project logic - it forwards requests with the appropriate `project_routing`
+   * header and Elasticsearch handles execution, security enforcement, and result aggregation.
+   *
+   * **Options**:
+   * - `'origin-only'`: Requests are routed exclusively to the "origin" Elasticsearch instance
+   *   (i.e., the project that Kibana is directly connected to). Use this for administrative or
+   *   internal operations that must not fan out across other projects.
+   * - `'space'`: Requests are routed to the Named Project Routing Expression (NPRE)
+   *   configured for the current Kibana space. This requires a {@link KibanaRequest} to be passed
+   *   to `asScoped`, so that the space context can be resolved. Use this when the scope of the
+   *   search should match the data boundaries of the active space.
+   * - `'all'`: Requests are broadcast to all CPS-connected Elasticsearch instances. This is the
+   *   broadest option and is appropriate when the intent is to search or aggregate data across
+   *   all connected projects.
+   *
+   * **Important**: This option only takes effect in CPS-enabled Serverless environments. In all
+   * other environments (stateful, non-CPS Serverless), the `project_routing` header is stripped
+   * from requests, preserving traditional single-cluster routing behavior.
    */
-  searchRouting: 'origin-only' | 'space-default' | 'all';
+  searchRouting: 'origin-only' | 'space' | 'all';
 }
 
 /**
@@ -32,11 +54,27 @@ export interface AsScopedOptions {
  **/
 export interface IClusterClient {
   /**
-   * A {@link ElasticsearchClient | client} to be used to query the ES cluster on behalf of the Kibana internal user
+   * A {@link ElasticsearchClient | client} used to query the Elasticsearch cluster on behalf of
+   * the Kibana internal user. Intended primarily for administrative and infrastructure-level
+   * operations (e.g., index management, bootstrapping, health checks) rather than user-facing
+   * data queries.
+   *
+   * In CPS-enabled Serverless environments, requests made through this client are always bound
+   * to `'origin-only'` routing - they will never fan out to other CPS-connected projects.
    */
   readonly asInternalUser: ElasticsearchClient;
   /**
-   * Creates a {@link IScopedClusterClient | scoped cluster client} bound to given {@link ScopeableRequest | request}
+   * Creates a {@link IScopedClusterClient | scoped cluster client} bound to the given request,
+   * forwarding the request's authentication headers to Elasticsearch.
+   *
+   * In CPS-enabled Serverless environments, the `opts` parameter controls how `project_routing`
+   * is injected into outgoing requests. See {@link AsScopedOptions} for details.
+   *
+   * @param request - The incoming {@link ScopeableRequest | request} whose credentials are used
+   *   to authenticate Elasticsearch calls. In CPS-enabled environments with `searchRouting: 'space'`,
+   *   the request is also used to resolve the space-level NPRE routing configuration.
+   * @param opts - Optional {@link AsScopedOptions | options} to configure CPS routing behavior.
+   *   Defaults to `'origin-only'` when not specified.
    */
   asScoped: (request: ScopeableRequest, opts?: AsScopedOptions) => IScopedClusterClient;
 }
