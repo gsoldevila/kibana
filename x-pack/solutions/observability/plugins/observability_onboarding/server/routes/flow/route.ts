@@ -150,7 +150,8 @@ const getProgressRoute = createObservabilityOnboardingServerRoute({
 
     const progress = { ...savedObservabilityOnboardingState?.progress };
 
-    const esClient = coreStart.elasticsearch.client.asScoped(request).asCurrentUser;
+    // TODO REVIEW
+    const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' }).asCurrentUser;
 
     if (progress['ea-status']?.status === 'complete') {
       const { agentId } = progress['ea-status']?.payload as ElasticAgentStepPayload;

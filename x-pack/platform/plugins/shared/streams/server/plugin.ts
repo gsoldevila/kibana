@@ -139,7 +139,8 @@ export class StreamsPlugin
         coreStart.savedObjects.getScopedClient(request)
       );
 
-      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request);
+      // TODO REVIEW
+      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
       const soClient = coreStart.savedObjects.getScopedClient(request);
       const inferenceClient = pluginsStart.inference.getClient({ request });
       const licensing = pluginsStart.licensing;

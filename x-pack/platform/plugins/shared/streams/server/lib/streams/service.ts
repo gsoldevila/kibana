@@ -39,7 +39,8 @@ export class StreamsService {
 
     const logger = this.logger;
 
-    const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request);
+    // TODO REVIEW
+    const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'space' });
     const isServerless = coreStart.elasticsearch.getCapabilities().serverless;
 
     return new StreamsClient({
