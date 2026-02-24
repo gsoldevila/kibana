@@ -33,6 +33,7 @@ dependsOn:
   - '@kbn/core-security-server'
   - '@kbn/core-security-server-internal'
   - '@kbn/core-security-server-mocks'
+  - '@kbn/core-elasticsearch-server-internal'
 tags:
   - shared-server
   - package
