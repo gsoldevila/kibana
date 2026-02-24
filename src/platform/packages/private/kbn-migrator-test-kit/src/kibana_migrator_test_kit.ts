@@ -38,7 +38,11 @@ import {
 import { AgentManager, configureClient } from '@kbn/core-elasticsearch-client-server-internal';
 import { type LoggingConfigType, LoggingSystem } from '@kbn/core-logging-server-internal';
 
-import type { ISavedObjectTypeRegistry, SavedObjectsType } from '@kbn/core-saved-objects-server';
+import type {
+  ISavedObjectTypeRegistry,
+  ISavedObjectsEncryptionExtension,
+  SavedObjectsType,
+} from '@kbn/core-saved-objects-server';
 import { ALL_SAVED_OBJECT_INDICES } from '@kbn/core-saved-objects-server';
 import { esTestConfig, kibanaServerTestUser } from '@kbn/test';
 import type { LoggerFactory } from '@kbn/logging';
@@ -49,10 +53,6 @@ import type { ISavedObjectsRepository } from '@kbn/core-saved-objects-api-server
 import { getDocLinks, getDocLinksMeta } from '@kbn/doc-links';
 import type { DocLinksServiceStart } from '@kbn/core-doc-links-server';
 import type { NodeRoles } from '@kbn/core-node-server';
-import type {
-  EncryptedSavedObjectsPluginStart,
-  EncryptedSavedObjectTypeRegistration,
-} from '@kbn/encrypted-saved-objects-plugin/server';
 import type { ElasticsearchClientWrapperFactory } from './elasticsearch_client_wrapper';
 import { delay } from './utils';
 
@@ -85,8 +85,9 @@ export interface KibanaMigratorTestKitParams {
   hashToVersionMap?: Record<string, string>;
   logFilePath?: string;
   clientWrapperFactory?: ElasticsearchClientWrapperFactory;
-  encryptedSavedObjects?: EncryptedSavedObjectsPluginStart;
-  encryptionOverrides?: EncryptedSavedObjectTypeRegistration[];
+  encryptionExtensionFactory?: (
+    typeRegistry: ISavedObjectTypeRegistry
+  ) => ISavedObjectsEncryptionExtension;
 }
 
 export interface KibanaMigratorTestKit {
@@ -151,8 +152,7 @@ export const getKibanaMigratorTestKit = async ({
   logFilePath = defaultLogFilePath,
   nodeRoles = defaultNodeRoles,
   clientWrapperFactory,
-  encryptedSavedObjects,
-  encryptionOverrides,
+  encryptionExtensionFactory,
 }: KibanaMigratorTestKitParams = {}): Promise<KibanaMigratorTestKit> => {
   let hasRun = false;
   const loggingSystem = new LoggingSystem();
@@ -198,9 +198,7 @@ export const getKibanaMigratorTestKit = async ({
     }
   };
 
-  const encryptionExtension = encryptedSavedObjects
-    ? encryptedSavedObjects?.__testCreateDangerousExtension(typeRegistry, encryptionOverrides)
-    : undefined;
+  const encryptionExtension = encryptionExtensionFactory?.(typeRegistry);
 
   const savedObjectsRepository = SavedObjectsRepository.createRepository(
     migrator,

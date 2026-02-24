@@ -15,7 +15,9 @@ import { checkDocuments } from './check_documents';
 export const testUpgrade: Task = async (ctx, task) => {
   const { runMigrations, savedObjectsRepository } = await getKibanaMigratorTestKit({
     types: ctx.updatedTypes,
-    encryptedSavedObjects: ctx.encryptedSavedObjects,
+    encryptionExtensionFactory: ctx.encryptedSavedObjects
+      ? (typeRegistry) => ctx.encryptedSavedObjects!.__testCreateDangerousExtension(typeRegistry)
+      : undefined,
   });
 
   const subtasks: ListrTask<TaskContext>[] = [
