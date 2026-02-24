@@ -28,8 +28,13 @@ export const createBaseline: Task = async (ctx, task) => {
     savedObjectsRepository,
   } = await getKibanaMigratorTestKit({
     types: previousVersionTypes,
-    encryptedSavedObjects: ctx.encryptedSavedObjects,
-    encryptionOverrides,
+    encryptionExtensionFactory: ctx.encryptedSavedObjects
+      ? (typeRegistry) =>
+          ctx.encryptedSavedObjects!.__testCreateDangerousExtension(
+            typeRegistry,
+            encryptionOverrides
+          )
+      : undefined,
   });
   const subtasks: ListrTask<TaskContext>[] = [
     {
