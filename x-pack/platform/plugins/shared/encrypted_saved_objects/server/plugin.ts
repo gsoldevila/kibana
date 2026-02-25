@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import nodeCrypto, { type Crypto } from '@elastic/node-crypto';
+import nodeCrypto from '@elastic/node-crypto';
 import { createHash } from 'crypto';
 
 import type {
@@ -23,7 +23,7 @@ import {
   getCreateMigration,
 } from './create_migration';
 import { type CreateEsoModelVersionFn, getCreateEsoModelVersion } from './create_model_version';
-import type { AttributeToEncrypt, EncryptedSavedObjectTypeRegistration } from './crypto';
+import type { EncryptedSavedObjectTypeRegistration } from './crypto';
 import {
   EncryptedSavedObjectsService,
   EncryptionError,
@@ -60,26 +60,6 @@ export interface EncryptedSavedObjectsPluginStart {
 }
 
 /**
- * Transforms an EncryptedSavedObjectTypeRegistration so that all attributes in
- * `attributesToEncrypt` have `dangerouslyExposeValue: true`. This is only used
- * for the test-only extension where decrypted values must be readable.
- */
-const dangerouslyExposeAttributes = (
-  registration: EncryptedSavedObjectTypeRegistration
-): EncryptedSavedObjectTypeRegistration => {
-  const exposedAttributes = new Set<string | AttributeToEncrypt>(
-    [...registration.attributesToEncrypt].map((attr) => {
-      const key = typeof attr === 'string' ? attr : attr.key;
-      return { key, dangerouslyExposeValue: true };
-    })
-  );
-  return {
-    ...registration,
-    attributesToEncrypt: exposedAttributes,
-  };
-};
-
-/**
  * Represents EncryptedSavedObjects Plugin instance that will be managed by the Kibana plugin system.
  */
 export class EncryptedSavedObjectsPlugin
@@ -88,9 +68,7 @@ export class EncryptedSavedObjectsPlugin
 {
   private readonly logger: Logger;
   private savedObjectsSetup!: ClientInstanciator;
-  private primaryCrypto?: Crypto;
-  private decryptionOnlyCryptos: Crypto[] = [];
-  private typeRegistrations: EncryptedSavedObjectTypeRegistration[] = [];
+  #service?: Readonly<EncryptedSavedObjectsService>;
 
   constructor(private readonly initializerContext: PluginInitializerContext) {
     this.logger = this.initializerContext.logger.get();
@@ -133,10 +111,7 @@ export class EncryptedSavedObjectsPlugin
       nodeCrypto({ encryptionKey: decryptionKey })
     );
 
-    this.primaryCrypto = primaryCrypto;
-    this.decryptionOnlyCryptos = decryptionOnlyCryptos;
-
-    const service = Object.freeze(
+    this.#service = Object.freeze(
       new EncryptedSavedObjectsService({
         primaryCrypto,
         decryptionOnlyCryptos,
@@ -145,7 +120,7 @@ export class EncryptedSavedObjectsPlugin
     );
 
     this.savedObjectsSetup = setupSavedObjects({
-      service,
+      service: this.#service,
       savedObjects: core.savedObjects,
       getStartServices: core.getStartServices,
       logger: this.logger,
@@ -159,7 +134,7 @@ export class EncryptedSavedObjectsPlugin
       encryptionKeyRotationService: Object.freeze(
         new EncryptionKeyRotationService({
           logger: this.logger.get('key-rotation-service'),
-          service,
+          service: this.#service,
           getStartServices: core.getStartServices,
         })
       ),
@@ -170,11 +145,10 @@ export class EncryptedSavedObjectsPlugin
     return {
       canEncrypt,
       registerType: (typeRegistration: EncryptedSavedObjectTypeRegistration) => {
-        this.typeRegistrations.push(typeRegistration);
-        service.registerType(typeRegistration);
+        this.#service?.registerType(typeRegistration);
       },
       createMigration: getCreateMigration(
-        service,
+        this.#service,
         (typeRegistration: EncryptedSavedObjectTypeRegistration) => {
           const serviceForMigration = new EncryptedSavedObjectsService({
             primaryCrypto,
@@ -186,7 +160,7 @@ export class EncryptedSavedObjectsPlugin
         }
       ),
       createModelVersion: getCreateEsoModelVersion(
-        service,
+        this.#service,
         (typeRegistration: EncryptedSavedObjectTypeRegistration) => {
           const serviceForMigration = new EncryptedSavedObjectsService({
             primaryCrypto,
@@ -209,28 +183,12 @@ export class EncryptedSavedObjectsPlugin
         typeRegistry: ISavedObjectTypeRegistry,
         typeRegistrationOverrides?: EncryptedSavedObjectTypeRegistration[]
       ): SavedObjectsEncryptionExtension => {
-        const testService = new EncryptedSavedObjectsService({
-          primaryCrypto: this.primaryCrypto,
-          decryptionOnlyCryptos: this.decryptionOnlyCryptos,
-          logger: this.logger,
-        });
-
-        const registeredTypes = new Set<string>();
-
-        for (const typeRegistration of typeRegistrationOverrides ?? []) {
-          testService.registerType(dangerouslyExposeAttributes(typeRegistration));
-          registeredTypes.add(typeRegistration.type);
+        if (!this.#service) {
+          throw new Error('EncryptedSavedObjectsPlugin setup has not been called');
         }
-
-        for (const typeRegistration of this.typeRegistrations) {
-          if (!registeredTypes.has(typeRegistration.type)) {
-            testService.registerType(dangerouslyExposeAttributes(typeRegistration));
-          }
-        }
-
         return new SavedObjectsEncryptionExtension({
           baseTypeRegistry: typeRegistry,
-          service: testService,
+          service: this.#service.__dangerousClone(typeRegistrationOverrides),
           getCurrentUser: async () => undefined,
         });
       },
