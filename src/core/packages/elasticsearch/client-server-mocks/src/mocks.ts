@@ -331,7 +331,9 @@ export interface ClusterClientMock {
    * (e.g. `mockClusterClient.asScoped().asCurrentUser`). Production code enforces
    * mandatory parameters via the `IClusterClient` interface.
    */
-  asScoped: jest.MockedFunction<(request?: ScopeableRequest, opts?: AsScopedOptions) => ScopedClusterClientMock>;
+  asScoped: jest.MockedFunction<
+    (request?: ScopeableRequest, opts?: AsScopedOptions) => ScopedClusterClientMock
+  >;
 }
 
 const createClusterClientMock = () => {

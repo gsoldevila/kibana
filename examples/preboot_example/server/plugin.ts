@@ -132,13 +132,16 @@ export class PrebootExamplePlugin implements PrebootPlugin {
           //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
           //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
           //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-          const scopedClient = esClient.asScoped({
-            headers: {
-              authorization: `Basic ${Buffer.from(
-                `${request.body.username}:${request.body.password}`
-              ).toString('base64')}`,
+          const scopedClient = esClient.asScoped(
+            {
+              headers: {
+                authorization: `Basic ${Buffer.from(
+                  `${request.body.username}:${request.body.password}`
+                ).toString('base64')}`,
+              },
             },
-          }, { projectRouting: 'origin-only' });
+            { projectRouting: 'origin-only' }
+          );
 
           try {
             return response.ok({

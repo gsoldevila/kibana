@@ -41,7 +41,9 @@ describe('CasesClientFactory', () => {
 
   describe('user info', () => {
     it('constructs the user info from user profiles', async () => {
-      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'origin-only' }).asCurrentUser;
+      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, {
+        projectRouting: 'origin-only',
+      }).asCurrentUser;
       args.securityPluginStart.userProfiles.getCurrent.mockResolvedValueOnce({
         // @ts-expect-error: not all fields are needed
         user: { username: 'my_user', full_name: 'My user', email: 'elastic@elastic.co' },
@@ -64,7 +66,9 @@ describe('CasesClientFactory', () => {
     });
 
     it('constructs the user info from the authc service if the user profile is not available', async () => {
-      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'origin-only' }).asCurrentUser;
+      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, {
+        projectRouting: 'origin-only',
+      }).asCurrentUser;
       // @ts-expect-error: not all fields are needed
       args.securityServiceStart.authc.getCurrentUser.mockReturnValueOnce({
         username: 'my_user_2',
@@ -89,8 +93,9 @@ describe('CasesClientFactory', () => {
     });
 
     it('constructs the user info from fake requests correctly', async () => {
-      const scopedClusterClient =
-        coreStart.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' }).asCurrentUser;
+      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest, {
+        projectRouting: 'origin-only',
+      }).asCurrentUser;
 
       await casesClientFactory.create({
         request: fakeRequest,
@@ -109,7 +114,9 @@ describe('CasesClientFactory', () => {
     });
 
     it('return null for all user fields if it cannot find the user info', async () => {
-      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'origin-only' }).asCurrentUser;
+      const scopedClusterClient = coreStart.elasticsearch.client.asScoped(request, {
+        projectRouting: 'origin-only',
+      }).asCurrentUser;
 
       await casesClientFactory.create({
         request,

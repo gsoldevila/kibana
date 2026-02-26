@@ -65,7 +65,9 @@ export class BulkDeleteTask {
               //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
               //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
               //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-              const scopedClusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
+              const scopedClusterClient = coreStart.elasticsearch.client.asScoped(fakeRequest, {
+                projectRouting: 'origin-only',
+              });
               const scopedSoClient = coreStart.savedObjects.getScopedClient(fakeRequest);
               const rulesClient = await pluginStart.alerting.getRulesClientWithRequest(fakeRequest);
 

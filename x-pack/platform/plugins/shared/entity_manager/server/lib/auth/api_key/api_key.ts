@@ -47,8 +47,9 @@ export const checkIfEntityDiscoveryAPIKeyIsValid = async (
     getFakeKibanaRequest({
       id: apiKey.id,
       api_key: apiKey.apiKey,
-    })
-  , { projectRouting: 'origin-only' }).asCurrentUser;
+    }),
+    { projectRouting: 'origin-only' }
+  ).asCurrentUser;
 
   server.logger.debug('validating API key has runtime privileges for entity discovery');
 

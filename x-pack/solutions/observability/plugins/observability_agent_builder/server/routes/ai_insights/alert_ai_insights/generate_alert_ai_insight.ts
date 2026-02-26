@@ -121,7 +121,9 @@ async function fetchAlertContext({
   //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
   //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
   //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-  const esClient = coreStart.elasticsearch.client.asScoped(request, { projectRouting: 'origin-only' });
+  const esClient = coreStart.elasticsearch.client.asScoped(request, {
+    projectRouting: 'origin-only',
+  });
 
   const results = await runSignalFetchers(
     {

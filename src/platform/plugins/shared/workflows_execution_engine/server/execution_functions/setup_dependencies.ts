@@ -114,7 +114,9 @@ export async function setupDependencies(
     //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
     //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
     //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-    coreStart.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' }).asCurrentUser;
+    coreStart.elasticsearch.client.asScoped(fakeRequest, {
+      projectRouting: 'origin-only',
+    }).asCurrentUser;
 
   const workflowTaskManager = new WorkflowTaskManager(taskManager);
 

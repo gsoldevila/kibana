@@ -166,7 +166,9 @@ export class APIKeys implements NativeAPIKeysType {
     //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
     //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
     //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-    const scopedClusterClient = this.clusterClient.asScoped(request, { projectRouting: 'origin-only' });
+    const scopedClusterClient = this.clusterClient.asScoped(request, {
+      projectRouting: 'origin-only',
+    });
 
     this.logger.debug('Trying to create an API key');
 
@@ -227,7 +229,9 @@ export class APIKeys implements NativeAPIKeysType {
     //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
     //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
     //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-    const scopedClusterClient = this.clusterClient.asScoped(request, { projectRouting: 'origin-only' });
+    const scopedClusterClient = this.clusterClient.asScoped(request, {
+      projectRouting: 'origin-only',
+    });
 
     this.logger.debug('Trying to edit an API key');
 
@@ -356,9 +360,11 @@ export class APIKeys implements NativeAPIKeysType {
       //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
       //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
       //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-      result = await this.clusterClient.asScoped(request, { projectRouting: 'origin-only' }).asCurrentUser.security.invalidateApiKey({
-        ids: params.ids,
-      });
+      result = await this.clusterClient
+        .asScoped(request, { projectRouting: 'origin-only' })
+        .asCurrentUser.security.invalidateApiKey({
+          ids: params.ids,
+        });
       this.logger.debug(
         `API keys by ids=[${params.ids.join(', ')}] was invalidated successfully as current user`
       );
@@ -422,7 +428,9 @@ export class APIKeys implements NativeAPIKeysType {
       //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
       //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
       //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-      await this.clusterClient.asScoped(fakeRequest, { projectRouting: 'origin-only' }).asCurrentUser.security.authenticate();
+      await this.clusterClient
+        .asScoped(fakeRequest, { projectRouting: 'origin-only' })
+        .asCurrentUser.security.authenticate();
       this.logger.debug(`API key was validated successfully`);
       return true;
     } catch (e) {

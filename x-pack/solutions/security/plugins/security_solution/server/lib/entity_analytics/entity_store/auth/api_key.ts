@@ -108,7 +108,9 @@ export const getApiKeyManager = ({
     //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
     //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
     //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-    const clusterClient = core.elasticsearch.client.asScoped(fakeRequest, { projectRouting: 'origin-only' });
+    const clusterClient = core.elasticsearch.client.asScoped(fakeRequest, {
+      projectRouting: 'origin-only',
+    });
     const soClient = core.savedObjects.getScopedClient(fakeRequest, {
       includedHiddenTypes: [EntityDiscoveryApiKeyType.name],
     });

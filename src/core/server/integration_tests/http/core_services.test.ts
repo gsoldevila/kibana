@@ -264,7 +264,9 @@ describe('http service', () => {
       router.get(
         { path: '/', validate: false, security: { authz: { enabled: false, reason: '' } } },
         async (context, req, res) => {
-          await elasticsearch.client.asScoped(req, { projectRouting: 'origin-only' }).asInternalUser.ping();
+          await elasticsearch.client
+            .asScoped(req, { projectRouting: 'origin-only' })
+            .asInternalUser.ping();
           return res.ok();
         }
       );
@@ -303,7 +305,9 @@ describe('http service', () => {
       router.get(
         { path: '/', validate: false, security: { authz: { enabled: false, reason: '' } } },
         async (context, req, res) => {
-          await elasticsearch.client.asScoped(req, { projectRouting: 'origin-only' }).asInternalUser.ping();
+          await elasticsearch.client
+            .asScoped(req, { projectRouting: 'origin-only' })
+            .asInternalUser.ping();
           return res.ok();
         }
       );

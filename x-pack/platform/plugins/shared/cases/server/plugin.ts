@@ -339,7 +339,8 @@ export class CasePlugin
         //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
         //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
         //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-        scopedClusterClient: client.asScoped(request, { projectRouting: 'origin-only' }).asCurrentUser,
+        scopedClusterClient: client.asScoped(request, { projectRouting: 'origin-only' })
+          .asCurrentUser,
         internalClusterClient: client.asInternalUser,
         savedObjectsService: core.savedObjects,
       });

@@ -83,7 +83,9 @@ export class LogViewsService {
         //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
         //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
         //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
-        const elasticsearchClient = elasticsearch.client.asScoped(request, { projectRouting: 'origin-only' }).asCurrentUser;
+        const elasticsearchClient = elasticsearch.client.asScoped(request, {
+          projectRouting: 'origin-only',
+        }).asCurrentUser;
         const logSourcesService =
           logsDataAccess.services.logSourcesServiceFactory.getScopedLogSourcesService(request);
         return this.getClient(savedObjectsClient, elasticsearchClient, logSourcesService, request);

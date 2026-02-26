@@ -122,7 +122,9 @@ export function initRoutes(
 
       let scopedClient;
       if (request.body.client === 'start-contract') {
-        scopedClient = (await core.getStartServices())[0].elasticsearch.client.asScoped(request, { projectRouting: 'origin-only' });
+        scopedClient = (await core.getStartServices())[0].elasticsearch.client.asScoped(request, {
+          projectRouting: 'origin-only',
+        });
       } else if (request.body.client === 'request-context') {
         scopedClient = (await context.core).elasticsearch.client;
       } else {
@@ -454,8 +456,9 @@ export function initRoutes(
       const scopedClient = elasticsearch.client.asScoped(
         request.body.apiKey
           ? { headers: { authorization: `ApiKey ${request.body.apiKey}` } }
-          : request
-      , { projectRouting: 'origin-only' });
+          : request,
+        { projectRouting: 'origin-only' }
+      );
 
       return response.ok({
         body: (await scopedClient.asSecondaryAuthUser.transport.request({
@@ -484,8 +487,9 @@ export function initRoutes(
         const scopedClient = elasticsearch.client.asScoped(
           request.body.apiKey
             ? { headers: { authorization: `ApiKey ${request.body.apiKey}` } }
-            : request
-        , { projectRouting: 'origin-only' });
+            : request,
+          { projectRouting: 'origin-only' }
+        );
 
         return response.ok({ body: await scopedClient.asCurrentUser.security.authenticate() });
       } catch (err) {
