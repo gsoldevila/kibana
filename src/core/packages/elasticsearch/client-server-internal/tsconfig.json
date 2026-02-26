@@ -26,7 +26,8 @@
     "@kbn/core-security-server",
     "@kbn/core-security-server-internal",
     "@kbn/core-security-server-mocks",
-    "@kbn/core-elasticsearch-server-internal",
+    "@kbn/cps-server-utils",
+    "@kbn/safer-lodash-set",
   ],
   "exclude": [
     "target/**/*",
