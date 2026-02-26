@@ -96,7 +96,13 @@ export class InferencePlugin
           regexWorker: this.regexWorker!,
           actions: pluginsStart.actions,
           logger: this.logger.get('client'),
-          esClient: core.elasticsearch.client.asScoped(options.request).asCurrentUser,
+          // TODO [CPS routing]: this client currently preserves the existing "origin-only" behavior.
+          //   Review and choose one of the following options:
+          //   A) Still unsure? Leave this comment as-is.
+          //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
+          //   C) Want to route within the current space? Change 'origin-only' to 'space' and remove this comment.
+          //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
+          esClient: core.elasticsearch.client.asScoped(options.request, { projectRouting: 'origin-only' }).asCurrentUser,
         }) as T extends InferenceBoundClientCreateOptions ? BoundInferenceClient : InferenceClient;
       },
 
@@ -109,7 +115,13 @@ export class InferencePlugin
           actions: pluginsStart.actions,
           anonymizationRulesPromise: createAnonymizationRulesPromise(options.request),
           regexWorker: this.regexWorker!,
-          esClient: core.elasticsearch.client.asScoped(options.request).asCurrentUser,
+          // TODO [CPS routing]: this client currently preserves the existing "origin-only" behavior.
+          //   Review and choose one of the following options:
+          //   A) Still unsure? Leave this comment as-is.
+          //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
+          //   C) Want to route within the current space? Change 'origin-only' to 'space' and remove this comment.
+          //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
+          esClient: core.elasticsearch.client.asScoped(options.request, { projectRouting: 'origin-only' }).asCurrentUser,
           logger: this.logger,
         });
       },
