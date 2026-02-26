@@ -74,7 +74,7 @@ export const createAgentHandlerContext = async <TParams = Record<string, unknown
     //   Review and choose one of the following options:
     //   A) Still unsure? Leave this comment as-is.
     //   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.
-    //   C) Want to route within the current space? Change 'origin-only' to 'space' and remove this comment.
+    //   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.
     //      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property.
     esClient: elasticsearch.client.asScoped(request, { projectRouting: 'origin-only' }),
     savedObjectsClient: savedObjects.getScopedClient(request),

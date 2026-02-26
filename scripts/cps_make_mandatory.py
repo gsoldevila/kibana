@@ -23,7 +23,7 @@ TODO_COMMENT = (
     '//   Review and choose one of the following options:\n'
     '//   A) Still unsure? Leave this comment as-is.\n'
     '//   B) Confirmed origin-only is correct? Replace this TODO with a concise explanation of why.\n'
-    "//   C) Want to route within the current space? Change 'origin-only' to 'space' and remove this comment.\n"
+    "//   C) Want to use current space’s NPRE (Named Project Routing Expression)? Change 'origin-only' to 'space' and remove this comment.\n"
     "//      Note: 'space' requires the request passed to asScoped() to carry a `url: URL` property."
 )
 
