@@ -109,7 +109,7 @@ describe('setupDependencies', () => {
       mockFakeRequest
     );
 
-    expect(mockAsScoped).toHaveBeenCalledWith(mockFakeRequest);
+    expect(mockAsScoped).toHaveBeenCalledWith(mockFakeRequest, { projectRouting: 'origin-only' });
     expect(result.esClient).toBe(mockAsCurrentUser);
   });
 
