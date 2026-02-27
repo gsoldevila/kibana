@@ -870,7 +870,9 @@ describe('API Keys', () => {
       const result = await apiKeys.validate(params);
       expect(result).toEqual(true);
 
-      expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request);
+      expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request, {
+        projectRouting: 'origin-only',
+      });
       expect(
         mockClusterClient.asScoped().asCurrentUser.security.authenticate
       ).toHaveBeenCalledWith();
@@ -885,7 +887,9 @@ describe('API Keys', () => {
 
       await expect(apiKeys.validate(params)).resolves.toEqual(false);
 
-      expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request);
+      expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request, {
+        projectRouting: 'origin-only',
+      });
       expect(
         mockClusterClient.asScoped().asCurrentUser.security.authenticate
       ).toHaveBeenCalledTimes(1);

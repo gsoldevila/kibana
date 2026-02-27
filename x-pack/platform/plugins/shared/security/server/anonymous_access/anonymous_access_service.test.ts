@@ -192,7 +192,8 @@ describe('AnonymousAccessService', () => {
 
         expect(startParams.clusterClient.asScoped).toHaveBeenCalledTimes(1);
         expect(startParams.clusterClient.asScoped).toHaveBeenCalledWith(
-          expect.objectContaining({ headers: { authorization: 'Basic dXNlcjpwYXNzd29yZA==' } })
+          expect.objectContaining({ headers: { authorization: 'Basic dXNlcjpwYXNzd29yZA==' } }),
+          { projectRouting: 'origin-only' }
         );
         expect(mockScopedClusterClient.asCurrentUser.security.authenticate).toHaveBeenCalledTimes(
           1

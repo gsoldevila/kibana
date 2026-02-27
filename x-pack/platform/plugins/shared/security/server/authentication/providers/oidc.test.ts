@@ -516,7 +516,10 @@ describe('OIDCAuthenticationProvider', () => {
         AuthenticationResult.succeeded(mockUser, { authHeaders: { authorization } })
       );
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -568,7 +571,10 @@ describe('OIDCAuthenticationProvider', () => {
         provider.authenticate(request, { ...tokenPair, realm: 'oidc1' })
       ).resolves.toEqual(AuthenticationResult.failed(failureReason));
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -628,7 +634,10 @@ describe('OIDCAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(tokenPair.refreshToken);
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -667,9 +676,10 @@ describe('OIDCAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(tokenPair.refreshToken);
 
       expect(mockOptions.client.asScoped).toHaveBeenCalledTimes(1);
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({
-        headers: { authorization },
-      });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
       expect(mockScopedClusterClient.asCurrentUser.security.authenticate).toHaveBeenCalledTimes(1);
 
       expect(mockOptions.client.asInternalUser.transport.request).not.toHaveBeenCalled();
@@ -701,9 +711,10 @@ describe('OIDCAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(tokenPair.refreshToken);
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({
-        headers: { 'kbn-xsrf': 'xsrf', authorization },
-      });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { 'kbn-xsrf': 'xsrf', authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -734,7 +745,10 @@ describe('OIDCAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(tokenPair.refreshToken);
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });

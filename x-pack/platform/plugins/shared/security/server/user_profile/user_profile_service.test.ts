@@ -496,7 +496,9 @@ describe('UserProfileService', () => {
           mockStartParams.clusterClient.asScoped().asCurrentUser.security.getApiKey
         ).toHaveBeenCalledTimes(1);
         expect(mockStartParams.clusterClient.asScoped).toHaveBeenCalled();
-        expect(mockStartParams.clusterClient.asScoped).toBeCalledWith(mockApiKeyRequest);
+        expect(mockStartParams.clusterClient.asScoped).toBeCalledWith(mockApiKeyRequest, {
+          projectRouting: 'origin-only',
+        });
         expect(
           mockStartParams.clusterClient.asScoped().asCurrentUser.security.getApiKey
         ).toHaveBeenCalledWith({ with_profile_uid: true });
@@ -530,7 +532,9 @@ describe('UserProfileService', () => {
           mockStartParams.clusterClient.asScoped().asCurrentUser.security.getApiKey
         ).toHaveBeenCalledTimes(1);
         expect(mockStartParams.clusterClient.asScoped).toHaveBeenCalled();
-        expect(mockStartParams.clusterClient.asScoped).toBeCalledWith(mockApiKeyRequest);
+        expect(mockStartParams.clusterClient.asScoped).toBeCalledWith(mockApiKeyRequest, {
+          projectRouting: 'origin-only',
+        });
         expect(
           mockStartParams.clusterClient.asScoped().asCurrentUser.security.getApiKey
         ).toHaveBeenCalledWith({ with_profile_uid: true });
@@ -593,7 +597,9 @@ describe('UserProfileService', () => {
           mockStartParams.clusterClient.asScoped().asCurrentUser.security.getApiKey
         ).toHaveBeenCalledTimes(1);
         expect(mockStartParams.clusterClient.asScoped).toHaveBeenCalled();
-        expect(mockStartParams.clusterClient.asScoped).toBeCalledWith(mockApiKeyRequest);
+        expect(mockStartParams.clusterClient.asScoped).toBeCalledWith(mockApiKeyRequest, {
+          projectRouting: 'origin-only',
+        });
         expect(
           mockStartParams.clusterClient.asScoped().asCurrentUser.security.getApiKey
         ).toHaveBeenCalledWith({ with_profile_uid: true });

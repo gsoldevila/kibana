@@ -90,7 +90,9 @@ function expectAuthenticateCall(
   scopeableRequest: ScopeableRequest
 ) {
   expect(mockClusterClient.asScoped).toHaveBeenCalledTimes(1);
-  expect(mockClusterClient.asScoped).toHaveBeenCalledWith(scopeableRequest);
+  expect(mockClusterClient.asScoped).toHaveBeenCalledWith(scopeableRequest, {
+    projectRouting: 'origin-only',
+  });
 
   const mockScopedClusterClient = mockClusterClient.asScoped.mock.results[0].value;
   expect(mockScopedClusterClient.asCurrentUser.security.authenticate).toHaveBeenCalledTimes(1);
