@@ -507,12 +507,20 @@ some weird+ca/with
 
         // Check that we properly provided apiKeys to scoped clients.
         expect(mockEnrollClient.asScoped).toHaveBeenCalledTimes(2);
-        expect(mockEnrollClient.asScoped).toHaveBeenNthCalledWith(1, {
-          headers: { authorization: 'ApiKey apiKey' },
-        });
-        expect(mockEnrollClient.asScoped).toHaveBeenNthCalledWith(2, {
-          headers: { authorization: 'ApiKey apiKey' },
-        });
+        expect(mockEnrollClient.asScoped).toHaveBeenNthCalledWith(
+          1,
+          {
+            headers: { authorization: 'ApiKey apiKey' },
+          },
+          { projectRouting: 'origin-only' }
+        );
+        expect(mockEnrollClient.asScoped).toHaveBeenNthCalledWith(
+          2,
+          {
+            headers: { authorization: 'ApiKey apiKey' },
+          },
+          { projectRouting: 'origin-only' }
+        );
 
         // Check that we properly called all required ES APIs.
         expect(

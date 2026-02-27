@@ -681,7 +681,10 @@ describe('SAMLAuthenticationProvider', () => {
           )
         ).resolves.toEqual(AuthenticationResult.failed(failureReason));
 
-        expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+        expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+          { headers: { authorization } },
+          { projectRouting: 'origin-only' }
+        );
         expect(mockOptions.client.asInternalUser.transport.request).toHaveBeenCalledWith({
           method: 'POST',
           path: '/_security/saml/authenticate',
@@ -717,7 +720,10 @@ describe('SAMLAuthenticationProvider', () => {
           )
         ).resolves.toEqual(AuthenticationResult.notHandled());
 
-        expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+        expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+          { headers: { authorization } },
+          { projectRouting: 'origin-only' }
+        );
         expect(mockOptions.client.asInternalUser.transport.request).toHaveBeenCalledWith({
           method: 'POST',
           path: '/_security/saml/authenticate',
@@ -755,7 +761,10 @@ describe('SAMLAuthenticationProvider', () => {
           )
         ).resolves.toEqual(AuthenticationResult.failed(failureReason));
 
-        expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+        expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+          { headers: { authorization } },
+          { projectRouting: 'origin-only' }
+        );
         expect(mockOptions.client.asInternalUser.transport.request).toHaveBeenCalledWith({
           method: 'POST',
           path: '/_security/saml/authenticate',
@@ -830,7 +839,10 @@ describe('SAMLAuthenticationProvider', () => {
             })
           );
 
-          expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+          expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+            { headers: { authorization } },
+            { projectRouting: 'origin-only' }
+          );
           expect(mockOptions.client.asInternalUser.transport.request).toHaveBeenCalledWith({
             method: 'POST',
             path: '/_security/saml/authenticate',
@@ -893,7 +905,10 @@ describe('SAMLAuthenticationProvider', () => {
             })
           );
 
-          expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+          expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+            { headers: { authorization } },
+            { projectRouting: 'origin-only' }
+          );
           expect(mockOptions.client.asInternalUser.transport.request).toHaveBeenCalledWith({
             method: 'POST',
             path: '/_security/saml/authenticate',
@@ -1201,7 +1216,10 @@ describe('SAMLAuthenticationProvider', () => {
         AuthenticationResult.succeeded(mockUser, { authHeaders: { authorization } })
       );
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -1224,7 +1242,10 @@ describe('SAMLAuthenticationProvider', () => {
         AuthenticationResult.failed(failureReason)
       );
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -1290,7 +1311,10 @@ describe('SAMLAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(state.refreshToken);
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -1323,9 +1347,10 @@ describe('SAMLAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(state.refreshToken);
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({
-        headers: { 'kbn-xsrf': 'xsrf', authorization },
-      });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { 'kbn-xsrf': 'xsrf', authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -1358,7 +1383,10 @@ describe('SAMLAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(state.refreshToken);
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(request.headers).not.toHaveProperty('authorization');
     });
@@ -1398,7 +1426,10 @@ describe('SAMLAuthenticationProvider', () => {
       expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
       expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(state.refreshToken);
 
-      expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+      expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+        { headers: { authorization } },
+        { projectRouting: 'origin-only' }
+      );
 
       expect(mockOptions.client.asInternalUser.transport.request).not.toHaveBeenCalled();
     });
@@ -1828,9 +1859,12 @@ describe('SAMLAuthenticationProvider', () => {
           })
         );
 
-        expect(mockOptions.client.asScoped).toHaveBeenCalledWith({
-          headers: { authorization, [ES_CLIENT_AUTHENTICATION_HEADER]: 'some-shared-secret' },
-        });
+        expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+          {
+            headers: { authorization, [ES_CLIENT_AUTHENTICATION_HEADER]: 'some-shared-secret' },
+          },
+          { projectRouting: 'origin-only' }
+        );
 
         expect(request.headers).not.toHaveProperty('authorization');
         expect(request.headers).not.toHaveProperty(ES_CLIENT_AUTHENTICATION_HEADER);
@@ -1967,9 +2001,12 @@ describe('SAMLAuthenticationProvider', () => {
         expect(mockOptions.uiam?.refreshSessionTokens).toHaveBeenCalledTimes(1);
         expect(mockOptions.uiam?.refreshSessionTokens).toHaveBeenCalledWith(state.refreshToken);
 
-        expect(mockOptions.client.asScoped).toHaveBeenCalledWith({
-          headers: { authorization, [ES_CLIENT_AUTHENTICATION_HEADER]: 'some-shared-secret' },
-        });
+        expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+          {
+            headers: { authorization, [ES_CLIENT_AUTHENTICATION_HEADER]: 'some-shared-secret' },
+          },
+          { projectRouting: 'origin-only' }
+        );
 
         expect(request.headers).not.toHaveProperty('authorization');
         expect(request.headers).not.toHaveProperty(ES_CLIENT_AUTHENTICATION_HEADER);
@@ -2054,7 +2091,10 @@ describe('SAMLAuthenticationProvider', () => {
           AuthenticationResult.succeeded(mockUser, { authHeaders: { authorization } })
         );
 
-        expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+        expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+          { headers: { authorization } },
+          { projectRouting: 'origin-only' }
+        );
 
         expect(request.headers).not.toHaveProperty('authorization');
         expect(request.headers).not.toHaveProperty(ES_CLIENT_AUTHENTICATION_HEADER);
@@ -2190,7 +2230,10 @@ describe('SAMLAuthenticationProvider', () => {
         expect(mockOptions.tokens.refresh).toHaveBeenCalledTimes(1);
         expect(mockOptions.tokens.refresh).toHaveBeenCalledWith(state.refreshToken);
 
-        expect(mockOptions.client.asScoped).toHaveBeenCalledWith({ headers: { authorization } });
+        expect(mockOptions.client.asScoped).toHaveBeenCalledWith(
+          { headers: { authorization } },
+          { projectRouting: 'origin-only' }
+        );
 
         expect(request.headers).not.toHaveProperty('authorization');
         expect(request.headers).not.toHaveProperty(ES_CLIENT_AUTHENTICATION_HEADER);

@@ -70,7 +70,9 @@ describe('#checkPrivilegesWithRequest.atSpace', () => {
       privileges: indexPrivileges,
     }));
 
-    expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request);
+    expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request, {
+      projectRouting: 'origin-only',
+    });
     expect(mockScopedClusterClient.asCurrentUser.security.hasPrivileges).toHaveBeenCalledWith({
       cluster: options.elasticsearchPrivileges?.cluster,
       index: expectedIndexPrivilegePayload,
@@ -909,7 +911,9 @@ describe('#checkPrivilegesWithRequest.atSpaces', () => {
       privileges: indexPrivileges,
     }));
 
-    expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request);
+    expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request, {
+      projectRouting: 'origin-only',
+    });
     expect(mockScopedClusterClient.asCurrentUser.security.hasPrivileges).toHaveBeenCalledWith({
       cluster: options.elasticsearchPrivileges?.cluster,
       index: expectedIndexPrivilegePayload,
@@ -2078,7 +2082,9 @@ describe('#checkPrivilegesWithRequest.globally', () => {
       privileges: indexPrivileges,
     }));
 
-    expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request);
+    expect(mockClusterClient.asScoped).toHaveBeenCalledWith(request, {
+      projectRouting: 'origin-only',
+    });
     expect(mockScopedClusterClient.asCurrentUser.security.hasPrivileges).toHaveBeenCalledWith({
       cluster: options.elasticsearchPrivileges?.cluster,
       index: expectedIndexPrivilegePayload,
