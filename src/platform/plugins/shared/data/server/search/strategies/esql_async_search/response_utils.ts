@@ -8,26 +8,32 @@
  */
 
 import type { ConnectionRequestParams } from '@elastic/transport';
-import type { EsqlAsyncQueryResponse } from '@elastic/elasticsearch/lib/api/types';
+import type { EsqlAsyncEsqlResult, EsqlEsqlResult } from '@elastic/elasticsearch/lib/api/types';
 import type { IKibanaSearchResponse } from '@kbn/search-types';
 import type { IncomingHttpHeaders } from 'http';
 import { sanitizeRequestParams } from '../../sanitize_request_params';
+
+type EsqlResponse = EsqlAsyncEsqlResult | EsqlEsqlResult;
 
 /**
  * Get the Kibana representation of an async search response (see `IKibanaSearchResponse`).
  */
 export function toAsyncKibanaSearchResponse(
-  response: EsqlAsyncQueryResponse,
+  response: EsqlResponse,
   headers: IncomingHttpHeaders,
   requestParams?: ConnectionRequestParams
-): IKibanaSearchResponse<EsqlAsyncQueryResponse> {
-  const responseIsStream = response.id === undefined;
+): IKibanaSearchResponse<EsqlResponse> {
+  // EsqlAsyncEsqlResult has `is_running`; synchronous/stop results (EsqlEsqlResult) do not.
+  const isAsyncResult = 'is_running' in response;
+  const responseId = isAsyncResult ? (response as EsqlAsyncEsqlResult).id : undefined;
+  const responseIsStream = responseId === undefined;
+
   return {
-    id: responseIsStream ? (headers['x-elasticsearch-async-id'] as string) : response.id,
+    id: responseIsStream ? (headers['x-elasticsearch-async-id'] as string) : responseId,
     rawResponse: response,
     isRunning: responseIsStream
       ? headers['x-elasticsearch-async-is-running'] === '?1'
-      : response.is_running,
+      : (response as EsqlAsyncEsqlResult).is_running,
     isPartial: responseIsStream
       ? headers['x-elasticsearch-async-is-partial'] === '?1'
       : response.is_partial,

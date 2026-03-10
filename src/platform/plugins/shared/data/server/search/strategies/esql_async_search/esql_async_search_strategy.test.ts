@@ -20,26 +20,27 @@ import { getMockSearchConfig } from '../../../../config.mock';
 const mockAsyncResponse = {
   body: {
     id: 'foo',
-    response: {
-      _shards: {
-        total: 10,
-        failed: 1,
-        skipped: 2,
-        successful: 7,
-      },
-    },
+    is_running: false,
+    is_partial: false,
+    columns: [],
+    values: [],
   },
   headers: {
     'x-elasticsearch-async-id': 'foo',
     'x-elasticsearch-async-is-running': '?0',
+  },
+  meta: {
+    request: {
+      params: {},
+    },
   },
 };
 
 describe('ES|QL async search strategy', () => {
   const mockAsyncQuery = jest.fn();
   const mockAsyncQueryGet = jest.fn();
-  const mockAsyncQueryDelete = jest.fn();
   const mockAsyncQueryStop = jest.fn();
+  const mockAsyncQueryDelete = jest.fn();
   const mockLogger: any = {
     debug: () => {},
     error: () => {},
@@ -53,8 +54,8 @@ describe('ES|QL async search strategy', () => {
         esql: {
           asyncQuery: mockAsyncQuery,
           asyncQueryGet: mockAsyncQueryGet,
-          asyncQueryDelete: mockAsyncQueryDelete,
           asyncQueryStop: mockAsyncQueryStop,
+          asyncQueryDelete: mockAsyncQueryDelete,
         },
       },
     },
@@ -65,8 +66,8 @@ describe('ES|QL async search strategy', () => {
   beforeEach(() => {
     mockAsyncQuery.mockClear();
     mockAsyncQueryGet.mockClear();
-    mockAsyncQueryDelete.mockClear();
     mockAsyncQueryStop.mockClear();
+    mockAsyncQueryDelete.mockClear();
   });
 
   it('returns a strategy with `search and `cancel`', async () => {
@@ -96,9 +97,9 @@ describe('ES|QL async search strategy', () => {
           .toPromise();
 
         expect(mockAsyncQuery).toBeCalled();
-        const request = mockAsyncQuery.mock.calls[0][0];
-        expect(request.query).toEqual(params.query);
-        expect(request).toHaveProperty('keep_alive', '60000ms');
+        const [requestParams] = mockAsyncQuery.mock.calls[0];
+        expect(requestParams.query).toEqual(params.query);
+        expect(requestParams).toHaveProperty('keep_alive', '60000ms');
       });
 
       it('makes a GET request to async search with ID', async () => {
@@ -112,29 +113,27 @@ describe('ES|QL async search strategy', () => {
         await esSearch.search({ id: 'foo', params }, {}, mockDeps).toPromise();
 
         expect(mockAsyncQueryGet).toBeCalled();
-        const request = mockAsyncQueryGet.mock.calls[0][0];
-        expect(request.id).toBe('foo');
-        expect(request).toHaveProperty('wait_for_completion_timeout');
-        expect(request).toHaveProperty('keep_alive', '60000ms');
+        const [requestParams] = mockAsyncQueryGet.mock.calls[0];
+        expect(requestParams.id).toBe('foo');
+        expect(requestParams).toHaveProperty('wait_for_completion_timeout');
+        expect(requestParams).toHaveProperty('keep_alive', '60000ms');
       });
 
-      it('allows overriding keep_alive and wait_for_completion_timeout', async () => {
+      it('uses default keep_alive and wait_for_completion_timeout from config on GET requests', async () => {
         mockAsyncQueryGet.mockResolvedValueOnce(mockAsyncResponse);
 
         const params = {
           query: 'from logs* | limit 10',
-          wait_for_completion_timeout: '10s',
-          keep_alive: '5m',
         };
         const esSearch = await esqlAsyncSearchStrategyProvider(mockSearchConfig, mockLogger);
 
         await esSearch.search({ id: 'foo', params }, {}, mockDeps).toPromise();
 
         expect(mockAsyncQueryGet).toBeCalled();
-        const request = mockAsyncQueryGet.mock.calls[0][0];
-        expect(request.id).toBe('foo');
-        expect(request).toHaveProperty('wait_for_completion_timeout', '10s');
-        expect(request).toHaveProperty('keep_alive', '5m');
+        const [requestParams] = mockAsyncQueryGet.mock.calls[0];
+        expect(requestParams.id).toBe('foo');
+        expect(requestParams).toHaveProperty('wait_for_completion_timeout');
+        expect(requestParams).toHaveProperty('keep_alive');
       });
 
       it('sets transport options on POST requests', async () => {
@@ -192,13 +191,19 @@ describe('ES|QL async search strategy', () => {
         await esSearch.search({ params }, {}, mockDeps).toPromise();
 
         expect(mockAsyncQuery).toBeCalled();
-        const request = mockAsyncQuery.mock.calls[0][0];
-        expect(request).toHaveProperty('wait_for_completion_timeout');
-        expect(request).toHaveProperty('keep_alive');
+        const [requestParams] = mockAsyncQuery.mock.calls[0];
+        expect(requestParams).toHaveProperty('wait_for_completion_timeout');
+        expect(requestParams).toHaveProperty('keep_alive');
       });
 
-      it('calls asyncQueryStop with the given ID when using options.retrieveResults: true', async () => {
-        mockAsyncQueryStop.mockResolvedValueOnce(mockAsyncResponse);
+      it('calls /stop with the given ID when using options.retrieveResults: true', async () => {
+        mockAsyncQueryStop.mockResolvedValueOnce({
+          ...mockAsyncResponse,
+          body: {
+            columns: [],
+            values: [],
+          },
+        });
 
         const id = 'FlBvQU5CS3BKVEdPcWM1V2lkYXNUbXccVmNhQl9wcWFRdG1WYzE4N2tsOFNNdzozNjMzOQ==';
         const params = { query: 'from logs* | limit 10' };
@@ -206,8 +211,8 @@ describe('ES|QL async search strategy', () => {
         await esSearch.search({ id, params }, { retrieveResults: true }, mockDeps).toPromise();
 
         expect(mockAsyncQueryStop).toBeCalled();
-        const request = mockAsyncQueryStop.mock.calls[0][0];
-        expect(request.id).toEqual(id);
+        const [requestParams] = mockAsyncQueryStop.mock.calls[0];
+        expect(requestParams.id).toBe(id);
       });
 
       it('should delete when aborted', async () => {
@@ -296,7 +301,7 @@ describe('ES|QL async search strategy', () => {
 
   describe('cancel', () => {
     it('makes a DELETE request to async search with the provided ID', async () => {
-      mockAsyncQueryDelete.mockResolvedValueOnce(200);
+      mockAsyncQueryDelete.mockResolvedValueOnce({ acknowledged: true });
 
       const id = 'some_id';
       const esSearch = await esqlAsyncSearchStrategyProvider(mockSearchConfig, mockLogger);
@@ -304,8 +309,8 @@ describe('ES|QL async search strategy', () => {
       await esSearch.cancel!(id, {}, mockDeps);
 
       expect(mockAsyncQueryDelete).toBeCalled();
-      const request = mockAsyncQueryDelete.mock.calls[0][0];
-      expect(request.id).toBe(id);
+      const [requestParams] = mockAsyncQueryDelete.mock.calls[0];
+      expect(requestParams.id).toBe(id);
     });
 
     it('throws normalized error on ResponseError', async () => {
@@ -347,8 +352,8 @@ describe('ES|QL async search strategy', () => {
       await esSearch.extend!(id, keepAlive, {}, mockDeps);
 
       expect(mockAsyncQueryGet).toBeCalled();
-      const request = mockAsyncQueryGet.mock.calls[0][0];
-      expect(request).toEqual({ id, keep_alive: keepAlive });
+      const [requestParams] = mockAsyncQueryGet.mock.calls[0];
+      expect(requestParams).toEqual({ id, keep_alive: keepAlive });
     });
 
     it('throws normalized error on ElasticsearchClientError', async () => {

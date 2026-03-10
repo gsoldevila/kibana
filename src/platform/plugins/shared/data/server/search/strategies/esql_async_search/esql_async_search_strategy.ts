@@ -10,11 +10,13 @@
 import type { Logger } from '@kbn/core/server';
 import { catchError, tap } from 'rxjs';
 import { getKbnServerError } from '@kbn/kibana-utils-plugin/server';
-import type { IKibanaSearchResponse, IKibanaSearchRequest } from '@kbn/search-types';
-import type { SqlQueryRequest } from '@elastic/elasticsearch/lib/api/types';
-import type { EsqlAsyncQueryResponse } from '@elastic/elasticsearch/lib/api/types';
+import type { IKibanaSearchRequest, IKibanaSearchResponse } from '@kbn/search-types';
 import type { ESQLSearchParams } from '@kbn/es-types';
-import type { WithRequiredProperty } from '@kbn/utility-types';
+import type {
+  EsqlAsyncEsqlResult,
+  EsqlAsyncQueryRequest,
+  EsqlEsqlResult,
+} from '@elastic/elasticsearch/lib/api/types';
 import { toAsyncKibanaSearchResponse } from './response_utils';
 import {
   getCommonDefaultAsyncSubmitParams,
@@ -26,31 +28,18 @@ import type { ISearchStrategy, SearchStrategyDependencies } from '../../types';
 import type { IAsyncSearchOptions } from '../../../../common';
 import type { SearchConfigSchema } from '../../../config';
 
-// `drop_null_columns` is going to change the response
-// now we get `all_columns` and `columns`
-// `columns` contain only columns with data
-// `all_columns` contain everything
-type ESQLQueryRequest = ESQLSearchParams & SqlQueryRequest;
+type ESQLQueryRequest = ESQLSearchParams;
+type EsqlResponse = EsqlAsyncEsqlResult | EsqlEsqlResult;
 
 export const esqlAsyncSearchStrategyProvider = (
   searchConfig: SearchConfigSchema,
   logger: Logger
-): ISearchStrategy<
-  IKibanaSearchRequest<ESQLQueryRequest>,
-  IKibanaSearchResponse<EsqlAsyncQueryResponse>
-> => {
+): ISearchStrategy<IKibanaSearchRequest<ESQLQueryRequest>, IKibanaSearchResponse<EsqlResponse>> => {
   function cancelEsqlAsyncSearch(
     id: string,
     { esClient }: Pick<SearchStrategyDependencies, 'esClient'>
   ) {
-    return esClient.asCurrentUser.esql.asyncQueryDelete(
-      { id },
-      {
-        meta: true,
-        // we don't want the ES client to retry (default value is 3)
-        maxRetries: 0,
-      }
-    );
+    return esClient.asCurrentUser.esql.asyncQueryDelete({ id });
   }
 
   function stopEsqlAsyncSearch(
@@ -70,23 +59,16 @@ export const esqlAsyncSearchStrategyProvider = (
   }
 
   function getEsqlAsyncSearch(
-    { id, ...request }: WithRequiredProperty<IKibanaSearchRequest<ESQLQueryRequest>, 'id'>,
+    { id, ...request }: IKibanaSearchRequest<ESQLQueryRequest>,
     options: IAsyncSearchOptions,
     { esClient }: SearchStrategyDependencies
   ) {
-    const params = {
-      ...getCommonDefaultAsyncGetParams(searchConfig, options),
-      ...(request.params?.keep_alive ? { keep_alive: request.params.keep_alive } : {}),
-      ...(request.params?.wait_for_completion_timeout
-        ? { wait_for_completion_timeout: request.params.wait_for_completion_timeout }
-        : {}),
-    };
-
+    const commonGetParams = getCommonDefaultAsyncGetParams(searchConfig, options);
     return esClient.asCurrentUser.esql.asyncQueryGet(
       {
-        id,
-        ...params,
-        // FIXME: the drop_null_columns param shouldn't be needed here once https://github.com/elastic/elasticsearch/issues/138439 is resolved
+        id: id!,
+        ...commonGetParams,
+        // FIXME: drop_null_columns shouldn't be needed here once https://github.com/elastic/elasticsearch/issues/138439 is resolved
         drop_null_columns: request.params?.dropNullColumns,
       },
       {
@@ -99,12 +81,11 @@ export const esqlAsyncSearchStrategyProvider = (
   }
 
   async function submitEsqlSearch(
-    request: IKibanaSearchRequest<ESQLQueryRequest>,
+    { id, ...request }: IKibanaSearchRequest<ESQLQueryRequest>,
     options: IAsyncSearchOptions,
     { esClient }: SearchStrategyDependencies
   ) {
-    if (!request.params) throw new Error('Missing request params');
-    const { dropNullColumns, ...requestParams } = request.params;
+    const { dropNullColumns, ...requestParams } = request.params ?? {};
 
     const params = {
       ...(await getCommonDefaultAsyncSubmitParams(searchConfig, options)),
@@ -112,10 +93,9 @@ export const esqlAsyncSearchStrategyProvider = (
     };
 
     return esClient.asCurrentUser.esql.asyncQuery(
-      {
-        ...params,
-        ...(dropNullColumns ? { drop_null_columns: true } : {}),
-      },
+      // ESQLSearchParams types (filter: unknown, params: ScalarValue[]) are slightly wider than
+      // EsqlAsyncQueryRequest; the runtime values are compatible so we cast.
+      { ...params, drop_null_columns: dropNullColumns } as EsqlAsyncQueryRequest,
       {
         ...options.transport,
         signal: options.abortSignal,
@@ -136,18 +116,14 @@ export const esqlAsyncSearchStrategyProvider = (
     const { abortSignal, ...options } = searchOptions;
     const search = async () => {
       const response = await (!id
-        ? submitEsqlSearch(request, options, deps)
+        ? submitEsqlSearch({ id, ...request }, options, deps)
         : options.retrieveResults
         ? stopEsqlAsyncSearch(id, options, deps)
         : getEsqlAsyncSearch({ id, ...request }, options, deps));
 
       const { body, headers, meta } = response;
 
-      return toAsyncKibanaSearchResponse(
-        body as EsqlAsyncQueryResponse, // We can remove this cast after https://github.com/elastic/elasticsearch-js/issues/3215
-        headers,
-        meta?.request?.params
-      );
+      return toAsyncKibanaSearchResponse(body, headers, meta?.request?.params);
     };
 
     const cancel = async () => {
