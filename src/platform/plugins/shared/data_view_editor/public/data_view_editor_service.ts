@@ -26,6 +26,7 @@ import type {
 } from '@kbn/data-views-plugin/public';
 import { INDEX_PATTERN_TYPE } from '@kbn/data-views-plugin/public';
 import type { ICPSManager } from '@kbn/cps-utils';
+import { PROJECT_ROUTING } from '@kbn/cps-utils';
 
 import type {
   RollupIndicesCapsResponse,
@@ -310,6 +311,10 @@ export class DataViewEditorService {
     const allSrcs = await this.getIndicesCached({
       pattern: '*',
       showAllIndices: this.allowHidden,
+      // When CPS is active, fetch all sources with all-projects routing so the "All sources"
+      // panel in the preview shows indices from every connected CPS project, not just the
+      // ones selected by the user in the project picker.
+      ...(this.cpsManager ? { projectRouting: PROJECT_ROUTING.ALL } : {}),
     });
     await this.loadMatchedIndices(this.indexPattern, this.allowHidden, allSrcs, this.type);
 
@@ -327,14 +332,18 @@ export class DataViewEditorService {
   private getIndicesCached = async (props: {
     pattern: string;
     showAllIndices?: boolean | undefined;
+    projectRouting?: string;
   }) => {
-    const projectRouting = this.cpsManager?.getProjectRouting();
-    const key = JSON.stringify({ ...props, projectRouting });
+    const { projectRouting: routingOverride, ...restProps } = props;
+    // When no override is provided, include the current CPS selection in the cache key so that
+    // stale entries are not reused after the user changes the project picker.
+    const cacheProjectRouting = routingOverride ?? this.cpsManager?.getProjectRouting();
+    const key = JSON.stringify({ ...restProps, projectRouting: cacheProjectRouting });
 
     this.getIndicesMemory[key] =
       this.getIndicesMemory[key] ||
       this.getIsRollupIndex().then((isRollupIndex) =>
-        this.dataViews.getIndices({ ...props, isRollupIndex })
+        this.dataViews.getIndices({ ...restProps, isRollupIndex, projectRouting: routingOverride })
       );
 
     this.getIndicesMemory[key].catch(() => {
