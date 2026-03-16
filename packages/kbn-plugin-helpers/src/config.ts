@@ -24,7 +24,11 @@ const isArrayOfStrings = (v: any): v is string[] =>
 export async function loadConfig(log: ToolingLog, plugin: Plugin): Promise<Config> {
   try {
     const path = Path.resolve(plugin.directory, '.kibana-plugin-helpers.json');
-    const file = loadJsonFile(path);
+    const file = loadJsonFile<{
+      skipInstallDependencies: boolean;
+      buildSourcePatterns?: string[];
+      serverSourcePatterns?: string[];
+    }>(path);
 
     if (!(typeof file === 'object' && file && !Array.isArray(file))) {
       throw new TypeError(`expected config at [${path}] to be an object`);
