@@ -45,6 +45,7 @@ export type VersionedRouteConfig<Method extends RouteMethod> = Omit<
     | 'excludeFromRateLimiter'
     | 'httpResource'
     | 'availability'
+    | 'disableResponseCompression'
   >;
   /** See {@link RouteConfigOptions<RouteMethod>['access']} */
   access: Exclude<RouteConfigOptions<Method>['access'], undefined>;

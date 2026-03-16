@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { Request, Server } from '@hapi/hapi';
+import type { Request, RouteOptions, Server } from '@hapi/hapi';
 import HapiStaticFiles from '@hapi/inert';
 import url from 'url';
 import { v4 as uuidv4 } from 'uuid';
@@ -517,6 +517,20 @@ export class HttpServer {
         return h.continue;
       });
     }
+
+    // Per-route compression opt-out: routes with `disableResponseCompression: true` bypass
+    // Hapi's content-encoding negotiation by clearing the effective Accept-Encoding before
+    // the response is transmitted. This runs after the handler so it does not interfere with
+    // global compression settings applied in `onRequest` above.
+    this.server.ext('onPreResponse', (request, h) => {
+      const routeOptions = (request.route.settings as RouteOptions).app as
+        | KibanaRouteOptions
+        | undefined;
+      if (routeOptions?.disableResponseCompression) {
+        request.info.acceptEncoding = '';
+      }
+      return h.continue;
+    });
   }
 
   private setupResponseLogging() {
@@ -953,6 +967,7 @@ export class HttpServer {
       deprecated,
       security: route.security,
       ...omitBy({ excludeFromRateLimiter: route.options.excludeFromRateLimiter }, isNil),
+      ...omitBy({ disableResponseCompression: route.options.disableResponseCompression }, isNil),
     };
     // Log HTTP API target consumer.
     optionsLogger.debug(

@@ -439,6 +439,17 @@ export interface RouteConfigOptions<Method extends RouteMethod> {
   excludeFromRateLimiter?: boolean;
 
   /**
+   * Disables response compression for this route, regardless of the server-level
+   * compression configuration and the MIME type's compressibility.
+   *
+   * Useful for routes using Server-Sent Events (SSE) or other streaming protocols
+   * where compression would interfere with chunked transfer or cause proxy buffering.
+   *
+   * @default false
+   */
+  disableResponseCompression?: boolean;
+
+  /**
    * Release version or date that this route will be removed
    * Use with `deprecated: true`
    *

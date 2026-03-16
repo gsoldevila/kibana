@@ -349,6 +349,11 @@ export function registerChatRoutes({
         availability: {
           since: '9.2.0',
         },
+        // SSE responses must never be compressed. Compression requires buffering data
+        // before flushing a compressed chunk, which defeats the purpose of streaming.
+        // This also prevents cloud proxy buffering that occurs when Hapi compresses
+        // the response and the proxy re-buffers it due to Vary: accept-encoding handling.
+        disableResponseCompression: true,
       },
     })
     .addVersion(
@@ -383,12 +388,7 @@ export function registerChatRoutes({
 
         return response.ok({
           headers: {
-            // cloud compress text/* types, loosing chunking capabilities which we need for SSE
-            'Content-Type': cloud?.isCloudEnabled
-              ? 'application/octet-stream'
-              : 'text/event-stream',
-            // another attempt at disabling compression
-            'Content-Encoding': 'identity',
+            'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             Connection: 'keep-alive',
             'Transfer-Encoding': 'chunked',
