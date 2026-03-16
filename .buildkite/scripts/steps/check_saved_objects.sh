@@ -40,7 +40,12 @@ findExistingSnapshotSha() {
       if [[ "$http_status" == "404"* ]]; then
         echo "Snapshot '$url' NOT FOUND, fetching parent commit snapshot (attempt $attempts of $max_attempts)..." >&2
         # Obtain the parent SHA, falling back to the GitHub API for commits not in the local clone
-        sha=$(getParentSha "$sha")
+        local parent_sha
+        if ! parent_sha="$(getParentSha "$sha")" || [[ -z "$parent_sha" || "$parent_sha" == "null" ]]; then
+          echo "❌ Failed to resolve parent SHA for '$sha' while searching for a baseline snapshot." >&2
+          return 1
+        fi
+        sha="$parent_sha"
       else
         echo "Error fetching snapshot '$url' (attempt $attempts of $max_attempts)..." >&2
       fi
