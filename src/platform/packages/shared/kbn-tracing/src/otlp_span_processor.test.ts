@@ -41,9 +41,7 @@ describe('OTLPSpanProcessor', () => {
 
     it('passes the url to the gRPC exporter', () => {
       new OTLPSpanProcessor(BASE_CONFIG, 'grpc');
-      expect(MockedGRPC).toHaveBeenCalledWith(
-        expect.objectContaining({ url: BASE_CONFIG.url })
-      );
+      expect(MockedGRPC).toHaveBeenCalledWith(expect.objectContaining({ url: BASE_CONFIG.url }));
     });
 
     it('converts headers to gRPC Metadata', () => {
@@ -67,10 +65,7 @@ describe('OTLPSpanProcessor', () => {
     });
 
     it('does not pass a headers field to the gRPC exporter', () => {
-      new OTLPSpanProcessor(
-        { ...BASE_CONFIG, headers: { authorization: 'Bearer token' } },
-        'grpc'
-      );
+      new OTLPSpanProcessor({ ...BASE_CONFIG, headers: { authorization: 'Bearer token' } }, 'grpc');
 
       const callArg = MockedGRPC.mock.calls[0][0] as Record<string, unknown>;
       expect(callArg).not.toHaveProperty('headers');
@@ -86,10 +81,7 @@ describe('OTLPSpanProcessor', () => {
     });
 
     it('passes url and headers directly to the HTTP exporter', () => {
-      new OTLPSpanProcessor(
-        { ...BASE_CONFIG, headers: { authorization: 'Bearer token' } },
-        'http'
-      );
+      new OTLPSpanProcessor({ ...BASE_CONFIG, headers: { authorization: 'Bearer token' } }, 'http');
       expect(MockedHTTP).toHaveBeenCalledWith({
         url: BASE_CONFIG.url,
         headers: { authorization: 'Bearer token' },
