@@ -154,7 +154,6 @@ const ESQLEditorInternal = function ESQLEditor({
   mergeExternalMessages,
   hideQuickSearch,
   queryStats,
-  projectRouting$,
   enableResourceBrowser = false,
 }: ESQLEditorPropsInternal) {
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -179,6 +178,7 @@ const ESQLEditorInternal = function ESQLEditor({
   const {
     application,
     core,
+    cps,
     fieldsMetadata,
     uiSettings,
     uiActions,
@@ -922,6 +922,7 @@ const ESQLEditorInternal = function ESQLEditor({
   // cache must also be cleared so the next validation fetches fresh source lists.
   // skip(1) drops the initial BehaviorSubject replay so we don't double-validate on mount.
   useEffect(() => {
+    const projectRouting$ = cps?.cpsManager?.getProjectRouting$();
     if (!projectRouting$) return;
 
     const subscription = projectRouting$.pipe(skip(1)).subscribe(() => {
@@ -930,7 +931,7 @@ const ESQLEditorInternal = function ESQLEditor({
     });
 
     return () => subscription.unsubscribe();
-  }, [projectRouting$, dataSourcesCache, queryValidation]);
+  }, [cps, dataSourcesCache, queryValidation]);
 
   // Refresh the fields cache when a new field has been added to the lookup index
   const onNewFieldsAddedToLookupIndex = useCallback(async () => {
