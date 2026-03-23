@@ -7,6 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
+import type { Observable } from 'rxjs';
 import type { CoreStart } from '@kbn/core/public';
 import type { AggregateQuery } from '@kbn/es-query';
 import type { FieldsMetadataPublicStart } from '@kbn/fields-metadata-plugin/public';
@@ -88,6 +89,15 @@ export interface ESQLEditorProps {
   enableResourceBrowser?: boolean;
   /** Stats about the last request made */
   queryStats?: ESQLQueryStats;
+  /**
+   * Optional observable that emits whenever the CPS project routing selection changes (e.g. the
+   * user picks a different project in the project picker). The editor re-validates the current
+   * query on each emission so that index-availability checks reflect the new project scope.
+   *
+   * Consumers with access to the CPS plugin should pass `cpsManager.getProjectRouting$()` here.
+   * When omitted the editor behaves as today (no automatic re-validation on project change).
+   */
+  projectRouting$?: Observable<string | undefined>;
 }
 
 interface ESQLVariableService {

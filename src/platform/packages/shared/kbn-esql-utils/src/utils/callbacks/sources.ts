@@ -29,16 +29,18 @@ interface IntegrationsResponse {
  * @param core The core start contract to make HTTP requests.
  * @param areRemoteIndicesAvailable A boolean indicating if remote indices should be included.
  * @param signal Optional AbortSignal to cancel the request.
+ * @param headers Optional additional HTTP headers forwarded with the request.
  * @returns A promise that resolves to an array of ESQLSourceResult objects.
  */
 export const getIndicesList = async (
   core: Pick<CoreStart, 'http'>,
   areRemoteIndicesAvailable: boolean,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  headers?: Record<string, string>
 ): Promise<ESQLSourceResult[]> => {
   const scope = areRemoteIndicesAvailable ? 'all' : 'local';
   const response = await core.http
-    .get(`${SOURCES_AUTOCOMPLETE_ROUTE}${scope}`, { signal })
+    .get(`${SOURCES_AUTOCOMPLETE_ROUTE}${scope}`, { signal, headers })
     .catch((error) => {
       if (signal?.aborted) return [];
       // eslint-disable-next-line no-console
@@ -96,18 +98,22 @@ const getIntegrations = async (
  * @param core The core start contract to make HTTP requests and access application capabilities.
  * @param getLicense An optional function to retrieve the current license information.
  * @param signal Optional AbortSignal to cancel the request.
+ * @param headers Optional additional HTTP headers forwarded with the index-resolution request.
+ *   Pass `{ 'x-kbn-project-routing': value }` to override the project routing injected by the
+ *   CPS interceptor (e.g. when the ESQL query contains a `SET project_routing` statement).
  * @returns A promise that resolves to an array of ESQLSourceResult objects.
  */
 export const getESQLSources = async (
   core: Pick<CoreStart, 'application' | 'http'>,
   getLicense: (() => Promise<ILicense | undefined>) | undefined,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  headers?: Record<string, string>
 ): Promise<ESQLSourceResult[]> => {
   const ls = await getLicense?.();
   const ccrFeature = ls?.getFeature('ccr');
   const areRemoteIndicesAvailable = ccrFeature?.isAvailable ?? false;
   const [allIndices, integrations] = await Promise.all([
-    getIndicesList(core, areRemoteIndicesAvailable, signal),
+    getIndicesList(core, areRemoteIndicesAvailable, signal, headers),
     getIntegrations(core, signal),
   ]);
   return [...allIndices, ...integrations];

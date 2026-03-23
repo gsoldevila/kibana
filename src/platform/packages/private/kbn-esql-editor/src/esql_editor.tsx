@@ -21,6 +21,7 @@ import { i18n } from '@kbn/i18n';
 import moment from 'moment';
 import { isEqual, memoize } from 'lodash';
 import { Global, css } from '@emotion/react';
+import { skip } from 'rxjs';
 import {
   getIndexPatternFromESQLQuery,
   getESQLSources,
@@ -28,6 +29,7 @@ import {
   getJoinIndices,
   fixESQLQueryWithVariables,
   prettifyQuery,
+  getProjectRoutingFromEsqlQuery,
 } from '@kbn/esql-utils';
 import type { CodeEditorProps } from '@kbn/code-editor';
 import { CodeEditor } from '@kbn/code-editor';
@@ -152,6 +154,7 @@ const ESQLEditorInternal = function ESQLEditor({
   mergeExternalMessages,
   hideQuickSearch,
   queryStats,
+  projectRouting$,
   enableResourceBrowser = false,
 }: ESQLEditorPropsInternal) {
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -603,16 +606,27 @@ const ESQLEditorInternal = function ESQLEditor({
     return { cache: fn.cache, memoizedFieldsFromESQL: fn };
   }, []);
 
+  // Extract the project routing override from a `SET project_routing = <value>` pre-statement.
+  // When present this value takes precedence over the CPS project picker selection so that index
+  // resolution in the sources route reflects what Elasticsearch will actually use for the query.
+  const setProjectRouting = useMemo(() => getProjectRoutingFromEsqlQuery(code), [code]);
+
   const { cache: dataSourcesCache, memoizedSources } = useMemo(() => {
+    // Include the SET-derived routing override in the cache key so that changing the SET
+    // statement causes a fresh fetch rather than returning stale cached sources.
+    const headers: Record<string, string> | undefined = setProjectRouting
+      ? { 'x-kbn-project-routing': setProjectRouting }
+      : undefined;
+
     const fn = memoize(
       (...args: [CoreStart, (() => Promise<ILicense | undefined>) | undefined]) => ({
         timestamp: Date.now(),
-        result: getESQLSources(...args),
+        result: getESQLSources(...args, undefined, headers),
       })
     );
 
     return { cache: fn.cache, memoizedSources: fn };
-  }, []);
+  }, [setProjectRouting]);
 
   const { cache: historyStarredItemsCache, memoizedHistoryStarredItems } = useMemo(() => {
     const fn = memoize(
@@ -902,6 +916,21 @@ const ESQLEditorInternal = function ESQLEditor({
     },
     [dataSourcesCache, getJoinIndicesCallback, onQueryUpdate, queryValidation]
   );
+
+  // Re-validate the query whenever the CPS project routing selection changes so that index
+  // availability checks (getSources) reflect the newly selected project scope. The data sources
+  // cache must also be cleared so the next validation fetches fresh source lists.
+  // skip(1) drops the initial BehaviorSubject replay so we don't double-validate on mount.
+  useEffect(() => {
+    if (!projectRouting$) return;
+
+    const subscription = projectRouting$.pipe(skip(1)).subscribe(() => {
+      dataSourcesCache?.clear?.();
+      queryValidation({ active: true });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [projectRouting$, dataSourcesCache, queryValidation]);
 
   // Refresh the fields cache when a new field has been added to the lookup index
   const onNewFieldsAddedToLookupIndex = useCallback(async () => {

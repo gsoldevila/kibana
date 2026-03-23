@@ -46,6 +46,22 @@ export class CpsPlugin implements Plugin<CPSPluginSetup, CPSPluginStart> {
         appAccessResolvers: this.appAccessResolvers,
       });
 
+      // Inject the current project routing into every outgoing Kibana HTTP request via a
+      // dedicated header, so server-side route handlers can opt into CPS-aware ES clients
+      // without each plugin having to thread the value through manually.
+      // The interceptor intentionally skips injection when the header is already present so
+      // that callers (e.g. the ESQL editor with a SET project_routing override) can supply
+      // a more specific value that takes precedence.
+      core.http.intercept({
+        request(options) {
+          if (options.headers?.['x-kbn-project-routing']) return;
+          const routing = manager.getProjectRouting();
+          if (routing) {
+            return { headers: { ...options.headers, 'x-kbn-project-routing': routing } };
+          }
+        },
+      });
+
       // Register project picker only after the default project routing is known
       manager.whenReady().then(() =>
         import('@kbn/cps-utils').then(({ ProjectPickerContainer }) => {
