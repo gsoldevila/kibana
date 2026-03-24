@@ -132,7 +132,6 @@ function createCoreRequestHandlerContextMock() {
     },
     elasticsearch: {
       client: elasticsearchServiceMock.createScopedClusterClient(),
-      getClient: jest.fn().mockReturnValue(elasticsearchServiceMock.createScopedClusterClient()),
     },
     uiSettings: {
       client: uiSettingsServiceMock.createClient(),

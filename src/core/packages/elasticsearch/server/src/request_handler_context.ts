@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { AsScopedOptions, IScopedClusterClient } from './client';
+import type { IScopedClusterClient } from './client';
 
 /**
  * Core's `elasticsearch` request handler context.
@@ -16,21 +16,6 @@ import type { AsScopedOptions, IScopedClusterClient } from './client';
 export interface ElasticsearchRequestHandlerContext {
   /**
    * A pre-scoped {@link IScopedClusterClient} for the current request using origin-only routing.
-   * Use {@link ElasticsearchRequestHandlerContext.getClient} for CPS-aware routing.
    */
   client: IScopedClusterClient;
-
-  /**
-   * Returns a {@link IScopedClusterClient} scoped to the current request with the given
-   * {@link AsScopedOptions | routing options}.
-   *
-   * Use `{ projectRouting: 'http-header' }` to honour the project picker selection forwarded
-   * by the CPS browser-side interceptor via the `x-kbn-project-routing` header:
-   *
-   * ```ts
-   * const client = core.elasticsearch.getClient({ projectRouting: 'http-header' });
-   * const result = await client.asCurrentUser.search(...);
-   * ```
-   */
-  getClient(opts: AsScopedOptions): IScopedClusterClient;
 }

@@ -52,14 +52,13 @@ interface CommonFactoryRoutingOpts {
 }
 
 interface ScopedFactoryRoutingOpts extends CommonFactoryRoutingOpts {
-  projectRouting: 'space' | 'http-header';
+  projectRouting: 'space';
   request: ScopeableUrlRequest;
 }
 
 /**
  * Union of routing options passed to {@link OnRequestHandlerFactory}.
- * The scoped variant carries the request so the factory can extract the appropriate
- * routing value (space NPRE or `x-kbn-project-routing` header).
+ * The scoped variant carries the request so the factory can extract the space NPRE.
  * @internal
  */
 export type FactoryRoutingOpts = CommonFactoryRoutingOpts | ScopedFactoryRoutingOpts;

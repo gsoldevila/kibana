@@ -20,8 +20,8 @@ import {
 import { i18n } from '@kbn/i18n';
 import moment from 'moment';
 import { isEqual, memoize } from 'lodash';
+import { EMPTY } from 'rxjs';
 import { Global, css } from '@emotion/react';
-import { skip } from 'rxjs';
 import {
   getIndexPatternFromESQLQuery,
   getESQLSources,
@@ -198,6 +198,7 @@ const ESQLEditorInternal = function ESQLEditor({
     [core.http, core.userProfile, usageCollection]
   );
 
+  const pickerProjectRouting = useObservable(cps?.cpsManager?.getProjectRouting$() ?? EMPTY);
   const activeSolutionNavId = useObservable(core.chrome.getActiveSolutionNavId$());
   const activeSolutionId: ESQLRegistrySolutionId =
     (activeSolutionNavId as ESQLRegistrySolutionId) ?? ESQL_CLASSIC_SOLUTION_ID;
@@ -606,27 +607,22 @@ const ESQLEditorInternal = function ESQLEditor({
     return { cache: fn.cache, memoizedFieldsFromESQL: fn };
   }, []);
 
-  // Extract the project routing override from a `SET project_routing = <value>` pre-statement.
-  // When present this value takes precedence over the CPS project picker selection so that index
-  // resolution in the sources route reflects what Elasticsearch will actually use for the query.
+  // `SET project_routing` in the query takes precedence over the project picker selection.
   const setProjectRouting = useMemo(() => getProjectRoutingFromEsqlQuery(code), [code]);
+  const effectiveProjectRouting = setProjectRouting ?? pickerProjectRouting;
 
   const { cache: dataSourcesCache, memoizedSources } = useMemo(() => {
-    // Include the SET-derived routing override in the cache key so that changing the SET
-    // statement causes a fresh fetch rather than returning stale cached sources.
-    const headers: Record<string, string> | undefined = setProjectRouting
-      ? { 'x-kbn-project-routing': setProjectRouting }
-      : undefined;
-
+    // Keying on effectiveProjectRouting ensures a fresh cache (and therefore a fresh fetch)
+    // whenever either the SET statement or the picker selection changes.
     const fn = memoize(
       (...args: [CoreStart, (() => Promise<ILicense | undefined>) | undefined]) => ({
         timestamp: Date.now(),
-        result: getESQLSources(...args, undefined, headers),
+        result: getESQLSources(...args, undefined, effectiveProjectRouting),
       })
     );
 
     return { cache: fn.cache, memoizedSources: fn };
-  }, [setProjectRouting]);
+  }, [effectiveProjectRouting]);
 
   const { cache: historyStarredItemsCache, memoizedHistoryStarredItems } = useMemo(() => {
     const fn = memoize(
@@ -919,19 +915,18 @@ const ESQLEditorInternal = function ESQLEditor({
 
   // Re-validate the query whenever the CPS project routing selection changes so that index
   // availability checks (getSources) reflect the newly selected project scope. The data sources
-  // cache must also be cleared so the next validation fetches fresh source lists.
-  // skip(1) drops the initial BehaviorSubject replay so we don't double-validate on mount.
+  // Re-validate when the project picker selection changes. useObservable causes a re-render
+  // (and therefore a memoizedSources cache miss) automatically; this effect handles the
+  // explicit re-validation trigger. The ref guards against running on the initial mount so
+  // we don't double-validate when the component first loads.
+  const isFirstPickerRenderRef = useRef(true);
   useEffect(() => {
-    const projectRouting$ = cps?.cpsManager?.getProjectRouting$();
-    if (!projectRouting$) return;
-
-    const subscription = projectRouting$.pipe(skip(1)).subscribe(() => {
-      dataSourcesCache?.clear?.();
-      queryValidation({ active: true });
-    });
-
-    return () => subscription.unsubscribe();
-  }, [cps, dataSourcesCache, queryValidation]);
+    if (isFirstPickerRenderRef.current) {
+      isFirstPickerRenderRef.current = false;
+      return;
+    }
+    queryValidation({ active: true });
+  }, [pickerProjectRouting, queryValidation]);
 
   // Refresh the fields cache when a new field has been added to the lookup index
   const onNewFieldsAddedToLookupIndex = useCallback(async () => {

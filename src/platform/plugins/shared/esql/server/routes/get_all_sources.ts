@@ -25,6 +25,9 @@ export const registerGetSourcesRoute = (router: IRouter, { logger }: PluginIniti
             }
           ),
         }),
+        query: schema.object({
+          projectRouting: schema.maybe(schema.string()),
+        }),
       },
       security: {
         authz: {
@@ -36,14 +39,12 @@ export const registerGetSourcesRoute = (router: IRouter, { logger }: PluginIniti
     async (requestHandlerContext, request, response) => {
       try {
         const { scope } = request.params;
+        const { projectRouting } = request.query;
         const core = await requestHandlerContext.core;
-        // Use the project routing forwarded by the CPS browser interceptor so that index
-        // resolution honours the current project picker selection (or an explicit
-        // SET project_routing override sent by the ESQL editor as the same header).
         const service = new EsqlService({
-          client: core.elasticsearch.getClient({ projectRouting: 'http-header' }).asCurrentUser,
+          client: core.elasticsearch.client.asCurrentUser,
         });
-        const result = await service.getAllIndices(scope);
+        const result = await service.getAllIndices(scope, projectRouting);
 
         return response.ok({
           body: result,

@@ -9,7 +9,6 @@
 
 import type { KibanaRequest } from '@kbn/core-http-server';
 import type {
-  AsScopedOptions,
   IScopedClusterClient,
   ElasticsearchRequestHandlerContext,
 } from '@kbn/core-elasticsearch-server';
@@ -32,9 +31,5 @@ export class CoreElasticsearchRouteHandlerContext implements ElasticsearchReques
       this.#client = this.elasticsearchStart.client.asScoped(this.request);
     }
     return this.#client;
-  }
-
-  public getClient(opts: AsScopedOptions): IScopedClusterClient {
-    return this.elasticsearchStart.client.asScoped(this.request, opts);
   }
 }

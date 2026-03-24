@@ -35,14 +35,8 @@ export interface AsScopedOptions {
    *   the current Kibana space. Requires a {@link ScopeableUrlRequest} to be passed to `asScoped`
    *   so that the space can be extracted from the URL pathname. Use this when the scope of the
    *   query should match the data boundaries of the active space (e.g. alerting rules).
-   *
-   * - `'http-header'`: Routes requests using the value of the `x-kbn-project-routing` HTTP header
-   *   present on the incoming Kibana request. Falls back to origin-only routing when the header is
-   *   absent. Use this to honour the project picker selection that the CPS plugin automatically
-   *   injects into all browser-initiated requests, without requiring explicit coupling to the CPS
-   *   plugin contract.
    */
-  projectRouting: 'space' | 'http-header';
+  projectRouting: 'space';
 }
 
 /**
@@ -66,13 +60,9 @@ export interface IClusterClient {
 
   /**
    * Creates a {@link IScopedClusterClient | scoped cluster client} bound to the given request,
-   * forwarding the request's authentication headers to Elasticsearch, with explicit CPS routing.
+   * forwarding the request's authentication headers to Elasticsearch, with CPS space routing.
    *
-   * - `{ projectRouting: 'space' }` - requires a {@link ScopeableUrlRequest} so the space id can
-   *   be extracted from the URL pathname.
-   * - `{ projectRouting: 'http-header' }` - reads the `x-kbn-project-routing` request header
-   *   injected by the CPS plugin's browser-side interceptor. A plain {@link ScopeableRequest} is
-   *   sufficient for this mode.
+   * Requires a {@link ScopeableUrlRequest} so the space id can be extracted from the URL pathname.
    *
    * @param request - The incoming Kibana request.
    * @param opts - {@link AsScopedOptions} that configure CPS routing behavior.
