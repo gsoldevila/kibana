@@ -15,7 +15,6 @@ export type ApmConfigSchema = TypeOf<typeof apmConfigSchema>;
 const apmReusableConfigSchema = schema.object(
   {
     active: schema.maybe(schema.boolean()),
-    contextPropagationOnly: schema.maybe(schema.boolean()),
     serverUrl: schema.maybe(schema.uri()),
     secretToken: schema.maybe(schema.string()),
     apiKey: schema.maybe(schema.string()),

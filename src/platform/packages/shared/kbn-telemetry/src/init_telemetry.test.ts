@@ -73,11 +73,16 @@ describe('initTelemetry', () => {
       const apmConfig = new ApmConfiguration(
         REPO_ROOT,
         {
-          elastic: { apm: { active: false, contextPropagationOnly: false } },
           telemetry: { tracing: { enabled: true, sample_rate: 1, exporters: [] } },
         },
         false
       );
+
+      // CI sets ELASTIC_APM_ACTIVE=true via env vars, which would override the active:false above.
+      // We spy on getConfig to ensure the test is isolated from the environment.
+      jest
+        .spyOn(apmConfig, 'getConfig')
+        .mockReturnValue({ active: false, contextPropagationOnly: false });
 
       const { loadConfiguration } = jest.requireMock('@kbn/apm-config-loader');
       loadConfiguration.mockImplementationOnce(() => apmConfig);
