@@ -17,6 +17,7 @@ import type {
   ElasticsearchCapabilities,
 } from '@kbn/core-elasticsearch-server';
 import { getCapabilitiesFromClient } from '@kbn/core-elasticsearch-server-internal';
+import { ToolingLog } from '@kbn/tooling-log';
 import {
   bulkOverwriteTransformedDocuments,
   closePit,
@@ -76,11 +77,25 @@ export const runActionTestSuite = ({
   };
 
   beforeAll(async () => {
-    // start ES and get capabilities
-    const { esServer: _esServer, client: _client } = await startEs();
-    esServer = _esServer;
-    client = _client;
-    esCapabilities = await getCapabilitiesFromClient(client);
+    const log = new ToolingLog({ writeTo: process.stdout, level: 'info' });
+    const startTime = Date.now();
+    const elapsedSec = () => Math.round((Date.now() - startTime) / 1000);
+
+    log.info('[setup] Starting Elasticsearch...');
+    try {
+      const { esServer: _esServer, client: _client } = await startEs();
+      esServer = _esServer;
+      client = _client;
+      log.info(
+        `[setup] Elasticsearch started after ${elapsedSec()}s. Fetching cluster capabilities...`
+      );
+      esCapabilities = await getCapabilitiesFromClient(client);
+      log.info(`[setup] Setup complete after ${elapsedSec()}s.`);
+    } catch (err) {
+      log.error(`[setup] Failed after ${elapsedSec()}s`);
+      log.error(err instanceof Error ? err : new Error(String(err)));
+      throw err;
+    }
   });
 
   beforeAll(async () => {
