@@ -82,20 +82,14 @@ export const runActionTestSuite = ({
     const elapsedSec = () => Math.round((Date.now() - startTime) / 1000);
 
     log.info('[setup] Starting Elasticsearch...');
-    try {
-      const { esServer: _esServer, client: _client } = await startEs();
-      esServer = _esServer;
-      client = _client;
-      log.info(
-        `[setup] Elasticsearch started after ${elapsedSec()}s. Fetching cluster capabilities...`
-      );
-      esCapabilities = await getCapabilitiesFromClient(client);
-      log.info(`[setup] Setup complete after ${elapsedSec()}s.`);
-    } catch (err) {
-      log.error(`[setup] Failed after ${elapsedSec()}s`);
-      log.error(err instanceof Error ? err : new Error(String(err)));
-      throw err;
-    }
+    const { esServer: _esServer, client: _client } = await startEs();
+    esServer = _esServer;
+    client = _client;
+    log.info(
+      `[setup] Elasticsearch started after ${elapsedSec()}s. Fetching cluster capabilities...`
+    );
+    esCapabilities = await getCapabilitiesFromClient(client);
+    log.info(`[setup] Setup complete after ${elapsedSec()}s.`);
   });
 
   beforeAll(async () => {
