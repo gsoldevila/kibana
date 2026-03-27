@@ -99,6 +99,48 @@ export function toSchemaPathFormat(mappingPath: string): string {
   return mappingPath.replace(/\.properties\./g, '.');
 }
 
+/**
+ * Recursively extracts field paths from a Joi schema in the same format that ES mapping
+ * extraction produces, so they can be directly compared.
+ *
+ * Key differences from getSchemaStructure():
+ *   - Arrays of objects: recurses into the item's object schema instead of stopping at the
+ *     array, because ES has no array type and stores object sub-properties directly.
+ *   - Union types (schema.nullable / schema.oneOf): recurses into all alternatives and
+ *     returns the union of their paths.
+ */
+// Note: we deliberately access Joi schema internals here, following the same pattern already
+// established in getSchemaStructure() in kbn-config-schema. If Joi internals change, both
+// places will need updating.
+function extractMappingCompatibleSchemaFields(joiSchema: any, path: string[] = []): string[] {
+  // Union types (schema.nullable / schema.oneOf) — recurse into all alternatives
+  const matches: Array<{ schema: any }> = joiSchema.$_terms?.matches;
+  if (matches?.length > 0) {
+    return matches.flatMap(({ schema: alt }) => extractMappingCompatibleSchemaFields(alt, path));
+  }
+
+  // Object types — recurse into named keys
+  const namedKeys: Map<string, { schema: any }> = joiSchema._ids?._byKey;
+  if (namedKeys?.size > 0) {
+    return [...namedKeys.entries()].flatMap(([key, { schema: child }]) =>
+      extractMappingCompatibleSchemaFields(child, [...path, key])
+    );
+  }
+
+  // Array types — recurse into item schemas so that arrayOf(object({...})) produces the same
+  // sub-paths as a plain ES object mapping.
+  const items: any[] = joiSchema.$_terms?.items;
+  if (items?.length > 0) {
+    const itemPaths = items.flatMap((item) => extractMappingCompatibleSchemaFields(item, path));
+    // If item schemas produced sub-paths the array contains objects; return those paths.
+    // Otherwise it is an array of primitives and the field itself is the leaf.
+    return itemPaths.length > 0 ? itemPaths : path.length > 0 ? [path.join('.')] : [];
+  }
+
+  // Leaf field (primitive, literal, etc.)
+  return path.length > 0 ? [path.join('.')] : [];
+}
+
 export function validateAllMappingsInModelVersion(
   name: string,
   to: MigrationInfoRecord,
@@ -129,13 +171,23 @@ export function validateAllMappingsInModelVersion(
   }
 
   const mappingFieldPaths = getMappingFieldPaths(to.mappings);
-  const schemaFields = (
-    createSchema.getSchemaStructure() as Array<{ path: string[]; type: string }>
-  ).map(({ path }) => path.join('.'));
+
+  // ES mappings have no array type — fields inside arrayOf(object(...)) appear as direct
+  // sub-properties in the mapping, identical to plain object fields. We therefore traverse the
+  // Joi schema recursively and recurse into array item schemas so the produced field paths match
+  // what the mapping extraction would produce.
+  const schemaFields = extractMappingCompatibleSchemaFields(createSchema.getSchema());
 
   // Normalize mapping paths (ES format: "parent.properties.child") to schema format ("parent.child")
   const normalizedMappingPaths = mappingFieldPaths.map((p) => toSchemaPathFormat(p));
-  const undeclaredFields = normalizedMappingPaths.filter((field) => !schemaFields.includes(field));
+  const undeclaredFields = normalizedMappingPaths.filter((field) => {
+    if (schemaFields.includes(field)) return false;
+    // A mapping may declare a parent field as type:object/enabled:false without enumerating
+    // sub-properties (so only the parent path appears). If the schema has deeper leaf paths
+    // under that parent, the field is still covered.
+    if (schemaFields.some((sf) => sf.startsWith(`${field}.`))) return false;
+    return true;
+  });
 
   if (undeclaredFields.length > 0) {
     throw new Error(
@@ -146,6 +198,35 @@ export function validateAllMappingsInModelVersion(
   }
 }
 
+function throwIfIndexOrEnabledFalse(
+  name: string,
+  fieldsWithIndexFalse: string[],
+  fieldsWithEnabledFalse: string[]
+): void {
+  if (fieldsWithIndexFalse.length > 0) {
+    throw new Error(
+      `❌ The SO type '${name}' has new mapping fields with 'index: false': ${fieldsWithIndexFalse.join(
+        ', '
+      )}. ` +
+        `This option cannot be updated without reindexing. Use 'dynamic: false' instead or omit the mapping.`
+    );
+  }
+
+  if (fieldsWithEnabledFalse.length > 0) {
+    throw new Error(
+      `❌ The SO type '${name}' has new mapping fields with 'enabled: false': ${fieldsWithEnabledFalse.join(
+        ', '
+      )}. ` +
+        `This option cannot be updated without reindexing. Use 'dynamic: false' instead or omit the mapping.`
+    );
+  }
+}
+
+/**
+ * Validates that mappings introduced in the given model versions do not use 'index: false'
+ * or 'enabled: false'. Used for existing types where only newly added mapping fields need
+ * to be checked.
+ */
 export function validateNoIndexOrEnabledFalse(
   name: string,
   to: MigrationInfoRecord,
@@ -168,34 +249,60 @@ export function validateNoIndexOrEnabledFalse(
     });
   });
 
-  if (fieldsWithIndexFalse.length > 0) {
-    throw new Error(
-      `❌ The SO type '${name}' has new mapping fields with 'index: false': ${fieldsWithIndexFalse.join(
-        ', '
-      )}. ` +
-        `This option cannot be updated without reindexing. Use 'dynamic: false' instead or omit the mapping.`
-    );
-  }
+  throwIfIndexOrEnabledFalse(name, fieldsWithIndexFalse, fieldsWithEnabledFalse);
+}
 
-  if (fieldsWithEnabledFalse.length > 0) {
-    throw new Error(
-      `❌ The SO type '${name}' has new mapping fields with 'enabled: false': ${fieldsWithEnabledFalse.join(
-        ', '
-      )}. ` +
-        `This option cannot be updated without reindexing. Use 'dynamic: false' instead or omit the mapping.`
-    );
-  }
+/**
+ * Validates that no field in the entire mapping uses 'index: false' or 'enabled: false'.
+ * Used for new types where all mapping fields need to be checked (newMappings is always
+ * empty for initial model versions, so we scan the full mappings snapshot instead).
+ */
+export function validateNoIndexOrEnabledFalseInAllMappings(
+  name: string,
+  to: MigrationInfoRecord
+): void {
+  const fieldsWithIndexFalse: string[] = [];
+  const fieldsWithEnabledFalse: string[] = [];
+
+  Object.entries(to.mappings).forEach(([key, value]) => {
+    if (!key.startsWith('properties.') || value !== false) return;
+    if (key.endsWith('.index')) {
+      fieldsWithIndexFalse.push(
+        toSchemaPathFormat(key.slice('properties.'.length, -'.index'.length))
+      );
+    } else if (key.endsWith('.enabled')) {
+      fieldsWithEnabledFalse.push(
+        toSchemaPathFormat(key.slice('properties.'.length, -'.enabled'.length))
+      );
+    }
+  });
+
+  throwIfIndexOrEnabledFalse(name, fieldsWithIndexFalse, fieldsWithEnabledFalse);
+}
+
+function isTextOrKeyword(type: unknown): boolean {
+  return typeof type === 'string' && (type === 'text' || type === 'keyword');
 }
 
 export function validateNameTitleFieldTypes(name: string, to: MigrationInfoRecord): void {
   const invalidFields: string[] = [];
 
-  if ('properties.name.type' in to.mappings && to.mappings['properties.name.type'] !== 'text') {
-    invalidFields.push(`name (type: ${to.mappings['properties.name.type']}, expected: text)`);
+  if (
+    'properties.name.type' in to.mappings &&
+    !isTextOrKeyword(to.mappings['properties.name.type'])
+  ) {
+    invalidFields.push(
+      `name (type: ${to.mappings['properties.name.type']}, expected: text or keyword)`
+    );
   }
 
-  if ('properties.title.type' in to.mappings && to.mappings['properties.title.type'] !== 'text') {
-    invalidFields.push(`title (type: ${to.mappings['properties.title.type']}, expected: text)`);
+  if (
+    'properties.title.type' in to.mappings &&
+    !isTextOrKeyword(to.mappings['properties.title.type'])
+  ) {
+    invalidFields.push(
+      `title (type: ${to.mappings['properties.title.type']}, expected: text or keyword)`
+    );
   }
 
   if (invalidFields.length > 0) {
