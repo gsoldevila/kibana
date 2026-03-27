@@ -260,22 +260,12 @@ export function validateNoIndexOrEnabledFalseInAllMappings(
 export function validateNameTitleFieldTypes(name: string, to: MigrationInfoRecord): void {
   const invalidFields: string[] = [];
 
-  if (
-    'properties.name.type' in to.mappings &&
-    to.mappings['properties.name.type'] !== 'text'
-  ) {
-    invalidFields.push(
-      `name (type: ${to.mappings['properties.name.type']}, expected: text)`
-    );
+  if ('properties.name.type' in to.mappings && to.mappings['properties.name.type'] !== 'text') {
+    invalidFields.push(`name (type: ${to.mappings['properties.name.type']}, expected: text)`);
   }
 
-  if (
-    'properties.title.type' in to.mappings &&
-    to.mappings['properties.title.type'] !== 'text'
-  ) {
-    invalidFields.push(
-      `title (type: ${to.mappings['properties.title.type']}, expected: text)`
-    );
+  if ('properties.title.type' in to.mappings && to.mappings['properties.title.type'] !== 'text') {
+    invalidFields.push(`title (type: ${to.mappings['properties.title.type']}, expected: text)`);
   }
 
   if (invalidFields.length > 0) {
