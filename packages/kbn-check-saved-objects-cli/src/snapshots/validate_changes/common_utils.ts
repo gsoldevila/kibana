@@ -80,7 +80,17 @@ export function getMappingFieldPaths(mappings: Record<string, unknown>): string[
   return [
     ...new Set(
       Object.keys(mappings)
-        .filter((key) => key.startsWith('properties.'))
+        .filter((key) => {
+          if (!key.startsWith('properties.')) return false;
+          // Exclude multi-field subfield paths (e.g. properties.name.fields.keyword.type).
+          // In the flattened key format, a property literally named 'fields' is always surrounded
+          // by '.properties.' boundaries (e.g. properties.parent.properties.fields.properties.id.type).
+          // Stripping the leading 'properties.' prefix and then splitting on '.properties.' yields
+          // one segment per nesting level. A '.fields.' occurrence inside any such segment means
+          // the key describes a multi-field subfield, not a regular nested property.
+          const keyBody = key.slice('properties.'.length);
+          return !keyBody.split('.properties.').some((segment) => segment.includes('.fields.'));
+        })
         .map((key) => {
           const withoutPrefix = key.slice('properties.'.length);
           const lastDotIndex = withoutPrefix.lastIndexOf('.');

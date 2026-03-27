@@ -236,6 +236,18 @@ describe('validateChangesNewType', () => {
     expect(() => callValidate(to, createMockType('my-type', ['name', 'title']))).not.toThrow();
   });
 
+  it('should not throw when name has a keyword subfield for sortability', () => {
+    const to = buildNewType('my-type', {
+      mappings: {
+        'properties.name.type': 'text',
+        'properties.name.fields.keyword.type': 'keyword',
+        'properties.name.fields.keyword.ignore_above': 2048,
+      },
+    });
+
+    expect(() => callValidate(to, createMockType('my-type', ['name']))).not.toThrow();
+  });
+
   it('should not throw when mapping has nested fields that match schema (path format normalization)', () => {
     const snapshot = loadSnapshot('nested_mapping_fields.json');
 
