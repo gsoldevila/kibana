@@ -73,8 +73,8 @@ export function validateNewModelVersionSchemas(name: string, mv: ModelVersionSum
 }
 
 /**
- * Extracts field paths from flattened ES mapping keys (e.g. properties.foo.type, properties.bar.properties.baz.type).
- * Returns paths in ES format (e.g. "bar.properties.baz" for nested).
+ * Extracts logical field paths from flattened ES mapping keys, excluding multi-field subfields
+ * (e.g. `properties.name.fields.keyword.type`) which have no independent schema counterpart.
  */
 export function getMappingFieldPaths(mappings: Record<string, unknown>): string[] {
   return [
@@ -82,12 +82,9 @@ export function getMappingFieldPaths(mappings: Record<string, unknown>): string[
       Object.keys(mappings)
         .filter((key) => {
           if (!key.startsWith('properties.')) return false;
-          // Exclude multi-field subfield paths (e.g. properties.name.fields.keyword.type).
-          // In the flattened key format, a property literally named 'fields' is always surrounded
-          // by '.properties.' boundaries (e.g. properties.parent.properties.fields.properties.id.type).
-          // Stripping the leading 'properties.' prefix and then splitting on '.properties.' yields
-          // one segment per nesting level. A '.fields.' occurrence inside any such segment means
-          // the key describes a multi-field subfield, not a regular nested property.
+          // A property named 'fields' is always wrapped in '.properties.' on both sides in the
+          // flattened key, so splitting on '.properties.' and checking for '.fields.' within a
+          // segment reliably identifies multi-field subfields vs. regular nested properties.
           const keyBody = key.slice('properties.'.length);
           return !keyBody.split('.properties.').some((segment) => segment.includes('.fields.'));
         })
@@ -101,35 +98,25 @@ export function getMappingFieldPaths(mappings: Record<string, unknown>): string[
   ].sort();
 }
 
-/**
- * Normalizes ES mapping path (e.g. "schedule.properties.interval") to schema path format (e.g. "schedule.interval")
- * for comparison with getSchemaStructure() output.
- */
+/** Normalizes an ES mapping path (e.g. "parent.properties.child") to schema path format ("parent.child"). */
 export function toSchemaPathFormat(mappingPath: string): string {
   return mappingPath.replace(/\.properties\./g, '.');
 }
 
 /**
- * Recursively extracts field paths from a Joi schema in the same format that ES mapping
- * extraction produces, so they can be directly compared.
+ * Recursively extracts field paths from a Joi schema in a format compatible with ES mapping paths,
+ * so they can be directly compared. Unlike `getSchemaStructure()`, this function recurses into
+ * array item schemas (ES has no array type) and union alternatives (schema.nullable / schema.oneOf).
  *
- * Key differences from getSchemaStructure():
- *   - Arrays of objects: recurses into the item's object schema instead of stopping at the
- *     array, because ES has no array type and stores object sub-properties directly.
- *   - Union types (schema.nullable / schema.oneOf): recurses into all alternatives and
- *     returns the union of their paths.
+ * Accesses Joi schema internals following the same pattern as `getSchemaStructure()` in
+ * kbn-config-schema. If Joi internals change, both places will need updating.
  */
-// Note: we deliberately access Joi schema internals here, following the same pattern already
-// established in getSchemaStructure() in kbn-config-schema. If Joi internals change, both
-// places will need updating.
 function extractMappingCompatibleSchemaFields(joiSchema: any, path: string[] = []): string[] {
-  // Union types (schema.nullable / schema.oneOf) — recurse into all alternatives
   const matches: Array<{ schema: any }> = joiSchema.$_terms?.matches;
   if (matches?.length > 0) {
     return matches.flatMap(({ schema: alt }) => extractMappingCompatibleSchemaFields(alt, path));
   }
 
-  // Object types — recurse into named keys
   const namedKeys: Map<string, { schema: any }> = joiSchema._ids?._byKey;
   if (namedKeys?.size > 0) {
     return [...namedKeys.entries()].flatMap(([key, { schema: child }]) =>
@@ -137,17 +124,12 @@ function extractMappingCompatibleSchemaFields(joiSchema: any, path: string[] = [
     );
   }
 
-  // Array types — recurse into item schemas so that arrayOf(object({...})) produces the same
-  // sub-paths as a plain ES object mapping.
   const items: any[] = joiSchema.$_terms?.items;
   if (items?.length > 0) {
     const itemPaths = items.flatMap((item) => extractMappingCompatibleSchemaFields(item, path));
-    // If item schemas produced sub-paths the array contains objects; return those paths.
-    // Otherwise it is an array of primitives and the field itself is the leaf.
     return itemPaths.length > 0 ? itemPaths : path.length > 0 ? [path.join('.')] : [];
   }
 
-  // Leaf field (primitive, literal, etc.)
   return path.length > 0 ? [path.join('.')] : [];
 }
 
@@ -181,20 +163,13 @@ export function validateAllMappingsInModelVersion(
   }
 
   const mappingFieldPaths = getMappingFieldPaths(to.mappings);
-
-  // ES mappings have no array type — fields inside arrayOf(object(...)) appear as direct
-  // sub-properties in the mapping, identical to plain object fields. We therefore traverse the
-  // Joi schema recursively and recurse into array item schemas so the produced field paths match
-  // what the mapping extraction would produce.
   const schemaFields = extractMappingCompatibleSchemaFields(createSchema.getSchema());
 
-  // Normalize mapping paths (ES format: "parent.properties.child") to schema format ("parent.child")
   const normalizedMappingPaths = mappingFieldPaths.map((p) => toSchemaPathFormat(p));
   const undeclaredFields = normalizedMappingPaths.filter((field) => {
     if (schemaFields.includes(field)) return false;
-    // A mapping may declare a parent field as type:object/enabled:false without enumerating
-    // sub-properties (so only the parent path appears). If the schema has deeper leaf paths
-    // under that parent, the field is still covered.
+    // Accept a mapping path that has no sub-properties listed (e.g. type:object/enabled:false)
+    // if the schema declares deeper leaf paths under the same parent.
     if (schemaFields.some((sf) => sf.startsWith(`${field}.`))) return false;
     return true;
   });
@@ -232,11 +207,7 @@ function throwIfIndexOrEnabledFalse(
   }
 }
 
-/**
- * Validates that mappings introduced in the given model versions do not use 'index: false'
- * or 'enabled: false'. Used for existing types where only newly added mapping fields need
- * to be checked.
- */
+/** Checks that newly introduced mapping fields (existing types) do not use 'index: false' or 'enabled: false'. */
 export function validateNoIndexOrEnabledFalse(
   name: string,
   to: MigrationInfoRecord,
@@ -262,11 +233,7 @@ export function validateNoIndexOrEnabledFalse(
   throwIfIndexOrEnabledFalse(name, fieldsWithIndexFalse, fieldsWithEnabledFalse);
 }
 
-/**
- * Validates that no field in the entire mapping uses 'index: false' or 'enabled: false'.
- * Used for new types where all mapping fields need to be checked (newMappings is always
- * empty for initial model versions, so we scan the full mappings snapshot instead).
- */
+/** Checks that no field in the full mapping snapshot uses 'index: false' or 'enabled: false'. Used for new types. */
 export function validateNoIndexOrEnabledFalseInAllMappings(
   name: string,
   to: MigrationInfoRecord
