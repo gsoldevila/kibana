@@ -30,8 +30,8 @@
       "schemaVersions": [],
       "mappings": {
         "dynamic": false,
-        "properties.name.type": "integer",
-        "properties.title.type": "integer"
+        "properties.name.type": "keyword",
+        "properties.title.type": "keyword"
       }
     }
   }

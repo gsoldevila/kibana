@@ -280,28 +280,24 @@ export function validateNoIndexOrEnabledFalseInAllMappings(
   throwIfIndexOrEnabledFalse(name, fieldsWithIndexFalse, fieldsWithEnabledFalse);
 }
 
-function isTextOrKeyword(type: unknown): boolean {
-  return typeof type === 'string' && (type === 'text' || type === 'keyword');
-}
-
 export function validateNameTitleFieldTypes(name: string, to: MigrationInfoRecord): void {
   const invalidFields: string[] = [];
 
   if (
     'properties.name.type' in to.mappings &&
-    !isTextOrKeyword(to.mappings['properties.name.type'])
+    to.mappings['properties.name.type'] !== 'text'
   ) {
     invalidFields.push(
-      `name (type: ${to.mappings['properties.name.type']}, expected: text or keyword)`
+      `name (type: ${to.mappings['properties.name.type']}, expected: text)`
     );
   }
 
   if (
     'properties.title.type' in to.mappings &&
-    !isTextOrKeyword(to.mappings['properties.title.type'])
+    to.mappings['properties.title.type'] !== 'text'
   ) {
     invalidFields.push(
-      `title (type: ${to.mappings['properties.title.type']}, expected: text or keyword)`
+      `title (type: ${to.mappings['properties.title.type']}, expected: text)`
     );
   }
 

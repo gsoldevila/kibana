@@ -221,7 +221,7 @@ describe('validateChangesNewType', () => {
         schemaFields: ['name', 'title'],
       })
     ).toThrowError(
-      /The SO type 'type-with-wrong-name-title' has 'name' or 'title' fields with incorrect types.*name \(type: integer, expected: text or keyword\).*title \(type: integer, expected: text or keyword\)/
+      /The SO type 'type-with-wrong-name-title' has 'name' or 'title' fields with incorrect types.*name \(type: keyword, expected: text\).*title \(type: keyword, expected: text\)/
     );
   });
 
@@ -230,17 +230,6 @@ describe('validateChangesNewType', () => {
       mappings: {
         'properties.name.type': 'text',
         'properties.title.type': 'text',
-      },
-    });
-
-    expect(() => callValidate(to, createMockType('my-type', ['name', 'title']))).not.toThrow();
-  });
-
-  it('should not throw when name and title fields are of type keyword', () => {
-    const to = buildNewType('my-type', {
-      mappings: {
-        'properties.name.type': 'keyword',
-        'properties.title.type': 'keyword',
       },
     });
 
