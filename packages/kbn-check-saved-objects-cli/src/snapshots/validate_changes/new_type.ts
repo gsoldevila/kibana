@@ -52,5 +52,5 @@ export function validateChangesNewType({ to, registeredType }: ValidateChangesNe
   validateNoIndexOrEnabledFalseInAllMappings(name, to);
 
   // validate that name and title fields are of type "text"
-  validateNameTitleFieldTypes(name, to);
+  validateNameTitleFieldTypes(name, to, registeredType);
 }

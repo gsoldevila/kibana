@@ -248,6 +248,30 @@ describe('validateChangesNewType', () => {
     expect(() => callValidate(to, createMockType('my-type', ['name']))).not.toThrow();
   });
 
+  it('should not throw when the type is hidden, even if name field has non-text type', () => {
+    const to = buildNewType('my-hidden-type', {
+      mappings: { 'properties.name.type': 'keyword' },
+    });
+    const hiddenType = {
+      ...createMockType('my-hidden-type', ['name']),
+      hidden: true,
+    } as unknown as SavedObjectsType;
+
+    expect(() => callValidate(to, hiddenType)).not.toThrow();
+  });
+
+  it('should not throw for non-importable/exportable types, even if name field has non-text type', () => {
+    const to = buildNewType('my-internal-type', {
+      mappings: { 'properties.name.type': 'keyword' },
+    });
+    const internalType = {
+      ...createMockType('my-internal-type', ['name']),
+      management: { importableAndExportable: false },
+    } as unknown as SavedObjectsType;
+
+    expect(() => callValidate(to, internalType)).not.toThrow();
+  });
+
   it('should not throw when mapping has nested fields that match schema (path format normalization)', () => {
     const snapshot = loadSnapshot('nested_mapping_fields.json');
 

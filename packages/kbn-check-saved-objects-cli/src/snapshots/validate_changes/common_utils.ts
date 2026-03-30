@@ -257,7 +257,17 @@ export function validateNoIndexOrEnabledFalseInAllMappings(
   throwIfIndexOrEnabledFalse(name, fieldsWithIndexFalse, fieldsWithEnabledFalse);
 }
 
-export function validateNameTitleFieldTypes(name: string, to: MigrationInfoRecord): void {
+export function validateNameTitleFieldTypes(
+  name: string,
+  to: MigrationInfoRecord,
+  registeredType: SavedObjectsType
+): void {
+  // Search API compatibility is only relevant for types that are exposed via the Search API.
+  // Hidden types and types that are not importable/exportable are internal-only and exempt.
+  if (registeredType.hidden || registeredType.management?.importableAndExportable === false) {
+    return;
+  }
+
   const invalidFields: string[] = [];
 
   if ('properties.name.type' in to.mappings && to.mappings['properties.name.type'] !== 'text') {
