@@ -292,4 +292,3 @@ export function getInvalidNameTitleFields(
 export function isSearchableViaManagement(registeredType: SavedObjectsType): boolean {
   return registeredType.management?.importableAndExportable === true;
 }
-
