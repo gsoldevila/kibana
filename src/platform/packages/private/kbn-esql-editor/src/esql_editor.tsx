@@ -913,20 +913,27 @@ const ESQLEditorInternal = function ESQLEditor({
     [dataSourcesCache, getJoinIndicesCallback, onQueryUpdate, queryValidation]
   );
 
-  // Re-validate the query whenever the CPS project routing selection changes so that index
-  // availability checks (getSources) reflect the newly selected project scope. The data sources
   // Re-validate when the project picker selection changes. useObservable causes a re-render
   // (and therefore a memoizedSources cache miss) automatically; this effect handles the
-  // explicit re-validation trigger. The ref guards against running on the initial mount so
-  // we don't double-validate when the component first loads.
+  // explicit re-validation trigger.
+  //
+  // queryValidationRef keeps the latest queryValidation without being listed as an effect
+  // dependency: including queryValidation directly would cause the effect to fire on every
+  // code edit (queryValidation's identity changes whenever `code` changes), doubling the
+  // validation work and causing performance test timeouts.
+  const queryValidationRef = useRef(queryValidation);
+  useEffect(() => {
+    queryValidationRef.current = queryValidation;
+  }, [queryValidation]);
+
   const isFirstPickerRenderRef = useRef(true);
   useEffect(() => {
     if (isFirstPickerRenderRef.current) {
       isFirstPickerRenderRef.current = false;
       return;
     }
-    queryValidation({ active: true });
-  }, [pickerProjectRouting, queryValidation]);
+    queryValidationRef.current({ active: true });
+  }, [pickerProjectRouting]);
 
   // Refresh the fields cache when a new field has been added to the lookup index
   const onNewFieldsAddedToLookupIndex = useCallback(async () => {
