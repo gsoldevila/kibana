@@ -13,7 +13,7 @@ import type { MigrationInfoRecord } from '../../types';
 import {
   validateNewModelVersionSchemas,
   validateModelVersionNumbers,
-  validateNameTitleFieldTypes,
+  validateNameTitleFieldTypesExistingType,
   validateNoIndexOrEnabledFalse,
   getLatestModelVersion,
   validateInitialModelVersion,
@@ -62,7 +62,7 @@ export function validateChangesExistingType({
   validateModelVersionNumbers(name, to.modelVersions);
 
   // validate that name and title fields are of type "text"
-  validateNameTitleFieldTypes(name, to, registeredType, from, log);
+  validateNameTitleFieldTypesExistingType(name, to, from, registeredType, log);
 
   const newModelVersionCount = to.modelVersions.length - from.modelVersions.length;
 

@@ -235,20 +235,21 @@ describe('validateChangesExistingType', () => {
       mappings,
     });
 
-    const nonHiddenType: SavedObjectsType = {
+    const importableExportableType: SavedObjectsType = {
       name: 'my-type',
       namespaceType: 'agnostic',
       hidden: false,
+      management: { importableAndExportable: true },
       mappings: { dynamic: false, properties: {} },
       modelVersions: {},
-    };
+    } as unknown as SavedObjectsType;
 
     it('should warn (not throw) when name or title field was already keyword in a previous model version', () => {
       const from = buildRecord({ 'properties.name.type': 'keyword' });
       const to = buildRecord({ 'properties.name.type': 'keyword' });
 
       expect(() =>
-        validateChangesExistingType({ from, to, registeredType: nonHiddenType, log })
+        validateChangesExistingType({ from, to, registeredType: importableExportableType, log })
       ).not.toThrow();
       expect(log).toHaveBeenCalledWith(
         expect.stringContaining("pre-existing 'name' or 'title' fields with incorrect types")
@@ -261,7 +262,7 @@ describe('validateChangesExistingType', () => {
       const to = buildRecord({ 'properties.name.type': 'keyword' });
 
       expect(() =>
-        validateChangesExistingType({ from, to, registeredType: nonHiddenType, log })
+        validateChangesExistingType({ from, to, registeredType: importableExportableType, log })
       ).toThrowError(
         /The SO type 'my-type' has 'name' or 'title' fields with incorrect types.*name \(type: keyword, expected: text\)/
       );
@@ -275,9 +276,29 @@ describe('validateChangesExistingType', () => {
       });
 
       expect(() =>
-        validateChangesExistingType({ from, to, registeredType: nonHiddenType, log })
+        validateChangesExistingType({ from, to, registeredType: importableExportableType, log })
       ).toThrowError(/name \(type: keyword, expected: text\)/);
       expect(log).toHaveBeenCalledWith(expect.stringContaining('title (type: keyword'));
+    });
+
+    it('should not validate types not searchable via the management page', () => {
+      const internalType: SavedObjectsType = {
+        name: 'my-type',
+        namespaceType: 'agnostic',
+        hidden: false,
+        management: { importableAndExportable: false },
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      } as unknown as SavedObjectsType;
+      // Use the same keyword mapping in both from and to so that the model-version check does not
+      // fire — we only want to verify that the name/title check is skipped for internal types.
+      const from = buildRecord({ 'properties.name.type': 'keyword' });
+      const to = buildRecord({ 'properties.name.type': 'keyword' });
+
+      expect(() =>
+        validateChangesExistingType({ from, to, registeredType: internalType, log })
+      ).not.toThrow();
+      expect(log).not.toHaveBeenCalled();
     });
   });
 });

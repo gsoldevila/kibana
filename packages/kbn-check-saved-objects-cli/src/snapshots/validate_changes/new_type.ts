@@ -13,7 +13,7 @@ import {
   validateAllMappingsInModelVersion,
   validateNewModelVersionSchemas,
   validateModelVersionNumbers,
-  validateNameTitleFieldTypes,
+  validateNameTitleFieldTypesNewType,
   validateNoIndexOrEnabledFalseInAllMappings,
   getLatestModelVersion,
   validateInitialModelVersion,
@@ -52,5 +52,5 @@ export function validateChangesNewType({ to, registeredType }: ValidateChangesNe
   validateNoIndexOrEnabledFalseInAllMappings(name, to);
 
   // validate that name and title fields are of type "text"
-  validateNameTitleFieldTypes(name, to, registeredType);
+  validateNameTitleFieldTypesNewType(name, to, registeredType);
 }
