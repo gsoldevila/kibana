@@ -260,7 +260,9 @@ export function validateNoIndexOrEnabledFalseInAllMappings(
 export function validateNameTitleFieldTypes(
   name: string,
   to: MigrationInfoRecord,
-  registeredType: SavedObjectsType
+  registeredType: SavedObjectsType,
+  from?: MigrationInfoRecord,
+  log?: (message: string) => void
 ): void {
   // Search API compatibility is only relevant for types that are exposed via the Search API.
   // Hidden types and types that are not importable/exportable are internal-only and exempt.
@@ -268,21 +270,61 @@ export function validateNameTitleFieldTypes(
     return;
   }
 
-  const invalidFields: string[] = [];
+  const invalidFields: Array<{ fieldName: string; description: string }> = [];
 
   if ('properties.name.type' in to.mappings && to.mappings['properties.name.type'] !== 'text') {
-    invalidFields.push(`name (type: ${to.mappings['properties.name.type']}, expected: text)`);
+    invalidFields.push({
+      fieldName: 'name',
+      description: `name (type: ${to.mappings['properties.name.type']}, expected: text)`,
+    });
   }
 
   if ('properties.title.type' in to.mappings && to.mappings['properties.title.type'] !== 'text') {
-    invalidFields.push(`title (type: ${to.mappings['properties.title.type']}, expected: text)`);
+    invalidFields.push({
+      fieldName: 'title',
+      description: `title (type: ${to.mappings['properties.title.type']}, expected: text)`,
+    });
   }
 
-  if (invalidFields.length > 0) {
-    throw new Error(
-      `❌ The SO type '${name}' has 'name' or 'title' fields with incorrect types: ${invalidFields.join(
-        ', '
-      )}. ` + `These fields must be of type 'text' for Search API compatibility.`
-    );
+  if (invalidFields.length === 0) {
+    return;
   }
+
+  // When a baseline is available, distinguish pre-existing issues (warn) from newly introduced
+  // ones (fail). A field type cannot be changed from 'keyword' to 'text' without reindexing,
+  // so there is nothing the developer can do if the incorrect type was shipped in a previous
+  // model version.
+  if (from) {
+    const preExisting = invalidFields.filter(
+      ({ fieldName }) => `properties.${fieldName}.type` in from.mappings
+    );
+    const newlyIntroduced = invalidFields.filter(
+      ({ fieldName }) => !(`properties.${fieldName}.type` in from.mappings)
+    );
+
+    if (preExisting.length > 0) {
+      log?.(
+        `⚠️  The SO type '${name}' has pre-existing 'name' or 'title' fields with incorrect types: ${preExisting
+          .map(({ description }) => description)
+          .join(', ')}. ` +
+          `These fields must be of type 'text' for Search API compatibility, but cannot be changed without reindexing existing data.`
+      );
+    }
+
+    if (newlyIntroduced.length > 0) {
+      throw new Error(
+        `❌ The SO type '${name}' has 'name' or 'title' fields with incorrect types: ${newlyIntroduced
+          .map(({ description }) => description)
+          .join(', ')}. ` + `These fields must be of type 'text' for Search API compatibility.`
+      );
+    }
+
+    return;
+  }
+
+  throw new Error(
+    `❌ The SO type '${name}' has 'name' or 'title' fields with incorrect types: ${invalidFields
+      .map(({ description }) => description)
+      .join(', ')}. ` + `These fields must be of type 'text' for Search API compatibility.`
+  );
 }

@@ -62,7 +62,7 @@ export function validateChangesExistingType({
   validateModelVersionNumbers(name, to.modelVersions);
 
   // validate that name and title fields are of type "text"
-  validateNameTitleFieldTypes(name, to, registeredType);
+  validateNameTitleFieldTypes(name, to, registeredType, from, log);
 
   const newModelVersionCount = to.modelVersions.length - from.modelVersions.length;
 
