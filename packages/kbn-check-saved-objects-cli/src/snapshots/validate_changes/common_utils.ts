@@ -261,7 +261,7 @@ export function validateNoIndexOrEnabledFalseInAllMappings(
  * Returns the invalid name/title fields for a given mapping snapshot, expressed as
  * `{ fieldName, description }` pairs. The caller decides whether to warn or throw.
  */
-function getInvalidNameTitleFields(
+export function getInvalidNameTitleFields(
   to: MigrationInfoRecord
 ): Array<{ fieldName: string; description: string }> {
   const invalidFields: Array<{ fieldName: string; description: string }> = [];
@@ -289,80 +289,7 @@ function getInvalidNameTitleFields(
  * explicitly `true` (the registry treats the absence of the flag as `false`). Only those types
  * need their `name`/`title` fields to be `type: text` for full-text search to work correctly.
  */
-function isSearchableViaManagement(registeredType: SavedObjectsType): boolean {
+export function isSearchableViaManagement(registeredType: SavedObjectsType): boolean {
   return registeredType.management?.importableAndExportable === true;
 }
 
-/**
- * Validates that `name` and `title` mapping fields use `type: text` on a **new** SO type being
- * introduced. Types that are not searchable via the management page are exempt.
- *
- * Throws if an incorrect field type is found.
- */
-export function validateNameTitleFieldTypesNewType(
-  name: string,
-  to: MigrationInfoRecord,
-  registeredType: SavedObjectsType
-): void {
-  if (!isSearchableViaManagement(registeredType)) {
-    return;
-  }
-
-  const invalidFields = getInvalidNameTitleFields(to);
-  if (invalidFields.length > 0) {
-    throw new Error(
-      `❌ The SO type '${name}' has 'name' or 'title' fields with incorrect types: ${invalidFields
-        .map(({ description }) => description)
-        .join(', ')}. ` + `These fields must be of type 'text' for Search API compatibility.`
-    );
-  }
-}
-
-/**
- * Validates that `name` and `title` mapping fields use `type: text` on an **existing** SO type.
- * Types that are not searchable via the management page are exempt.
- *
- * A field type cannot be changed from 'keyword' to 'text' without reindexing, so when a field
- * with an incorrect type was already present in the baseline (`from`), a warning is emitted
- * instead of throwing. Only fields newly introduced with the wrong type cause a hard failure.
- */
-export function validateNameTitleFieldTypesExistingType(
-  name: string,
-  to: MigrationInfoRecord,
-  from: MigrationInfoRecord,
-  registeredType: SavedObjectsType,
-  log: (message: string) => void
-): void {
-  if (!isSearchableViaManagement(registeredType)) {
-    return;
-  }
-
-  const invalidFields = getInvalidNameTitleFields(to);
-  if (invalidFields.length === 0) {
-    return;
-  }
-
-  const preExisting = invalidFields.filter(
-    ({ fieldName }) => `properties.${fieldName}.type` in from.mappings
-  );
-  const newlyIntroduced = invalidFields.filter(
-    ({ fieldName }) => !(`properties.${fieldName}.type` in from.mappings)
-  );
-
-  if (preExisting.length > 0) {
-    log(
-      `⚠️  The SO type '${name}' has pre-existing 'name' or 'title' fields with incorrect types: ${preExisting
-        .map(({ description }) => description)
-        .join(', ')}. ` +
-        `These fields must be of type 'text' for Search API compatibility, but cannot be changed without reindexing existing data.`
-    );
-  }
-
-  if (newlyIntroduced.length > 0) {
-    throw new Error(
-      `❌ The SO type '${name}' has 'name' or 'title' fields with incorrect types: ${newlyIntroduced
-        .map(({ description }) => description)
-        .join(', ')}. ` + `These fields must be of type 'text' for Search API compatibility.`
-    );
-  }
-}

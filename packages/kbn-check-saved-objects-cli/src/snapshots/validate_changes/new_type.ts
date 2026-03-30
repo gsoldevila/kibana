@@ -13,12 +13,12 @@ import {
   validateAllMappingsInModelVersion,
   validateNewModelVersionSchemas,
   validateModelVersionNumbers,
-  validateNameTitleFieldTypesNewType,
   validateNoIndexOrEnabledFalseInAllMappings,
   getLatestModelVersion,
   validateInitialModelVersion,
   getFirstModelVersion,
 } from './common_utils';
+import { validateNameTitleFieldTypesNewType } from './new_type_utils';
 
 interface ValidateChangesNewTypeParams {
   to: MigrationInfoRecord;

@@ -13,7 +13,6 @@ import type { MigrationInfoRecord } from '../../types';
 import {
   validateNewModelVersionSchemas,
   validateModelVersionNumbers,
-  validateNameTitleFieldTypesExistingType,
   validateNoIndexOrEnabledFalse,
   getLatestModelVersion,
   validateInitialModelVersion,
@@ -23,6 +22,7 @@ import {
   validateNoModelVersionChanges,
   validateModelVersionsChanges,
   validateNewMappingsInModelVersion,
+  validateNameTitleFieldTypesExistingType,
 } from './existing_type_utils';
 
 interface ValidateChangesExistingTypeParams {
