@@ -95,7 +95,7 @@ To avoid exposing data unintentionally:
 
 * Prefer aggregations on fields that are directly filterable in the current query.
 * Avoid `terms` aggregations on fields whose values could come from documents outside the user's access scope.
-* Review the {{es}} documentation on [document-level security and aggregations](https://www.elastic.co/docs/deploy-manage/users-roles/cluster-or-deployment-auth/document-level-security) before using aggregations in a security-sensitive context.
+* Review the {{es}} documentation on [document-level security and aggregations](docs-content://deploy-manage/users-roles/cluster-or-deployment-auth/document-level-security.md) before using aggregations in a security-sensitive context.
 
 ---
 
