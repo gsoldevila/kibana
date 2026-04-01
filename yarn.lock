@@ -7351,6 +7351,10 @@
   version "0.0.0"
   uid ""
 
+"@kbn/ingest-hub-plugin@link:x-pack/platform/plugins/shared/ingest_hub":
+  version "0.0.0"
+  uid ""
+
 "@kbn/ingest-pipelines-plugin@link:x-pack/platform/plugins/shared/ingest_pipelines":
   version "0.0.0"
   uid ""
@@ -8564,6 +8568,10 @@
   uid ""
 
 "@kbn/screenshotting-server@link:src/platform/packages/private/kbn-screenshotting-server":
+  version "0.0.0"
+  uid ""
+
+"@kbn/search-agent@link:src/platform/packages/shared/kbn-search-agent":
   version "0.0.0"
   uid ""
 
