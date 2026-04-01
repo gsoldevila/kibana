@@ -19,7 +19,7 @@ Core exposes the Saved Objects service to plugins as `core.savedObjects`:
 
 You need the **start** contract to create, read, update, or delete Saved Object documents. Typically you obtain a client (or repository) per request inside a route handler using the request from the handler.
 
-## Start contract: clients and repositories
+## Start contract: clients and repositories [saved-objects-service-start]
 
 **SavedObjectsServiceStart** (contracts.ts) exposes four methods. The first two return an object that implements **SavedObjectsClientContract** (defined in `src/core/packages/saved-objects/api-server/src/saved_objects_client.ts`). The other two return an object that implements **ISavedObjectsRepository** (defined in `src/core/packages/saved-objects/api-server/src/saved_objects_repository.ts`).
 
