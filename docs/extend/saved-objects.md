@@ -28,7 +28,7 @@ When integrating with saved objects via the Saved Objects import/export APIs or 
 
 ## Security [saved-objects-security]
 
-Saved Objects are secured using Kibana's Privileges model, unlike data in {{es}} data indices, which is secured using {{es}}'s model.
+Saved Objects are secured using Kibana's privileges model, unlike data in {{es}} data indices, which is secured using {{es}}'s model.
 
 ### Space awareness [saved-objects-space-awareness]
 
