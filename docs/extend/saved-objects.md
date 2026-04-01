@@ -56,7 +56,7 @@ A Saved Object can be embedded inside another Saved Object ("by value") rather t
 
 Note: the terms "by value" and "by reference" are internal developer concepts and are not surfaced to end users.
 
-## Sections [saved-objects-sections]
+## Saved Objects documentation summary [saved-objects-sections]
 
 This documentation is organized into the following sections:
 
