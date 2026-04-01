@@ -80,7 +80,7 @@ Creates a **repository** using the internal user, with no request context. Same 
 If you are not sure, use the client. Prefer the **scoped** client for request handlers and the **internal** client for background or system operations.
 
 ::::{warning}
-Do not manually instantiate `SavedObjectsClient` (or `SavedObjectsRepository`) by passing a non-default or custom repository directly. Clients obtained this way bypass the wrappers that provide security, spaces isolation, and encrypted saved object protections. Always obtain a client or repository through the methods on `SavedObjectsServiceStart` described above.
+Do not manually instantiate `SavedObjectsClient` (or `SavedObjectsRepository`) by passing a non-default or custom repository directly. Clients obtained this way bypass the wrappers that provide security, spaces isolation, and encrypted saved object protections. Always obtain a client or repository through the methods exposed by [`SavedObjectsServiceStart`](#saved-objects-service-start).
 ::::
 
 ---
