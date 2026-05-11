@@ -87,7 +87,7 @@ describe('validateChangesExistingType', () => {
     const to = loadSnapshot('mutated_model_versions.json');
 
     expect(() => validateChangesWrapper({ from, to, type: { name: 'task' } })).toThrowError(
-      `❌ Some modelVersions have been updated for SO type 'task' after they were defined: 10.6.0.`
+      `❌ Some modelVersions have been structurally updated for SO type 'task' after they were defined: 10.6.0.`
     );
   });
 
@@ -101,13 +101,13 @@ describe('validateChangesExistingType', () => {
       expect(log).toHaveBeenCalledWith(expect.stringContaining("'task'"));
     });
 
-    it('should throw when a schema change is detected in an older (non-latest) model version', () => {
+    it('should not throw and emit a warning when a schema change is detected in a non-latest model version', () => {
       const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
       const to = loadSnapshot('schema_only_change_in_older_model_version.json');
 
-      expect(() => validateChangesWrapper({ from, to, type: { name: 'task' } })).toThrowError(
-        `❌ Some modelVersions have been updated for SO type 'task' after they were defined`
-      );
+      expect(() => validateChangesWrapper({ from, to, type: { name: 'task' } })).not.toThrow();
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
+      expect(log).toHaveBeenCalledWith(expect.stringContaining("'task'"));
     });
 
     it('should throw when the registered type schema does not cover all mapping fields', () => {
@@ -157,6 +157,50 @@ describe('validateChangesExistingType', () => {
       expect(() =>
         validateChangesWrapper({ from, to, type: { name: 'task', modelVersions } })
       ).not.toThrow();
+    });
+  });
+
+  describe('schema-only changes in existing versions when adding a new model version', () => {
+    // Scenario: a schema-only change was applied to model version 3 (approved by CI) and
+    // a developer subsequently adds model version 4 in the same PR or a later one.
+    // Version 3 in 'from' has the OLD schema hashes; 'to' has the NEW hashes and version 4.
+    const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+    const to = loadSnapshot('new_model_version_after_schema_only_change.json');
+
+    it('should not throw and emit a warning when a schema-only change is present in an existing version alongside a new version', () => {
+      expect(() => validateChangesWrapper({ from, to, type: { name: 'task' } })).not.toThrow();
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
+      expect(log).toHaveBeenCalledWith(expect.stringContaining("'task'"));
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('10.3.0'));
+    });
+
+    it('should throw when a structural mutation is present in an existing version alongside a new version', () => {
+      // Version 3 has changeTypes mutated (structural change), plus version 4 is new.
+      const typeFrom = from.typeDefinitions.task;
+      const toWithStructuralMutation = {
+        ...to.typeDefinitions.task,
+        modelVersions: to.typeDefinitions.task.modelVersions.map((mv) =>
+          mv.version === '3' ? { ...mv, changeTypes: ['data_removal'] } : mv
+        ),
+      };
+      const registeredType = {
+        name: 'task',
+        namespaceType: 'agnostic' as const,
+        hidden: false,
+        mappings: { dynamic: false as const, properties: {} },
+        modelVersions: {},
+      };
+
+      expect(() =>
+        validateChangesExistingType({
+          from: typeFrom,
+          to: toWithStructuralMutation,
+          registeredType,
+          log,
+        })
+      ).toThrowError(
+        `❌ Some modelVersions have been structurally updated for SO type 'task' after they were defined: 10.3.0.`
+      );
     });
   });
 

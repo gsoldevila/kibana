@@ -19,8 +19,7 @@ import {
 } from './common_utils';
 import {
   mappingsUpdated,
-  validateNoModelVersionChanges,
-  validateModelVersionsChanges,
+  validateNoStructuralModelVersionChanges,
   validateNewMappingsInModelVersion,
   validateNameTitleFieldTypesExistingType,
 } from './existing_type_utils';
@@ -64,41 +63,37 @@ export function validateChangesExistingType({
   // validate that name and title fields are of type "text"
   validateNameTitleFieldTypesExistingType(name, to, from, registeredType, log);
 
+  // Schema-only mutations are tolerated (they don't affect ES index operations).
+  validateNoStructuralModelVersionChanges(from, to, registeredType, log);
+
   const newModelVersionCount = to.modelVersions.length - from.modelVersions.length;
 
-  switch (newModelVersionCount) {
-    case 0: // the type has been updated but no new model version has been added
-      if (mappingsUpdated(from, to)) {
-        throw new Error(
-          `❌ The '${name}' SO type has changes in the mappings, but is missing a modelVersion that defines these changes.`
-        );
-      }
-      // mappings are unchanged, so schema-only changes in the latest model version are allowed
-      validateModelVersionsChanges({ from, to, registeredType, log });
-      break;
-    case 1: // a new model version has been added
-      // existing model versions must not have been mutated at all when introducing a new one
-      validateNoModelVersionChanges(from, to);
-
-      const newModelVersion = getLatestModelVersion(to);
-
-      if (to.modelVersions.length === 1) {
-        // an existing SO type can be defining its first model version ever
-        validateInitialModelVersion(name, newModelVersion);
-      }
-
-      // check that the last modelVersion has schemas and that schemas have both create and forwardCompatibility defined
-      validateNewModelVersionSchemas(name, newModelVersion);
-
-      // validate that newly added mapping fields are declared in the new model version
-      validateNewMappingsInModelVersion(name, from, to);
-
-      // validate that new mappings do not use index: false or enabled: false
-      validateNoIndexOrEnabledFalse(name, to, [newModelVersion]);
-      break;
-    default: // cannot define more than 1 new model version at a time
+  if (newModelVersionCount === 0) {
+    if (mappingsUpdated(from, to)) {
       throw new Error(
-        `❌ The SO type '${name}' is defining ${newModelVersionCount} new model versions, but can only define one at a time.`
+        `❌ The '${name}' SO type has changes in the mappings, but is missing a modelVersion that defines these changes.`
       );
+    }
+  } else if (newModelVersionCount === 1) {
+    const newModelVersion = getLatestModelVersion(to);
+
+    if (to.modelVersions.length === 1) {
+      // an existing SO type can be defining its first model version ever
+      validateInitialModelVersion(name, newModelVersion);
+    }
+
+    // check that the last modelVersion has schemas and that schemas have both create and forwardCompatibility defined
+    validateNewModelVersionSchemas(name, newModelVersion);
+
+    // validate that newly added mapping fields are declared in the new model version
+    validateNewMappingsInModelVersion(name, from, to);
+
+    // validate that new mappings do not use index: false or enabled: false
+    validateNoIndexOrEnabledFalse(name, to, [newModelVersion]);
+  } else {
+    // cannot define more than 1 new model version at a time
+    throw new Error(
+      `❌ The SO type '${name}' is defining ${newModelVersionCount} new model versions, but can only define one at a time.`
+    );
   }
 }
