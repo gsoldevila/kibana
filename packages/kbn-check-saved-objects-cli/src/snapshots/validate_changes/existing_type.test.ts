@@ -92,7 +92,7 @@ describe('validateChangesExistingType', () => {
   });
 
   describe('schema-only changes in the latest model version', () => {
-    it('should not throw and emit a warning when only the latest model version schemas changed and mappings are unchanged', () => {
+    it('should warn (not throw) when a constraint is tightened in the latest model version schemas', () => {
       const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
       const to = loadSnapshot('schema_only_change_in_latest_model_version_updated.json');
 
@@ -101,13 +101,159 @@ describe('validateChangesExistingType', () => {
       expect(log).toHaveBeenCalledWith(expect.stringContaining("'task'"));
     });
 
-    it('should not throw and emit a warning when a schema change is detected in a non-latest model version', () => {
+    it('should warn (not throw) when a schema change is detected in a non-latest model version', () => {
       const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
       const to = loadSnapshot('schema_only_change_in_older_model_version.json');
 
       expect(() => validateChangesWrapper({ from, to, type: { name: 'task' } })).not.toThrow();
       expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
       expect(log).toHaveBeenCalledWith(expect.stringContaining("'task'"));
+    });
+
+    it('should throw when a field is removed from the create schema', () => {
+      const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+      const typeFrom = from.typeDefinitions.task;
+      const typeTo = {
+        ...typeFrom,
+        modelVersions: typeFrom.modelVersions.map((mv) => {
+          if (mv.version !== '3') return mv;
+          return {
+            ...mv,
+            modelVersionHash: 'changed-hash',
+            schemas: {
+              forwardCompatibility: mv.schemas.forwardCompatibility,
+              // Remove 'partition' from the create schema
+              create: {
+                type: 'object',
+                keys: { taskType: { type: 'string' }, status: { type: 'string' } },
+              },
+            },
+          };
+        }),
+      };
+      const registeredType: SavedObjectsType = {
+        name: 'task',
+        namespaceType: 'agnostic',
+        hidden: false,
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      };
+      expect(() =>
+        validateChangesExistingType({ from: typeFrom, to: typeTo, registeredType, log })
+      ).toThrowError(/Breaking schema changes.*field 'partition' removed from create schema/s);
+    });
+
+    it('should throw when a required field is added to the create schema', () => {
+      const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+      const typeFrom = from.typeDefinitions.task;
+      const typeTo = {
+        ...typeFrom,
+        modelVersions: typeFrom.modelVersions.map((mv) => {
+          if (mv.version !== '3') return mv;
+          return {
+            ...mv,
+            modelVersionHash: 'changed-hash',
+            schemas: {
+              forwardCompatibility: mv.schemas.forwardCompatibility,
+              create: {
+                type: 'object',
+                keys: {
+                  taskType: { type: 'string' },
+                  status: { type: 'string' },
+                  partition: { type: 'number' },
+                  newRequiredField: { type: 'string' },
+                },
+              },
+            },
+          };
+        }),
+      };
+      const registeredType: SavedObjectsType = {
+        name: 'task',
+        namespaceType: 'agnostic',
+        hidden: false,
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      };
+      expect(() =>
+        validateChangesExistingType({ from: typeFrom, to: typeTo, registeredType, log })
+      ).toThrowError(
+        /Breaking schema changes.*required field 'newRequiredField' added to create schema/s
+      );
+    });
+
+    it('should not throw and allow silently when a new optional field is added to the create schema', () => {
+      const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+      const typeFrom = from.typeDefinitions.task;
+      const typeTo = {
+        ...typeFrom,
+        modelVersions: typeFrom.modelVersions.map((mv) => {
+          if (mv.version !== '3') return mv;
+          return {
+            ...mv,
+            modelVersionHash: 'changed-hash',
+            schemas: {
+              forwardCompatibility: mv.schemas.forwardCompatibility,
+              create: {
+                type: 'object',
+                keys: {
+                  taskType: { type: 'string' },
+                  status: { type: 'string' },
+                  partition: { type: 'number' },
+                  newOptionalField: { type: 'string', flags: { presence: 'optional' } },
+                },
+              },
+            },
+          };
+        }),
+      };
+      const registeredType: SavedObjectsType = {
+        name: 'task',
+        namespaceType: 'agnostic',
+        hidden: false,
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      };
+      expect(() =>
+        validateChangesExistingType({ from: typeFrom, to: typeTo, registeredType, log })
+      ).not.toThrow();
+      // "non-breaking" path: logs a warning noting all changes are non-breaking
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
+    });
+
+    it('should emit a general warning (no throw) when comparing against a hash-based baseline', () => {
+      const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+      // Simulate a hash-based baseline by replacing schema objects with fake hash strings
+      const typeFrom = {
+        ...from.typeDefinitions.task,
+        modelVersions: from.typeDefinitions.task.modelVersions.map((mv) => ({
+          ...mv,
+          schemas: {
+            create:
+              'aaaa1111bbbb2222cccc3333dddd4444eeee5555ffff6666000011112222333' as unknown as false,
+            forwardCompatibility:
+              'bbbb2222cccc3333dddd4444eeee5555ffff666600001111222233334444555' as unknown as false,
+          },
+        })),
+      };
+      const to = loadSnapshot('schema_only_change_in_latest_model_version_updated.json');
+      const registeredType: SavedObjectsType = {
+        name: 'task',
+        namespaceType: 'agnostic',
+        hidden: false,
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      };
+      expect(() =>
+        validateChangesExistingType({
+          from: typeFrom,
+          to: to.typeDefinitions.task,
+          registeredType,
+          log,
+        })
+      ).not.toThrow();
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('hash format'));
     });
 
     it('should throw when the registered type schema does not cover all mapping fields', () => {
@@ -267,7 +413,7 @@ describe('validateChangesExistingType', () => {
       changeTypes: [],
       hasTransformation: false,
       newMappings: [],
-      schemas: { create: 'hash', forwardCompatibility: 'hash' },
+      schemas: { create: false as const, forwardCompatibility: false as const },
     };
 
     const buildRecord = (mappings: Record<string, unknown> = {}): MigrationInfoRecord => ({
