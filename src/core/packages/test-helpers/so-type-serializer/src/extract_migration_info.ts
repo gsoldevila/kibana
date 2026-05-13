@@ -42,8 +42,8 @@ export interface ModelVersionSummary {
   hasTransformation: boolean;
   newMappings: string[];
   schemas: {
-    create: false | Record<string, unknown>;
-    forwardCompatibility: false | Record<string, unknown>;
+    create: false | string | Record<string, unknown>;
+    forwardCompatibility: false | string | Record<string, unknown>;
   };
 }
 
