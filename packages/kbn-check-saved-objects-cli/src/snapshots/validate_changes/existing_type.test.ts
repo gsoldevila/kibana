@@ -9,6 +9,7 @@
 
 import path from 'path';
 import fs from 'fs';
+import { createHash } from 'crypto';
 import { schema } from '@kbn/config-schema';
 import type { SavedObjectsType } from '@kbn/core-saved-objects-server';
 import { validateChangesExistingType } from './existing_type';
@@ -330,10 +331,7 @@ describe('validateChangesExistingType', () => {
       // Old snapshots stored function-based forwardCompatibility schemas as SHA256(fn.toString()).
       // The new format stores { __fn: fn.toString() }. Verify no false positive is raised.
       const fnSource = 'function(doc) { return doc; }';
-      const oldHash = require('crypto')
-        .createHash('sha256')
-        .update(fnSource)
-        .digest('hex') as string;
+      const oldHash = createHash('sha256').update(fnSource).digest('hex');
 
       const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
       const typeFrom = {
