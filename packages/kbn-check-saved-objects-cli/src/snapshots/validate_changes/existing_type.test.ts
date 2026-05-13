@@ -221,7 +221,7 @@ describe('validateChangesExistingType', () => {
       expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
     });
 
-    it('should emit a general warning (no throw) when comparing against a hash-based baseline', () => {
+    it('should throw when comparing against a hash-based baseline (cannot diff)', () => {
       const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
       // Simulate a hash-based baseline by replacing schema objects with fake hash strings
       const typeFrom = {
@@ -251,9 +251,7 @@ describe('validateChangesExistingType', () => {
           registeredType,
           log,
         })
-      ).not.toThrow();
-      expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
-      expect(log).toHaveBeenCalledWith(expect.stringContaining('hash format'));
+      ).toThrowError(/baseline snapshot uses the legacy hash format/);
     });
 
     it('should throw when the registered type schema does not cover all mapping fields', () => {

@@ -177,9 +177,12 @@ function reportSchemaChanges(
   const versionLabels = mutations.map((m) => m.versionLabel).join(', ');
 
   if (undiffable.length > 0) {
-    log(
-      `⚠️ WARNING: Schema-only changes detected in model version(s) ${undiffable.join(', ')} ` +
-        `of SO type '${name}' (baseline uses hash format — upgrade the baseline to enable detailed diff).`
+    throw new Error(
+      `❌ Schema-only changes detected in model version(s) ${undiffable.join(
+        ', '
+      )} of SO type '${name}', ` +
+        `but the baseline snapshot uses the legacy hash format — detailed diff is not possible. ` +
+        `Re-generate the baseline snapshot to enable schema change validation.`
     );
   }
 
