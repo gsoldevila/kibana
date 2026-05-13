@@ -55,7 +55,7 @@ export function isOnlySchemaMutated(
  * custom validators) emit a warning.
  *
  * When comparing against an older baseline that stored schemas as hashes, granular
- * diffing is not possible; a general warning is emitted instead.
+ * diffing is not possible; an error is thrown to force a baseline regeneration.
  *
  * Structural mutations (which drive index operations during upgrades) still fail
  * unconditionally.
@@ -141,7 +141,24 @@ function schemasEqual(a: SchemasValue, b: SchemasValue): boolean {
   return equal(a, b);
 }
 
+/**
+ * Computes a hash of a serialized schema object that matches the hash stored in
+ * older GCS baselines, enabling cross-format equality checks during the transition
+ * period before all baselines have been regenerated.
+ *
+ * Old snapshots stored:
+ *  - `SHA256(fn.toString())` for function-based schemas
+ *  - `SHA256(JSON.stringify(serializeConfigSchema(schema)))` for Joi schemas
+ *
+ * New snapshots store the full serialized object (not a hash). Function-based schemas
+ * are serialized as `{ __fn: fn.toString() }`, so we must hash just the function
+ * source to reproduce the old hash.
+ */
 function computeSchemaHash(schema: Record<string, unknown>): string {
+  // Function-based schema: serialized as { __fn: "source" }. Old hash = SHA256(source).
+  if (typeof schema.__fn === 'string' && Object.keys(schema).length === 1) {
+    return createHash('sha256').update(schema.__fn).digest('hex');
+  }
   return createHash('sha256').update(JSON.stringify(schema)).digest('hex');
 }
 
@@ -253,8 +270,8 @@ function diffModelVersionSchemas(
  * |-----------------------------------------|------------|------------------------|
  * | Field removed                           | ❌ break   | ❌ break               |
  * | Field type changed                      | ❌ break   | ❌ break               |
- * | Optional → required field               | ❌ break   | ⚠️ warn               |
- * | Required field added                    | ❌ break   | ⚠️ warn               |
+ * | Optional → required field               | ❌ break   | ❌ break               |
+ * | Required field added                    | ❌ break   | ❌ break               |
  * | New optional field                      | ✅ allow   | ✅ allow               |
  * | Required → optional field               | ✅ allow   | ✅ allow               |
  * | Constraint tightened / validator added  | ⚠️ warn    | ⚠️ warn               |
@@ -286,11 +303,7 @@ function diffSchemas(
 
     if (!beforeField) {
       if (afterField.presence === 'required') {
-        if (schemaType === 'create') {
-          breaking.push(`required field '${path}' added to ${schemaType} schema`);
-        } else {
-          warnings.push(`required field '${path}' added to ${schemaType} schema`);
-        }
+        breaking.push(`required field '${path}' added to ${schemaType} schema`);
       }
       continue;
     }
@@ -303,11 +316,7 @@ function diffSchemas(
     }
 
     if (beforeField.presence === 'optional' && afterField.presence === 'required') {
-      if (schemaType === 'create') {
-        breaking.push(`field '${path}' changed from optional to required in ${schemaType} schema`);
-      } else {
-        warnings.push(`field '${path}' changed from optional to required in ${schemaType} schema`);
-      }
+      breaking.push(`field '${path}' changed from optional to required in ${schemaType} schema`);
     }
 
     if (afterField.rulesCount > beforeField.rulesCount) {

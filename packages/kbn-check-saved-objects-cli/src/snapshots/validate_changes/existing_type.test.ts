@@ -182,6 +182,111 @@ describe('validateChangesExistingType', () => {
       );
     });
 
+    it('should throw when a required field is added to the forwardCompatibility schema', () => {
+      const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+      const typeFrom = from.typeDefinitions.task;
+      const typeTo = {
+        ...typeFrom,
+        modelVersions: typeFrom.modelVersions.map((mv) => {
+          if (mv.version !== '3') return mv;
+          return {
+            ...mv,
+            modelVersionHash: 'changed-hash',
+            schemas: {
+              create: mv.schemas.create,
+              forwardCompatibility: {
+                type: 'object',
+                keys: {
+                  taskType: { type: 'string' },
+                  status: { type: 'string' },
+                  partition: { type: 'number' },
+                  newRequiredField: { type: 'string' },
+                },
+              },
+            },
+          };
+        }),
+      };
+      const registeredType: SavedObjectsType = {
+        name: 'task',
+        namespaceType: 'agnostic',
+        hidden: false,
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      };
+      expect(() =>
+        validateChangesExistingType({ from: typeFrom, to: typeTo, registeredType, log })
+      ).toThrowError(
+        /Breaking schema changes.*required field 'newRequiredField' added to forwardCompatibility schema/s
+      );
+    });
+
+    it('should throw when a field changes from optional to required in the forwardCompatibility schema', () => {
+      const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+      const typeFrom = from.typeDefinitions.task;
+      const typeTo = {
+        ...typeFrom,
+        modelVersions: typeFrom.modelVersions.map((mv) => {
+          if (mv.version !== '3') return mv;
+          return {
+            ...mv,
+            modelVersionHash: 'changed-hash',
+            schemas: {
+              create: mv.schemas.create,
+              forwardCompatibility: {
+                type: 'object',
+                keys: {
+                  taskType: { type: 'string' },
+                  status: { type: 'string' },
+                  // partition was optional (no flags), now explicitly required
+                  partition: { type: 'number' },
+                  newField: { type: 'string', flags: { presence: 'optional' } },
+                },
+              },
+            },
+          };
+        }),
+      };
+      // Simulate "partition" changing from optional to required by adjusting baseline
+      const typeFromWithOptionalPartition = {
+        ...typeFrom,
+        modelVersions: typeFrom.modelVersions.map((mv) => {
+          if (mv.version !== '3') return mv;
+          return {
+            ...mv,
+            schemas: {
+              ...mv.schemas,
+              forwardCompatibility: {
+                type: 'object',
+                keys: {
+                  taskType: { type: 'string' },
+                  status: { type: 'string' },
+                  partition: { type: 'number', flags: { presence: 'optional' } },
+                },
+              },
+            },
+          };
+        }),
+      };
+      const registeredType: SavedObjectsType = {
+        name: 'task',
+        namespaceType: 'agnostic',
+        hidden: false,
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      };
+      expect(() =>
+        validateChangesExistingType({
+          from: typeFromWithOptionalPartition,
+          to: typeTo,
+          registeredType,
+          log,
+        })
+      ).toThrowError(
+        /Breaking schema changes.*'partition' changed from optional to required in forwardCompatibility schema/s
+      );
+    });
+
     it('should not throw and allow silently when a new optional field is added to the create schema', () => {
       const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
       const typeFrom = from.typeDefinitions.task;
@@ -219,6 +324,50 @@ describe('validateChangesExistingType', () => {
       ).not.toThrow();
       // "non-breaking" path: logs a warning noting all changes are non-breaking
       expect(log).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
+    });
+
+    it('should not flag an unchanged function-based schema when comparing against a legacy hash baseline', () => {
+      // Old snapshots stored function-based forwardCompatibility schemas as SHA256(fn.toString()).
+      // The new format stores { __fn: fn.toString() }. Verify no false positive is raised.
+      const fnSource = 'function(doc) { return doc; }';
+      const oldHash = require('crypto')
+        .createHash('sha256')
+        .update(fnSource)
+        .digest('hex') as string;
+
+      const from = loadSnapshot('schema_only_change_in_latest_model_version.json');
+      const typeFrom = {
+        ...from.typeDefinitions.task,
+        modelVersions: from.typeDefinitions.task.modelVersions.map((mv) => ({
+          ...mv,
+          schemas: {
+            create: oldHash as unknown as false,
+            forwardCompatibility: oldHash as unknown as false,
+          },
+        })),
+      };
+      const typeTo = {
+        ...from.typeDefinitions.task,
+        modelVersions: from.typeDefinitions.task.modelVersions.map((mv) => ({
+          ...mv,
+          schemas: {
+            create: { __fn: fnSource } as unknown as false,
+            forwardCompatibility: { __fn: fnSource } as unknown as false,
+          },
+        })),
+      };
+      const registeredType: SavedObjectsType = {
+        name: 'task',
+        namespaceType: 'agnostic',
+        hidden: false,
+        mappings: { dynamic: false, properties: {} },
+        modelVersions: {},
+      };
+      // Schemas are effectively unchanged — no error or warning should be produced.
+      expect(() =>
+        validateChangesExistingType({ from: typeFrom, to: typeTo, registeredType, log })
+      ).not.toThrow();
+      expect(log).not.toHaveBeenCalled();
     });
 
     it('should throw when comparing against a hash-based baseline (cannot diff)', () => {
