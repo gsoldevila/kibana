@@ -6,7 +6,7 @@
  */
 
 import * as t from 'io-ts';
-import { asSpaceId, type SpaceId } from '@kbn/core-spaces-common';
+import type { SpaceId } from '@kbn/core-spaces-common';
 
 export enum ActionsCompletion {
   COMPLETE = 'complete',
@@ -16,22 +16,18 @@ export enum ActionsCompletion {
 /**
  * io-ts codec that decodes a serialized space id into a branded {@link SpaceId}.
  *
- * The value was already a valid space id when the task was scheduled, so this is
- * a trusted-boundary re-brand on deserialization rather than fresh validation.
+ * The space id was already format-validated when the space was created and when
+ * the task was scheduled, so this is a trusted-boundary re-brand on
+ * deserialization rather than fresh validation: any string is accepted and
+ * simply re-branded. Re-validating here would add no safety (a malformed
+ * persisted value can't be repaired on read) and would only risk taking a rule
+ * out of execution, so validation is intentionally left at the write boundary.
  */
 const spaceIdCodec = new t.Type<SpaceId, string, unknown>(
   'SpaceId',
   (input): input is SpaceId => typeof input === 'string',
-  (input, context) => {
-    if (typeof input !== 'string') {
-      return t.failure(input, context);
-    }
-    try {
-      return t.success(asSpaceId(input));
-    } catch {
-      return t.failure(input, context);
-    }
-  },
+  (input, context) =>
+    typeof input === 'string' ? t.success(input as SpaceId) : t.failure(input, context),
   t.identity
 );
 
