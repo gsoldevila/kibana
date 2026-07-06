@@ -13,7 +13,12 @@ import type { KibanaRequest } from '@kbn/core-http-server';
 import type { SpacesPluginStart } from '@kbn/spaces-plugin/server';
 import { schema } from '@kbn/config-schema';
 import { isResponseError } from '@kbn/es-errors';
-import { EXAMPLE_SPACE_ID, QUERY_SCENARIOS, type QueryScenario, type UnmappedFieldsMode } from '../common/constants';
+import {
+  EXAMPLE_SPACE_ID,
+  QUERY_SCENARIOS,
+  type QueryScenario,
+  type UnmappedFieldsMode,
+} from '../common/constants';
 import { ensureExampleSpace } from './ensure_example_space';
 import { setupSeedData } from './saved_objects_data';
 import { runQueryScenario } from './query_scenarios';

@@ -141,9 +141,7 @@ describe('esql', () => {
 
     expect(client.esql.query).toHaveBeenCalledTimes(1);
     const [[request]] = client.esql.query.mock.calls;
-    expect(request.query).toMatch(
-      /^SET unmapped_fields = "LOAD".*FROM .+ \| LIMIT 10$/s
-    );
+    expect(request.query).toMatch(/^SET unmapped_fields = "LOAD".*FROM .+ \| LIMIT 10$/s);
   });
 
   it('should throw if pipeline contains a source command', async () => {
