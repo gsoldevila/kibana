@@ -30,6 +30,8 @@ import { PrivilegeSpaceTable } from './privilege_space_table';
 import { isRoleReserved, isRoleWithWildcardBasePrivilege } from '../../../../../../../common';
 import type { RoleValidator } from '../../../validate_role';
 import { PrivilegeSummary } from '../privilege_summary';
+import type { AllSpacesEntry } from '../role_space';
+import { createAllSpacesEntry } from '../role_space';
 
 interface Props {
   kibanaPrivileges: KibanaPrivileges;
@@ -51,18 +53,11 @@ interface State {
 }
 
 export class SpaceAwarePrivilegeSection extends Component<Props, State> {
-  private globalSpaceEntry: Space = {
-    id: '*',
-    name: i18n.translate(
-      'xpack.security.management.editRole.spaceAwarePrivilegeForm.globalSpacesName',
-      {
-        defaultMessage: '* All Spaces',
-      }
-    ),
-    color: '#D3DAE6',
-    initials: '*',
-    disabledFeatures: [],
-  };
+  private globalSpaceEntry: AllSpacesEntry = createAllSpacesEntry(
+    i18n.translate('xpack.security.management.editRole.spaceAwarePrivilegeForm.globalSpacesName', {
+      defaultMessage: '* All Spaces',
+    })
+  );
 
   constructor(props: Props) {
     super(props);

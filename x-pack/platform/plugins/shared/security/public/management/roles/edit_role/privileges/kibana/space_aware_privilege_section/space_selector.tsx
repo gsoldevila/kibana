@@ -10,29 +10,33 @@ import { EuiComboBox, EuiHealth, EuiHighlight } from '@elastic/eui';
 import React, { Component } from 'react';
 
 import { i18n } from '@kbn/i18n';
-import type { Space } from '@kbn/spaces-plugin/public';
 import { getSpaceColor } from '@kbn/spaces-plugin/public';
 
-const spaceToOption = (space?: Space, currentSelection?: 'global' | 'spaces') => {
+import type { RoleSpace } from '../role_space';
+import { isAllSpacesEntry } from '../role_space';
+
+const spaceToOption = (space?: RoleSpace, currentSelection?: 'global' | 'spaces') => {
   if (!space) {
     return;
   }
+
+  const isAllSpaces = isAllSpacesEntry(space);
 
   return {
     id: `spaceOption_${space.id}`,
     label: space.name,
     color: getSpaceColor(space),
     disabled:
-      (currentSelection === 'global' && space.id !== '*') ||
-      (currentSelection === 'spaces' && space.id === '*'),
+      (currentSelection === 'global' && !isAllSpaces) ||
+      (currentSelection === 'spaces' && isAllSpaces),
   };
 };
 
-const spaceIdToOption = (spaces: Space[]) => (s: string) =>
+const spaceIdToOption = (spaces: RoleSpace[]) => (s: string) =>
   spaceToOption(spaces.find((space) => space.id === s));
 
 interface Props {
-  spaces: Space[];
+  spaces: RoleSpace[];
   selectedSpaceIds: string[];
   onChange: (spaceIds: string[]) => void;
   disabled?: boolean;
