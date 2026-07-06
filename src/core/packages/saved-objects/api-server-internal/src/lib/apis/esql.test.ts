@@ -136,6 +136,16 @@ describe('esql', () => {
     expect(request.query).toMatch(/^FROM .+ METADATA _id, _source \| LIMIT 10$/);
   });
 
+  it('should prepend SET options before the FROM clause when setOptions is provided', async () => {
+    await repository.esql({ ...options, setOptions: { unmapped_fields: 'LOAD' } });
+
+    expect(client.esql.query).toHaveBeenCalledTimes(1);
+    const [[request]] = client.esql.query.mock.calls;
+    expect(request.query).toMatch(
+      /^SET unmapped_fields = "LOAD".*FROM .+ \| LIMIT 10$/s
+    );
+  });
+
   it('should throw if pipeline contains a source command', async () => {
     await expect(
       repository.esql({ ...options, pipeline: esql`FROM .kibana | LIMIT 10` })

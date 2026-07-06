@@ -38,7 +38,14 @@ export async function performEsql(
   { registry, helpers, allowedTypes, extensions = {} }: ApiExecutionContext
 ): Promise<SavedObjectsEsqlResponse> {
   const { securityExtension, spacesExtension } = extensions;
-  const { namespaces: requestedNamespaces, type, pipeline, metadata, ...esqlOptions } = options;
+  const {
+    namespaces: requestedNamespaces,
+    type,
+    pipeline,
+    metadata,
+    setOptions,
+    ...esqlOptions
+  } = options;
 
   if (requestedNamespaces.length === 0) {
     throw SavedObjectsErrorHelpers.createBadRequestError(
@@ -98,10 +105,16 @@ export async function performEsql(
   // esql.from() parses indices and metadata through the ES|QL parser,
   // preventing injection via malformed values.
   const indices = helpers.common.getIndicesForTypes(types);
-  const fromClause =
-    metadata && metadata.length > 0
-      ? esql.from(indices, metadata).print()
-      : esql.from(indices).print();
+  const fromQuery =
+    metadata && metadata.length > 0 ? esql.from(indices, metadata) : esql.from(indices);
+
+  if (setOptions) {
+    for (const [key, value] of Object.entries(setOptions)) {
+      fromQuery.addSetCommand(key, value);
+    }
+  }
+
+  const fromClause = fromQuery.print();
 
   Walker.walk(pipeline.ast, {
     visitCommand: (cmd) => {

@@ -1263,6 +1263,7 @@
     "@kbn/unified-search-plugin": "link:src/platform/plugins/shared/unified_search",
     "@kbn/unified-tabs": "link:src/platform/packages/shared/kbn-unified-tabs",
     "@kbn/unified-tabs-examples-plugin": "link:examples/unified_tabs_examples",
+    "@kbn/unmapped-fields-esql-example-plugin": "link:examples/unmapped_fields_esql_example",
     "@kbn/unsaved-changes-prompt": "link:src/platform/packages/shared/kbn-unsaved-changes-prompt",
     "@kbn/upgrade-assistant-pkg-common": "link:x-pack/platform/packages/private/upgrade-assistant/common",
     "@kbn/upgrade-assistant-pkg-public": "link:x-pack/platform/packages/private/upgrade-assistant/public",

@@ -1,0 +1,19 @@
+{
+  "type": "plugin",
+  "id": "@kbn/unmapped-fields-esql-example-plugin",
+  "owner": "@elastic/kibana-core",
+  "description": "Example plugin demonstrating ES|QL unmapped_fields queries against saved objects.",
+  "group": "platform",
+  "visibility": "private",
+  "plugin": {
+    "id": "unmappedFieldsEsqlExample",
+    "server": true,
+    "browser": true,
+    "requiredPlugins": [
+      "developerExamples",
+      "features",
+      "kibanaReact",
+      "spaces"
+    ]
+  }
+}

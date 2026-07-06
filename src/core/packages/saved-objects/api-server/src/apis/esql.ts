@@ -71,6 +71,17 @@ export interface SavedObjectsEsqlOptions
    * ```
    */
   metadata?: string[];
+
+  /**
+   * ES|QL SET options prepended before the auto-generated `FROM` clause.
+   *
+   * @example
+   * ```
+   * setOptions: { unmapped_fields: 'LOAD' }
+   * // generates: SET unmapped_fields = "LOAD"; FROM .kibana
+   * ```
+   */
+  setOptions?: Record<string, string>;
 }
 
 /**
