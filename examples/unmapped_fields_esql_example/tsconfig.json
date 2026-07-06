@@ -23,6 +23,11 @@
     "@kbn/developer-examples-plugin",
     "@kbn/es-errors",
     "@kbn/kibana-react-plugin",
-    "@kbn/spaces-plugin"
+    "@kbn/spaces-plugin",
+    "@kbn/features-plugin",
+    "@kbn/core-http-server",
+    "@kbn/config-schema",
+    "@kbn/core-lifecycle-server-internal",
+    "@kbn/core-root-server-internal"
   ]
 }
