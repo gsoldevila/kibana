@@ -9,7 +9,7 @@ import { z } from '@kbn/zod/v4';
 import dateMath from '@kbn/datemath';
 import { parseDuration } from '@kbn/alerting-plugin/common';
 import { ToolType } from '@kbn/agent-builder-common';
-import { asSpaceId } from '@kbn/core-spaces-common';
+import { brandSpaceId } from '@kbn/core-spaces-common';
 import { ToolResultType } from '@kbn/agent-builder-common/tools/tool_result';
 import { ConfirmationStatus } from '@kbn/agent-builder-common/agents/prompts';
 import type { BuiltinToolDefinition, StaticToolRegistration } from '@kbn/agent-builder-server';
@@ -238,7 +238,7 @@ The tool returns the generated previewId and the attachment metadata. Use the re
         body,
         enableLoggedRequests: false,
         request,
-        spaceId: asSpaceId(spaceId),
+        spaceId: brandSpaceId(spaceId),
         actionsClient,
         license,
         savedObjectsClient,

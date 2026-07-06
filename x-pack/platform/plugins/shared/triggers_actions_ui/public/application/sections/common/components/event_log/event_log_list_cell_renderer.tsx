@@ -11,7 +11,7 @@ import { EuiLink } from '@elastic/eui';
 import type { RuleAlertingOutcome } from '@kbn/alerting-plugin/common';
 import { useHistory } from 'react-router-dom';
 import { getRuleDetailsRoute as internalGetRuleDetailsRoute } from '@kbn/rule-data-utils';
-import { asSpaceId, getSpaceUrlPrefix } from '@kbn/core-spaces-common';
+import { brandSpaceId, getSpaceUrlPrefix } from '@kbn/core-spaces-common';
 import { formatRuleAlertCount } from '../../../../../common/lib/format_rule_alert_count';
 import { useKibana, useSpacesData } from '../../../../../common/lib/kibana';
 import { EventLogListStatus } from './event_log_list_status';
@@ -79,11 +79,11 @@ export const EventLogListCellRenderer = (props: EventLogListCellRendererProps) =
       const [linkedSpaceId] = spaceIds ?? [];
       const basePath = http.basePath.get();
       // linkedSpaceId / activeSpace.id come from event metadata and the Spaces plugin
-      // Space.id (both typed as string); validate-and-brand at this boundary.
-      const spacePath = getSpaceUrlPrefix(asSpaceId(linkedSpaceId));
+      // Space.id (both already-validated space ids); trusted re-brand, no throw on render.
+      const spacePath = getSpaceUrlPrefix(brandSpaceId(linkedSpaceId));
       const historyPathname = history.location.pathname;
       const newPathname = `${basePath.replace(
-        getSpaceUrlPrefix(asSpaceId(activeSpace!.id)),
+        getSpaceUrlPrefix(brandSpaceId(activeSpace!.id)),
         ''
       )}${spacePath}${window.location.pathname
         .replace(basePath, '')

@@ -8,7 +8,7 @@
 import type { ElasticsearchClient, Logger } from '@kbn/core/server';
 import { getSpaceNPRE, PROJECT_ROUTING_ALL } from '@kbn/cps-server-utils';
 import type { ProjectTagsResponse } from '@kbn/cps-utils';
-import { asSpaceId } from '@kbn/core-spaces-common';
+import { brandSpaceId } from '@kbn/core-spaces-common';
 import type { CpsData } from '../types';
 
 export const resolveCpsData = async (
@@ -16,7 +16,7 @@ export const resolveCpsData = async (
   spaceId: string,
   logger: Logger
 ): Promise<CpsData> => {
-  const npreRef = getSpaceNPRE(asSpaceId(spaceId));
+  const npreRef = getSpaceNPRE(brandSpaceId(spaceId));
   const npreName = npreRef.replace(/^@/, '');
 
   try {

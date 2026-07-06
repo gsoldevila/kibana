@@ -15,7 +15,7 @@ import { nanosToMillis } from '@kbn/event-log-plugin/common';
 import type { CancellableTask, RunResult } from '@kbn/task-manager-plugin/server/task';
 import { TaskPriority } from '@kbn/task-manager-plugin/server/task';
 import { ATTACK_DISCOVERY_SCHEDULES_ALERT_TYPE_ID } from '@kbn/elastic-assistant-common';
-import { asSpaceId } from '@kbn/core-spaces-common';
+import { brandSpaceId } from '@kbn/core-spaces-common';
 import type { AdHocRunStatus } from '../../common/constants';
 import { adHocRunStatus } from '../../common/constants';
 import type { RuleRunnerErrorStackTraceLog, RunRuleResult, TaskRunnerContext } from './types';
@@ -188,7 +188,7 @@ export class AdHocTaskRunner implements CancellableTask {
     const ruleType = this.ruleTypeRegistry.get(rule.alertTypeId);
     // spaceId is persisted on the ad-hoc run saved object, written by validated
     // request handlers. Brand it once here at the SO load boundary.
-    const spaceId = asSpaceId(adHocRunData.spaceId);
+    const spaceId = brandSpaceId(adHocRunData.spaceId);
 
     const ruleLabel = `${ruleType.id}:${rule.id}: '${rule.name}'`;
     const ruleTypeRunnerContext = {
