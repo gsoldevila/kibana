@@ -49,8 +49,6 @@ export const exampleSpaceItems: UnmappedFieldsItemSeed[] = [
   },
 ];
 
-export const allSeedItems = [...defaultNamespaceItems, ...exampleSpaceItems];
-
 const assertNoBulkCreateErrors = (
   operation: string,
   results: Array<{ id?: string; error?: { message?: string } }>
@@ -101,30 +99,4 @@ export async function setupSeedData(
     }))
   );
   assertNoBulkCreateErrors('bulkCreate (example space)', exampleSpaceCreateResult.saved_objects);
-}
-
-/** Used by integration tests that bypass the Spaces plugin. */
-export async function setupSeedDataWithInitialNamespaces(
-  savedObjectsClient: SavedObjectsClientContract
-) {
-  await savedObjectsClient.bulkDelete(
-    allSeedItems.map(({ id }) => ({
-      type: UNMAPPED_FIELDS_ITEM_TYPE,
-      id,
-    }))
-  );
-
-  await savedObjectsClient.bulkCreate([
-    ...defaultNamespaceItems.map(({ id, ...attributes }) => ({
-      type: UNMAPPED_FIELDS_ITEM_TYPE,
-      id,
-      attributes,
-    })),
-    ...exampleSpaceItems.map(({ id, ...attributes }) => ({
-      type: UNMAPPED_FIELDS_ITEM_TYPE,
-      id,
-      attributes,
-      initialNamespaces: [EXAMPLE_SPACE_ID],
-    })),
-  ]);
 }
