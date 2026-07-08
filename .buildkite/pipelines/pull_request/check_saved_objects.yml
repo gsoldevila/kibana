@@ -13,6 +13,7 @@ steps:
       - check
       - checks
       - quick_checks
+      - check_types
       - build
     timeout_in_minutes: 20
     retry:
