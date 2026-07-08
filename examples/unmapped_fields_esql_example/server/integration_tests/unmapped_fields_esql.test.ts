@@ -24,6 +24,7 @@ import { EXAMPLE_SPACE_ID, UNMAPPED_FIELDS_ITEM_TYPE } from '../../common/consta
 import { unmappedFieldsItemType } from '../saved_objects';
 import { defaultNamespaceItems, exampleSpaceItems } from '../saved_objects_data';
 import { runQueryScenario } from '../query_scenarios';
+import { putCategoryMapping, refreshIndex } from './mapping_transition_helpers';
 
 const colTitle = esql.col(`${UNMAPPED_FIELDS_ITEM_TYPE}.title`);
 const colCategory = esql.col(`${UNMAPPED_FIELDS_ITEM_TYPE}.category`);
@@ -258,5 +259,61 @@ describe('Unmapped fields ES|QL saved objects integration', () => {
     });
 
     expect(result.values).toHaveLength(0);
+  });
+
+  it('stops matching legacy _source via ES|QL LOAD after category is mapped but not re-indexed', async () => {
+    const esClient = esServer.es.getClient();
+    const aliasResponse = await esClient.indices.getAlias({ name: '.kibana' });
+    const kibanaIndex = Object.keys(aliasResponse)[0];
+
+    const beforeMapping = await runQueryScenario(
+      savedObjectsRepository,
+      'filter_unmapped_category',
+      'LOAD',
+      'default'
+    );
+    expect(beforeMapping.values).toHaveLength(2);
+
+    await putCategoryMapping(esClient, kibanaIndex);
+    await refreshIndex(esClient, kibanaIndex);
+
+    const afterMappingLoad = await runQueryScenario(
+      savedObjectsRepository,
+      'filter_unmapped_category',
+      'LOAD',
+      'default'
+    );
+    // Once mapped, the column is no longer "unmapped" — LOAD does not read legacy _source.
+    expect(afterMappingLoad.values).toHaveLength(0);
+
+    const termCount = await esClient.count({
+      index: kibanaIndex,
+      query: {
+        bool: {
+          filter: [
+            { term: { type: UNMAPPED_FIELDS_ITEM_TYPE } },
+            { term: { [`${UNMAPPED_FIELDS_ITEM_TYPE}.category`]: 'alpha' } },
+          ],
+        },
+      },
+    });
+    expect(termCount.count).toBe(0);
+
+    const metadataResult = await runQueryScenario(
+      savedObjectsRepository,
+      'metadata_source',
+      'DEFAULT',
+      'default'
+    );
+
+    const sourceIdx = getColumnIndex(metadataResult.columns, '_source');
+    const categories = metadataResult.values
+      // extract the _source field from the result
+      .map((result) => result[sourceIdx] as unknown as Record<string, unknown>)
+      // extract the unmapped fields item type from the _source field
+      .map((doc) => doc![UNMAPPED_FIELDS_ITEM_TYPE] as Record<string, unknown>)
+      // extract the category from the unmapped fields item type
+      .map((attrs) => attrs.category);
+    expect(categories.filter((category) => category === 'alpha')).toHaveLength(2);
   });
 });

@@ -63,6 +63,36 @@ With `LOAD`, the following are **not supported**:
 
 Before this change, consumers could not prepend `SET unmapped_fields` because the saved objects client auto-generates the `FROM` clause and only accepts a post-`FROM` pipeline. Adding `setOptions` to `SavedObjectsEsqlOptions` resolves this.
 
+## Mapping transition: adding mappings for legacy `_source`-only fields
+
+Empirical tests in `server/integration_tests/mapping_transition.test.ts` and
+`unmapped_fields_esql.test.ts` (saved-object index) cover what happens when
+documents already contain mixed-type values in `_source` and a mapping is added
+later — the typical saved-object migration scenario (`dynamic: false`, only some
+attributes mapped).
+
+### `dynamic: false` (saved object pattern)
+
+| Question | Observed behavior |
+|----------|-------------------|
+| Does `PUT mapping` succeed when the field existed only in `_source` (including mixed string/number values)? | **Yes.** Mapping update is accepted; Elasticsearch does not scan existing documents for type conflicts when the field was never indexed. |
+| Are pre-existing `_source` values indexed automatically after mapping? | **No.** Term queries on the newly mapped field return 0 hits until each document is re-ingested (index/update). New documents indexed after the mapping **are** searchable. |
+| Does `update_by_query` fail when `_source` types disagree with the new mapping? | **No.** The task completes with zero failures. Scripts can read and mutate `_source` regardless of mapping; use `ctx.op = 'noop'` to skip documents you do not want to update. Type-mismatched values remain in `_source` until explicitly rewritten and re-indexed. |
+| Do ES\|QL queries still find legacy values after mapping? | **With `SET unmapped_fields = "LOAD"` before mapping:** yes. **After mapping:** no — the field is mapped (even though index values are empty), so `LOAD` no longer applies and filters on that column match nothing. Use `METADATA _source` to read legacy attrs, or re-index documents first. **Term/query DSL on the mapped field:** no — same re-index requirement. **DEFAULT mode on a previously unmapped field:** fails before mapping; after mapping the column exists but returns empty until re-indexed. |
+
+### `dynamic: true` (contrast)
+
+| Question | Observed behavior |
+|----------|-------------------|
+| Does `PUT mapping` succeed when conflicting types were dynamically indexed? | **No.** Elasticsearch rejects the mapping change with `illegal_argument_exception` when existing indexed values conflict with the requested type (e.g. string + long in the same field path, then `PUT` long). |
+
+### Implications for saved-object migrations
+
+1. Adding a property to a type mapping is safe under `dynamic: false` even if production documents already store that attribute in `_source` with inconsistent types — but those values are **not** queryable via the mapped field until re-indexed.
+2. `update_by_query` is a viable way to normalize `_source` before or after mapping; it does not fail on type mismatch, but it does not magically index values either — re-ingest (update/index) is still required for search/aggregations on the mapped field.
+3. During a transition window **before** mapping is deployed, `SET unmapped_fields = "LOAD"` can query legacy `_source` values. **After** mapping is added, that escape hatch stops working for the newly mapped field — plan a re-index migration before or immediately after the mapping change, or use `METADATA _source` for read-only access.
+4. Prefer `dynamic: false` on saved object types so new attributes stay in `_source` until an intentional mapping + migration, rather than being dynamically indexed with unpredictable types.
+
 ## Open questions
 
 - Should `performEsql` expose additional ES|QL request options beyond `setOptions`?
