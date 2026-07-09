@@ -116,6 +116,13 @@ export type LoggingConfigType = Pick<TypeOf<typeof config.schema>, 'loggers' | '
   appenders: Map<string, AppenderConfigType>;
 };
 
+type LoggingConfigLoggerType = LoggingConfigType['loggers'][number];
+
+const withDefaultFilters = (logger: LoggerConfigType): LoggingConfigLoggerType => ({
+  ...logger,
+  filters: logger.filters ?? [],
+});
+
 /** @internal */
 export type LoggingConfigWithBrowserType = LoggingConfigType &
   Pick<TypeOf<typeof config.schema>, 'browser'>;
@@ -208,7 +215,7 @@ export class LoggingConfig {
 
     const mergedConfig: LoggingConfigType = {
       appenders: new Map([...this.configType.appenders, ...contextConfig.appenders]),
-      loggers: [...mergedLoggers.values()],
+      loggers: [...mergedLoggers.values()].map(withDefaultFilters),
       root: this.configType.root,
     };
 
@@ -254,7 +261,7 @@ export class LoggingConfig {
       // We expect `appenders` to never be empty at this point, since the `root` context config should always
       // have at least one appender that is enforced by the config schema validation.
       this.loggers.set(loggerContext, {
-        ...loggerConfig,
+        ...withDefaultFilters(loggerConfig),
         appenders,
       });
     }

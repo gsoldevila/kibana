@@ -21,5 +21,5 @@ export interface LoggerConfigType {
   name: string;
   level: LogLevelId;
   /** Meta-based filters to apply on top of the nominal log level. Defaults to no filters. */
-  filters: MetaFilterConfig[];
+  filters?: MetaFilterConfig[];
 }
