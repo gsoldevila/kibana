@@ -357,7 +357,7 @@ export class TaskRunner<
     // spaceId is optional in the persisted task params (legacy), but is always
     // populated for tasks scheduled by the rules client. Default to the built-in
     // space at this trusted boundary so the branded SpaceId flows downstream.
-    const spaceId: SpaceId = maybeSpaceId ?? DEFAULT_SPACE_ID;
+    const spaceId: SpaceId = brandSpaceId(maybeSpaceId ?? DEFAULT_SPACE_ID);
 
     const { queryDelaySettings, flappingSettings: spaceFlappingSettings } =
       await this.context.rulesSettingsService.getSettings(fakeRequest, spaceId);
