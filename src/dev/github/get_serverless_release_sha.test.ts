@@ -74,7 +74,7 @@ describe('fetchServerlessReleaseShaFromGitHub', () => {
   const createOctokit = (request: jest.Mock) =>
     ({
       request,
-    }) as { request: jest.Mock };
+    } as { request: jest.Mock });
 
   it('returns the qa-ds-1 SHA from versions.yaml', async () => {
     const request = jest.fn().mockResolvedValue({
