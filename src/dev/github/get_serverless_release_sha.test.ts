@@ -11,6 +11,7 @@ jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn(),
 }));
 
+import type { Octokit } from '@octokit/rest';
 import {
   fetchServerlessReleaseShaFromGitHub,
   isTransientHttpError,
@@ -74,7 +75,7 @@ describe('fetchServerlessReleaseShaFromGitHub', () => {
   const createOctokit = (request: jest.Mock) =>
     ({
       request,
-    } as { request: jest.Mock });
+    }) as unknown as Octokit;
 
   it('returns the qa-ds-1 SHA from versions.yaml', async () => {
     const request = jest.fn().mockResolvedValue({
