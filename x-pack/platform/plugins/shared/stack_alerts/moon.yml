@@ -65,6 +65,7 @@ dependsOn:
   - '@kbn/object-utils'
   - '@kbn/kql'
   - '@kbn/core-spaces-common'
+  - '@kbn/core-notifications-browser-mocks'
 tags:
   - plugin
   - prod
