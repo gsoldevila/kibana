@@ -23,11 +23,11 @@ import type { KibanaPrivileges } from '@kbn/security-role-management-model';
 import type { SpacesApiUi } from '@kbn/spaces-plugin/public';
 
 import { PrivilegeSummaryTable } from './privilege_summary_table';
-import type { RoleSpace } from '../role_space';
+import type { DisplaySpace } from '../display_space';
 
 interface Props {
   role: Role;
-  spaces: RoleSpace[];
+  spaces: DisplaySpace[];
   kibanaPrivileges: KibanaPrivileges;
   canCustomizeSubFeaturePrivileges: boolean;
   spacesApiUi: SpacesApiUi;

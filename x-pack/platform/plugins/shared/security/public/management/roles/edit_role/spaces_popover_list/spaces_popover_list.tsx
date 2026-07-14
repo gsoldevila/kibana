@@ -24,10 +24,10 @@ import { FormattedMessage } from '@kbn/i18n-react';
 import { SPACE_SEARCH_COUNT_THRESHOLD } from '@kbn/spaces-plugin/common';
 import type { SpacesApiUi } from '@kbn/spaces-plugin/public';
 
-import type { RoleSpace } from '../privileges/kibana/role_space';
+import type { DisplaySpace } from '../privileges/kibana/display_space';
 
 interface Props {
-  spaces: RoleSpace[];
+  spaces: DisplaySpace[];
   buttonText: string;
   spacesApiUi: SpacesApiUi;
 }

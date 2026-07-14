@@ -30,7 +30,7 @@ import { getSpaceColor } from '@kbn/spaces-plugin/public';
 
 import { PrivilegeDisplay } from './privilege_display';
 import { copyRole } from '../../../../../../../common/model';
-import type { RoleSpace } from '../role_space';
+import type { DisplaySpace } from '../display_space';
 
 const SPACES_DISPLAY_COUNT = 4;
 
@@ -39,7 +39,7 @@ interface Props {
   privilegeCalculator: PrivilegeFormCalculator;
   onChange: (role: Role) => void;
   onEdit: (privilegeIndex: number) => void;
-  displaySpaces: RoleSpace[];
+  displaySpaces: DisplaySpace[];
   disabled?: boolean;
 }
 
@@ -47,7 +47,7 @@ interface State {
   expandedSpacesGroups: number[];
 }
 
-type TableSpace = RoleSpace &
+type TableSpace = DisplaySpace &
   Partial<{
     deleted: boolean;
   }>;

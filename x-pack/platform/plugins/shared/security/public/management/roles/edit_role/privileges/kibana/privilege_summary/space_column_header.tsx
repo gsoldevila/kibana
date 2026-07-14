@@ -14,10 +14,10 @@ import { isGlobalPrivilegeDefinition } from '@kbn/security-role-management-model
 import type { SpacesApiUi } from '@kbn/spaces-plugin/public';
 
 import { SpacesPopoverList } from '../../../spaces_popover_list';
-import type { RoleSpace } from '../role_space';
+import type { DisplaySpace } from '../display_space';
 
 export interface SpaceColumnHeaderProps {
-  spaces: RoleSpace[];
+  spaces: DisplaySpace[];
   entry: RoleKibanaPrivilege;
   spacesApiUi: SpacesApiUi;
 }
@@ -27,7 +27,7 @@ const SPACES_DISPLAY_COUNT = 4;
 export const SpaceColumnHeader = (props: SpaceColumnHeaderProps) => {
   const { spacesApiUi } = props;
   const isGlobal = isGlobalPrivilegeDefinition(props.entry);
-  const entrySpaces = props.entry.spaces.map((spaceId): RoleSpace => {
+  const entrySpaces = props.entry.spaces.map((spaceId): DisplaySpace => {
     return (
       props.spaces.find((s) => s.id === spaceId) ?? {
         id: spaceId,

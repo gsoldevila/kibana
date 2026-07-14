@@ -12,10 +12,10 @@ import React, { Component } from 'react';
 import { i18n } from '@kbn/i18n';
 import { getSpaceColor } from '@kbn/spaces-plugin/public';
 
-import type { RoleSpace } from '../role_space';
-import { isAllSpacesEntry } from '../role_space';
+import type { DisplaySpace } from '../display_space';
+import { isAllSpacesEntry } from '../display_space';
 
-const spaceToOption = (space?: RoleSpace, currentSelection?: 'global' | 'spaces') => {
+const spaceToOption = (space?: DisplaySpace, currentSelection?: 'global' | 'spaces') => {
   if (!space) {
     return;
   }
@@ -32,11 +32,11 @@ const spaceToOption = (space?: RoleSpace, currentSelection?: 'global' | 'spaces'
   };
 };
 
-const spaceIdToOption = (spaces: RoleSpace[]) => (s: string) =>
+const spaceIdToOption = (spaces: DisplaySpace[]) => (s: string) =>
   spaceToOption(spaces.find((space) => space.id === s));
 
 interface Props {
-  spaces: RoleSpace[];
+  spaces: DisplaySpace[];
   selectedSpaceIds: string[];
   onChange: (spaceIds: string[]) => void;
   disabled?: boolean;

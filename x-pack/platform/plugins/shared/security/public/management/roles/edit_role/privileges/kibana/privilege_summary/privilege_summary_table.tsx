@@ -36,12 +36,12 @@ import type { EffectiveFeaturePrivileges } from './privilege_summary_calculator'
 import { PrivilegeSummaryCalculator } from './privilege_summary_calculator';
 import { PrivilegeSummaryExpandedRow } from './privilege_summary_expanded_row';
 import { SpaceColumnHeader } from './space_column_header';
-import type { RoleSpace } from '../role_space';
-import { isAllSpacesEntry } from '../role_space';
+import type { DisplaySpace } from '../display_space';
+import { isAllSpacesEntry } from '../display_space';
 
 export interface PrivilegeSummaryTableProps {
   role: Role;
-  spaces: RoleSpace[];
+  spaces: DisplaySpace[];
   kibanaPrivileges: KibanaPrivileges;
   canCustomizeSubFeaturePrivileges: boolean;
   spacesApiUi: SpacesApiUi;

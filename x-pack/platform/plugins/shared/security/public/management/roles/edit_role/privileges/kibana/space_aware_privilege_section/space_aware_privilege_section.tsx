@@ -29,9 +29,9 @@ import { PrivilegeSpaceForm } from './privilege_space_form';
 import { PrivilegeSpaceTable } from './privilege_space_table';
 import { isRoleReserved, isRoleWithWildcardBasePrivilege } from '../../../../../../../common';
 import type { RoleValidator } from '../../../validate_role';
+import type { AllSpacesEntry } from '../display_space';
+import { createAllSpacesEntry } from '../display_space';
 import { PrivilegeSummary } from '../privilege_summary';
-import type { AllSpacesEntry } from '../role_space';
-import { createAllSpacesEntry } from '../role_space';
 
 interface Props {
   kibanaPrivileges: KibanaPrivileges;

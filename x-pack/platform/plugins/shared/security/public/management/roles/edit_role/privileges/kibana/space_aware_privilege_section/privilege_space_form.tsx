@@ -38,12 +38,12 @@ import { SpaceSelector } from './space_selector';
 import type { FeaturesPrivileges, Role } from '../../../../../../../common';
 import { ALL_SPACES_ID } from '../../../../../../../common/constants';
 import { copyRole } from '../../../../../../../common/model';
-import type { RoleSpace } from '../role_space';
+import type { DisplaySpace } from '../display_space';
 
 interface Props {
   role: Role;
   kibanaPrivileges: KibanaPrivileges;
-  spaces: RoleSpace[];
+  spaces: DisplaySpace[];
   privilegeIndex: number;
   canCustomizeSubFeaturePrivileges: boolean;
   onChange: (role: Role) => void;
