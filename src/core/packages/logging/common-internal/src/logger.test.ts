@@ -319,6 +319,32 @@ describe('AbstractLogger', () => {
       }
     });
 
+    it('matches flat top-level meta keys as well as nested objects', () => {
+      logger = new TestLogger(context, LogLevel.Warn, appenderMocks, factory, [filter]);
+      // @ts-expect-error ECS custom meta may use flat dot-notation keys
+      logger.debug('debug message', { 'labels.ruleType': 'esql' });
+
+      for (const appenderMock of appenderMocks) {
+        expect(appenderMock.append).toHaveBeenCalledTimes(1);
+      }
+    });
+
+    it('does not match when config and meta value types differ under strict equality', () => {
+      const numericFilter: MetaFilterConfig = {
+        type: 'meta',
+        match: { retryCount: 3 },
+        level: 'debug',
+      };
+      logger = new TestLogger(context, LogLevel.Warn, appenderMocks, factory, [numericFilter]);
+
+      // @ts-expect-error intentional type mismatch to verify strict equality
+      logger.debug('debug message', { retryCount: '3' });
+
+      for (const appenderMock of appenderMocks) {
+        expect(appenderMock.append).not.toHaveBeenCalled();
+      }
+    });
+
     it('drops records at the filter level when meta does not match', () => {
       logger = new TestLogger(context, LogLevel.Warn, appenderMocks, factory, [filter]);
       logger.debug('debug message', nonMatchingMeta);

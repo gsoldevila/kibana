@@ -447,4 +447,146 @@ describe('meta filters', () => {
       })
     ).toThrow();
   });
+
+  it('inherits filters from the parent logger when the child entry omits them', () => {
+    const parentFilter = {
+      type: 'meta' as const,
+      match: { 'labels.ruleType': 'esql' },
+      level: 'debug' as const,
+    };
+    const configValue = new LoggingConfig(
+      config.schema.validate({
+        loggers: [
+          {
+            name: 'plugins.alerting',
+            level: 'warn',
+            filters: [parentFilter],
+          },
+          {
+            name: 'plugins.alerting.rules',
+            level: 'info',
+          },
+        ],
+      })
+    );
+
+    expect(configValue.loggers.get('plugins.alerting.rules')?.filters).toEqual([parentFilter]);
+  });
+
+  it('accepts filters: null to opt out of inherited filters', () => {
+    const parentFilter = {
+      type: 'meta' as const,
+      match: { 'labels.ruleType': 'esql' },
+      level: 'debug' as const,
+    };
+    const configValue = new LoggingConfig(
+      config.schema.validate({
+        loggers: [
+          {
+            name: 'plugins.alerting',
+            level: 'warn',
+            filters: [parentFilter],
+          },
+          {
+            name: 'plugins.alerting.rules',
+            level: 'info',
+            filters: null,
+          },
+        ],
+      })
+    );
+
+    expect(configValue.loggers.get('plugins.alerting.rules')?.filters).toEqual([]);
+  });
+
+  it('skips a parent with filters: null when inheriting from a higher ancestor', () => {
+    const grandparentFilter = {
+      type: 'meta' as const,
+      match: { 'labels.ruleType': 'esql' },
+      level: 'debug' as const,
+    };
+    const configValue = new LoggingConfig(
+      config.schema.validate({
+        loggers: [
+          {
+            name: 'plugins',
+            level: 'warn',
+            filters: [grandparentFilter],
+          },
+          {
+            name: 'plugins.alerting',
+            level: 'info',
+            filters: null,
+          },
+          {
+            name: 'plugins.alerting.rules',
+            level: 'info',
+          },
+        ],
+      })
+    );
+
+    expect(configValue.loggers.get('plugins.alerting')?.filters).toEqual([]);
+    expect(configValue.loggers.get('plugins.alerting.rules')?.filters).toEqual([grandparentFilter]);
+  });
+
+  it('rejects more than 10 keys in a filter match object', () => {
+    expect(() =>
+      config.schema.validate({
+        loggers: [
+          {
+            name: 'plugins',
+            level: 'warn',
+            filters: [
+              {
+                type: 'meta',
+                match: Object.fromEntries(
+                  Array.from({ length: 11 }, (_, i) => [`key${i}`, `value${i}`])
+                ),
+                level: 'debug',
+              },
+            ],
+          },
+        ],
+      })
+    ).toThrow();
+  });
+
+  it('rejects match keys and string values that exceed max length', () => {
+    expect(() =>
+      config.schema.validate({
+        loggers: [
+          {
+            name: 'plugins',
+            level: 'warn',
+            filters: [
+              {
+                type: 'meta',
+                match: { [`${'a'.repeat(257)}`]: 'value' },
+                level: 'debug',
+              },
+            ],
+          },
+        ],
+      })
+    ).toThrow();
+
+    expect(() =>
+      config.schema.validate({
+        loggers: [
+          {
+            name: 'plugins',
+            level: 'warn',
+            filters: [
+              {
+                type: 'meta',
+                match: { key: 'a'.repeat(1025) },
+                level: 'debug',
+              },
+            ],
+          },
+        ],
+      })
+    ).toThrow();
+  });
 });

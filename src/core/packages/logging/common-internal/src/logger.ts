@@ -28,20 +28,74 @@ export type CreateLogRecordFn = <Meta extends LogMeta>(
   meta?: Meta
 ) => LogRecord;
 
+interface CompiledMatchPredicate {
+  readonly pathSegments: readonly string[];
+  readonly flatKey: string;
+  readonly value: string | number | boolean;
+}
+
+interface CompiledMetaFilter {
+  readonly level: LogLevel;
+  readonly predicates: readonly CompiledMatchPredicate[];
+}
+
+const compileMetaFilters = (filters: ReadonlyArray<MetaFilterConfig>): CompiledMetaFilter[] =>
+  filters.map((filter) => ({
+    level: LogLevel.fromId(filter.level),
+    predicates: Object.entries(filter.match).map(([path, value]) => ({
+      pathSegments: path.split('.'),
+      flatKey: path,
+      value,
+    })),
+  }));
+
 /**
  * Returns the most permissive (highest `value`) log level that should act as
  * the early guard for a logger with the given nominal level and meta filters.
  *
  * When no filters are present the gate level equals the nominal level.
- * When filters are present the gate level is the minimum level (most verbose)
- * across the nominal level and all filter levels, so that records eligible for
- * any filter can pass the early check before meta is inspected.
+ * When filters are present the gate level is the most verbose level across
+ * the nominal level and all filter levels, so records eligible for any filter
+ * can pass the early check before meta is inspected.
+ *
+ * The gate cheaply skips levels more verbose than any configured filter level.
+ * It does not avoid per-record filter evaluation for levels at or below the gate.
  */
-const computeGateLevel = (nominalLevel: LogLevel, filters: ReadonlyArray<MetaFilterConfig>) =>
-  filters.reduce((gateLevel, filter) => {
-    const filterLevel = LogLevel.fromId(filter.level);
-    return filterLevel.value > gateLevel.value ? filterLevel : gateLevel;
+const computeGateLevel = (
+  nominalLevel: LogLevel,
+  compiledFilters: ReadonlyArray<CompiledMetaFilter>
+) =>
+  compiledFilters.reduce((gateLevel, filter) => {
+    return filter.level.value > gateLevel.value ? filter.level : gateLevel;
   }, nominalLevel);
+
+const getNestedValueFromSegments = (obj: unknown, segments: readonly string[]): unknown =>
+  segments.reduce<unknown>((current, key) => {
+    if (current != null && typeof current === 'object') {
+      return (current as Record<string, unknown>)[key];
+    }
+    return undefined;
+  }, obj);
+
+const getMetaValue = (meta: LogMeta, predicate: CompiledMatchPredicate): unknown => {
+  const nestedValue = getNestedValueFromSegments(meta, predicate.pathSegments);
+  if (nestedValue !== undefined) {
+    return nestedValue;
+  }
+
+  return (meta as Record<string, unknown>)[predicate.flatKey];
+};
+
+const matchesCompiledMeta = (
+  meta: LogMeta | undefined,
+  predicates: readonly CompiledMatchPredicate[]
+): boolean => {
+  if (meta == null) {
+    return false;
+  }
+
+  return predicates.every((predicate) => getMetaValue(meta, predicate) === predicate.value);
+};
 
 /**
  * Determines the effective minimum log level for a specific log record by
@@ -52,44 +106,20 @@ const computeGateLevel = (nominalLevel: LogLevel, filters: ReadonlyArray<MetaFil
  */
 const resolveEffectiveLevel = (
   nominalLevel: LogLevel,
-  filters: ReadonlyArray<MetaFilterConfig>,
+  compiledFilters: ReadonlyArray<CompiledMetaFilter>,
   meta: LogMeta | undefined
 ): LogLevel => {
-  if (filters.length === 0) return nominalLevel;
+  if (compiledFilters.length === 0) {
+    return nominalLevel;
+  }
 
-  return filters.reduce((effectiveLevel, filter) => {
-    if (!matchesMeta(meta, filter.match)) return effectiveLevel;
-    const filterLevel = LogLevel.fromId(filter.level);
-    return filterLevel.value > effectiveLevel.value ? filterLevel : effectiveLevel;
-  }, nominalLevel);
-};
-
-/**
- * Returns the value at the given dot-notation `path` inside `obj`, or
- * `undefined` if any segment is missing or not an object.
- *
- * Supports simple property paths (e.g. `'labels.ruleType'`, `'event.dataset'`)
- * but not array indices or complex expressions.
- */
-const getNestedValue = (obj: unknown, path: string): unknown =>
-  path.split('.').reduce<unknown>((current, key) => {
-    if (current != null && typeof current === 'object') {
-      return (current as Record<string, unknown>)[key];
+  return compiledFilters.reduce((effectiveLevel, filter) => {
+    if (!matchesCompiledMeta(meta, filter.predicates)) {
+      return effectiveLevel;
     }
-    return undefined;
-  }, obj);
 
-/**
- * Returns `true` when every key-value pair in `match` is found with strict
- * equality inside `meta`, using dot-notation paths to traverse nested fields
- * (e.g. `'labels.ruleType'`).
- */
-const matchesMeta = (
-  meta: LogMeta | undefined,
-  match: Record<string, string | number | boolean>
-): boolean => {
-  if (meta == null) return false;
-  return Object.entries(match).every(([path, value]) => getNestedValue(meta, path) === value);
+    return filter.level.value > effectiveLevel.value ? filter.level : effectiveLevel;
+  }, nominalLevel);
 };
 
 /**
@@ -99,18 +129,20 @@ const matchesMeta = (
 export abstract class AbstractLogger implements Logger {
   /**
    * The most permissive log level across the nominal level and all filter levels.
-   * Used as the O(1) early guard before meta is inspected.
+   * Used as an early guard before meta is inspected.
    */
   private readonly gateLevel: LogLevel;
+  private readonly compiledFilters: ReadonlyArray<CompiledMetaFilter>;
 
   constructor(
     protected readonly context: string,
     protected readonly level: LogLevel,
     protected readonly appenders: Appender[],
     protected readonly factory: LoggerFactory,
-    private readonly filters: ReadonlyArray<MetaFilterConfig> = []
+    filters: ReadonlyArray<MetaFilterConfig> = []
   ) {
-    this.gateLevel = computeGateLevel(level, filters);
+    this.compiledFilters = compileMetaFilters(filters);
+    this.gateLevel = computeGateLevel(level, this.compiledFilters);
   }
 
   protected abstract createLogRecord<Meta extends LogMeta>(
@@ -121,21 +153,24 @@ export abstract class AbstractLogger implements Logger {
 
   public trace<Meta extends LogMeta = LogMeta>(message: LogMessageSource, meta?: Meta): void {
     if (!this.gateLevel.supports(LogLevel.Trace)) return;
-    if (!resolveEffectiveLevel(this.level, this.filters, meta).supports(LogLevel.Trace)) return;
+    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Trace))
+      return;
     if (typeof message === 'function') message = message();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Trace, message, meta));
   }
 
   public debug<Meta extends LogMeta = LogMeta>(message: LogMessageSource, meta?: Meta): void {
     if (!this.gateLevel.supports(LogLevel.Debug)) return;
-    if (!resolveEffectiveLevel(this.level, this.filters, meta).supports(LogLevel.Debug)) return;
+    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Debug))
+      return;
     if (typeof message === 'function') message = message();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Debug, message, meta));
   }
 
   public info<Meta extends LogMeta = LogMeta>(message: LogMessageSource, meta?: Meta): void {
     if (!this.gateLevel.supports(LogLevel.Info)) return;
-    if (!resolveEffectiveLevel(this.level, this.filters, meta).supports(LogLevel.Info)) return;
+    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Info))
+      return;
     if (typeof message === 'function') message = message();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Info, message, meta));
   }
@@ -145,7 +180,8 @@ export abstract class AbstractLogger implements Logger {
     meta?: Meta
   ): void {
     if (!this.gateLevel.supports(LogLevel.Warn)) return;
-    if (!resolveEffectiveLevel(this.level, this.filters, meta).supports(LogLevel.Warn)) return;
+    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Warn))
+      return;
     if (typeof errorOrMessage === 'function') errorOrMessage = errorOrMessage();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Warn, errorOrMessage, meta));
   }
@@ -155,7 +191,8 @@ export abstract class AbstractLogger implements Logger {
     meta?: Meta
   ): void {
     if (!this.gateLevel.supports(LogLevel.Error)) return;
-    if (!resolveEffectiveLevel(this.level, this.filters, meta).supports(LogLevel.Error)) return;
+    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Error))
+      return;
     if (typeof errorOrMessage === 'function') errorOrMessage = errorOrMessage();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Error, errorOrMessage, meta));
   }
@@ -165,7 +202,8 @@ export abstract class AbstractLogger implements Logger {
     meta?: Meta
   ): void {
     if (!this.gateLevel.supports(LogLevel.Fatal)) return;
-    if (!resolveEffectiveLevel(this.level, this.filters, meta).supports(LogLevel.Fatal)) return;
+    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Fatal))
+      return;
     if (typeof errorOrMessage === 'function') errorOrMessage = errorOrMessage();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Fatal, errorOrMessage, meta));
   }
@@ -176,7 +214,9 @@ export abstract class AbstractLogger implements Logger {
 
   public log(record: LogRecord) {
     if (!this.gateLevel.supports(record.level)) return;
-    if (!resolveEffectiveLevel(this.level, this.filters, record.meta).supports(record.level))
+    if (
+      !resolveEffectiveLevel(this.level, this.compiledFilters, record.meta).supports(record.level)
+    )
       return;
     this.appendRecord(record);
   }

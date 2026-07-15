@@ -119,6 +119,34 @@ test('appends records via multiple appenders.', async () => {
   expect(mockStreamWrite.mock.calls[1][0]).toMatchSnapshot('file logs');
 });
 
+test('applies meta filters from config through to appenders', async () => {
+  await system.upgrade(
+    config.schema.validate({
+      appenders: { default: { type: 'console', layout: { type: 'pattern' } } },
+      loggers: [
+        {
+          name: 'plugins.alerting',
+          level: 'warn',
+          filters: [{ type: 'meta', match: { 'labels.ruleType': 'esql' }, level: 'debug' }],
+        },
+        {
+          name: 'plugins.alerting.rules',
+          level: 'info',
+        },
+      ],
+    })
+  );
+
+  const childLogger = system.get('plugins', 'alerting', 'rules');
+  childLogger.debug('filtered debug message', { labels: { ruleType: 'esql' } });
+  childLogger.debug('dropped debug message', { labels: { ruleType: 'kql' } });
+  childLogger.info('nominal info message');
+
+  expect(mockConsoleLog).toHaveBeenCalledTimes(2);
+  expect(mockConsoleLog.mock.calls[0][0]).toContain('filtered debug message');
+  expect(mockConsoleLog.mock.calls[1][0]).toContain('nominal info message');
+});
+
 test('uses `root` logger if context name is not specified.', async () => {
   await system.upgrade(
     config.schema.validate({
