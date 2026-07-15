@@ -397,6 +397,16 @@ describe('AbstractLogger', () => {
       }
     });
 
+    it('short-circuits nested meta matching when the root key is absent', () => {
+      logger = new TestLogger(context, LogLevel.Warn, appenderMocks, factory, [filter]);
+      // @ts-expect-error ECS custom meta
+      logger.debug('debug message', { unrelated: 'value' });
+
+      for (const appenderMock of appenderMocks) {
+        expect(appenderMock.append).not.toHaveBeenCalled();
+      }
+    });
+
     it('takes the most permissive matching filter when multiple filters are configured', () => {
       const traceFilter: MetaFilterConfig = {
         type: 'meta',

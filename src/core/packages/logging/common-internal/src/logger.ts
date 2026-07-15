@@ -78,12 +78,25 @@ const getNestedValueFromSegments = (obj: unknown, segments: readonly string[]): 
   }, obj);
 
 const getMetaValue = (meta: LogMeta, predicate: CompiledMatchPredicate): unknown => {
+  const metaRecord = meta as Record<string, unknown>;
+
+  if (predicate.pathSegments.length === 1) {
+    return metaRecord[predicate.pathSegments[0]!];
+  }
+
+  const rootKey = predicate.pathSegments[0]!;
+  const rootValue = metaRecord[rootKey];
+  const flatValue = metaRecord[predicate.flatKey];
+  if (rootValue === undefined && flatValue === undefined) {
+    return undefined;
+  }
+
   const nestedValue = getNestedValueFromSegments(meta, predicate.pathSegments);
   if (nestedValue !== undefined) {
     return nestedValue;
   }
 
-  return (meta as Record<string, unknown>)[predicate.flatKey];
+  return flatValue;
 };
 
 const matchesCompiledMeta = (
@@ -151,26 +164,47 @@ export abstract class AbstractLogger implements Logger {
     meta?: Meta
   ): LogRecord;
 
+  /**
+   * Filters only loosen the nominal level for more-verbose records. When the
+   * requested level is at or below the nominal level, meta can be ignored.
+   */
+  private resolveEffectiveLevelForRecord(
+    requestedLevel: LogLevel,
+    meta: LogMeta | undefined
+  ): LogLevel {
+    if (this.compiledFilters.length === 0 || requestedLevel.value <= this.level.value) {
+      return this.level;
+    }
+
+    if (meta == null) {
+      return this.level;
+    }
+
+    return resolveEffectiveLevel(this.level, this.compiledFilters, meta);
+  }
+
+  private shouldLogRecord(requestedLevel: LogLevel, meta: LogMeta | undefined): boolean {
+    if (!this.gateLevel.supports(requestedLevel)) {
+      return false;
+    }
+
+    return this.resolveEffectiveLevelForRecord(requestedLevel, meta).supports(requestedLevel);
+  }
+
   public trace<Meta extends LogMeta = LogMeta>(message: LogMessageSource, meta?: Meta): void {
-    if (!this.gateLevel.supports(LogLevel.Trace)) return;
-    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Trace))
-      return;
+    if (!this.shouldLogRecord(LogLevel.Trace, meta)) return;
     if (typeof message === 'function') message = message();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Trace, message, meta));
   }
 
   public debug<Meta extends LogMeta = LogMeta>(message: LogMessageSource, meta?: Meta): void {
-    if (!this.gateLevel.supports(LogLevel.Debug)) return;
-    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Debug))
-      return;
+    if (!this.shouldLogRecord(LogLevel.Debug, meta)) return;
     if (typeof message === 'function') message = message();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Debug, message, meta));
   }
 
   public info<Meta extends LogMeta = LogMeta>(message: LogMessageSource, meta?: Meta): void {
-    if (!this.gateLevel.supports(LogLevel.Info)) return;
-    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Info))
-      return;
+    if (!this.shouldLogRecord(LogLevel.Info, meta)) return;
     if (typeof message === 'function') message = message();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Info, message, meta));
   }
@@ -179,9 +213,7 @@ export abstract class AbstractLogger implements Logger {
     errorOrMessage: LogMessageSource | Error,
     meta?: Meta
   ): void {
-    if (!this.gateLevel.supports(LogLevel.Warn)) return;
-    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Warn))
-      return;
+    if (!this.shouldLogRecord(LogLevel.Warn, meta)) return;
     if (typeof errorOrMessage === 'function') errorOrMessage = errorOrMessage();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Warn, errorOrMessage, meta));
   }
@@ -190,9 +222,7 @@ export abstract class AbstractLogger implements Logger {
     errorOrMessage: LogMessageSource | Error,
     meta?: Meta
   ): void {
-    if (!this.gateLevel.supports(LogLevel.Error)) return;
-    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Error))
-      return;
+    if (!this.shouldLogRecord(LogLevel.Error, meta)) return;
     if (typeof errorOrMessage === 'function') errorOrMessage = errorOrMessage();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Error, errorOrMessage, meta));
   }
@@ -201,9 +231,7 @@ export abstract class AbstractLogger implements Logger {
     errorOrMessage: LogMessageSource | Error,
     meta?: Meta
   ): void {
-    if (!this.gateLevel.supports(LogLevel.Fatal)) return;
-    if (!resolveEffectiveLevel(this.level, this.compiledFilters, meta).supports(LogLevel.Fatal))
-      return;
+    if (!this.shouldLogRecord(LogLevel.Fatal, meta)) return;
     if (typeof errorOrMessage === 'function') errorOrMessage = errorOrMessage();
     this.appendRecord(this.createLogRecord<Meta>(LogLevel.Fatal, errorOrMessage, meta));
   }
@@ -213,11 +241,7 @@ export abstract class AbstractLogger implements Logger {
   }
 
   public log(record: LogRecord) {
-    if (!this.gateLevel.supports(record.level)) return;
-    if (
-      !resolveEffectiveLevel(this.level, this.compiledFilters, record.meta).supports(record.level)
-    )
-      return;
+    if (!this.shouldLogRecord(record.level, record.meta)) return;
     this.appendRecord(record);
   }
 

@@ -20,9 +20,13 @@ const mockCreateWriteStream = createWriteStream as unknown as jest.Mock<typeof c
 import { LoggingSystem, config } from '..';
 import { EcsVersion } from '@elastic/ecs';
 import { unsafeConsole } from '@kbn/security-hardening';
+import moment from 'moment-timezone';
+
+const TEST_TIMEZONE = 'America/New_York';
 
 let system: LoggingSystem;
 beforeEach(() => {
+  moment.tz.setDefault(TEST_TIMEZONE);
   mockConsoleLog = jest.spyOn(unsafeConsole, 'log').mockReturnValue(undefined);
   jest.spyOn<any, any>(global, 'Date').mockImplementation(() => timestamp);
   jest.spyOn(process, 'uptime').mockReturnValue(10);
@@ -30,6 +34,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  moment.tz.setDefault();
   jest.clearAllMocks();
   mockCreateWriteStream.mockClear();
   mockStreamWrite.mockClear();
