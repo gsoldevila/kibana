@@ -374,7 +374,7 @@ groups:
 
           At most, 10 filters are allowed per logger. Omit the setting or set it to `[]` to inherit filters from the nearest ancestor logger (same inheritance pattern as `appenders`). Set `filters: null` to opt out of inherited filters without defining your own.
 
-          Example — keep most alerting logs at `warn`, but enable `debug` for ES|QL rules when plugins emit `labels.ruleType` in log meta:
+          For example, to keep most alerting logs at `warn`, but enable `debug` for ES|QL rules when plugins emit `labels.ruleType` in log meta:
 
           ```yaml
           logging:
