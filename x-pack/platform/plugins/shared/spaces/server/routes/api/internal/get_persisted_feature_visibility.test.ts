@@ -9,7 +9,7 @@ import * as Rx from 'rxjs';
 
 import { kibanaResponseFactory } from '@kbn/core/server';
 import { coreMock, httpServerMock, httpServiceMock } from '@kbn/core/server/mocks';
-import { asSpaceId } from '@kbn/core-spaces-common';
+import { brandSpaceId } from '@kbn/core-spaces-common';
 import { featuresPluginMock } from '@kbn/features-plugin/server/mocks';
 
 import { initGetPersistedFeatureVisibilityApi } from './get_persisted_feature_visibility';
@@ -90,7 +90,7 @@ describe('GET /internal/spaces/space/{id}/persisted_feature_visibility', () => {
     const { routeHandler, routeContext } = await setup({
       spacesSavedObjects: [
         {
-          id: asSpaceId('mySpace'),
+          id: brandSpaceId('mySpace'),
           attributes: {
             name: 'mySpace',
             disabledFeatures: ['feature_1', 'feature_2'],

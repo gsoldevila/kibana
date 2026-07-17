@@ -17,7 +17,7 @@ import {
   loggingSystemMock,
 } from '@kbn/core/server/mocks';
 import type { MockedVersionedRouter } from '@kbn/core-http-router-server-mocks';
-import { asSpaceId } from '@kbn/core-spaces-common';
+import { asSpaceId, brandSpaceId } from '@kbn/core-spaces-common';
 import type { INpreClient } from '@kbn/cps/server/npre';
 import type { CPSServerStart } from '@kbn/cps/server/types';
 import { featuresPluginMock } from '@kbn/features-plugin/server/mocks';
@@ -219,7 +219,7 @@ describe('PUT /api/spaces/space', () => {
     const { routeHandler, savedObjectsRepositoryMock } = await setup({
       spacesSavedObjects: [
         {
-          id: asSpaceId('mySpace'),
+          id: brandSpaceId('mySpace'),
           attributes: {
             name: 'mySpace',
             solution: 'classic',
@@ -229,7 +229,7 @@ describe('PUT /api/spaces/space', () => {
       ],
     });
     const payload = {
-      id: asSpaceId('mySpace'),
+      id: brandSpaceId('mySpace'),
       name: 'mySpace',
       disabledFeatures: [],
       solution: 'oblt' as const,
@@ -258,7 +258,7 @@ describe('PUT /api/spaces/space', () => {
     const { routeHandler, savedObjectsRepositoryMock } = await setup({
       spacesSavedObjects: [
         {
-          id: asSpaceId('mySpace'),
+          id: brandSpaceId('mySpace'),
           attributes: {
             name: 'mySpace',
             solution: 'oblt',
@@ -268,7 +268,7 @@ describe('PUT /api/spaces/space', () => {
       ],
     });
     const payload = {
-      id: asSpaceId('mySpace'),
+      id: brandSpaceId('mySpace'),
       name: 'mySpace',
       disabledFeatures: [],
       solution: 'classic' as const,

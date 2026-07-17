@@ -9,7 +9,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 
 import type { CloudStart } from '@kbn/cloud-plugin/public';
 import type { CoreStart } from '@kbn/core/public';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 import { useFooterLinks } from './use_footer_links';
 
@@ -71,7 +70,7 @@ describe('useFooterLinks', () => {
     expect(result.current).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: asSpaceId('connectionDetails'),
+          id: 'connectionDetails',
           label: 'Connection details',
         }),
       ])
@@ -125,7 +124,7 @@ describe('useFooterLinks', () => {
     expect(result.current).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: asSpaceId('inviteUsers'),
+          id: 'inviteUsers',
           label: 'Invite users',
           href: '/app/management/security/users',
           external: false,

@@ -5,8 +5,6 @@
  * 2.0.
  */
 
-import { asSpaceId } from '@kbn/core-spaces-common';
-
 import { SpaceValidator } from './validate_space';
 
 let validator: SpaceValidator;
@@ -98,7 +96,7 @@ describe('validateURLIdentifier', () => {
 
   test('it requires a valid Space Identifier', () => {
     const space = {
-      id: asSpaceId('invalid identifier'),
+      id: 'invalid identifier',
       name: '',
     };
 
@@ -107,7 +105,7 @@ describe('validateURLIdentifier', () => {
 
   test('it allows a valid Space Identifier', () => {
     const space = {
-      id: asSpaceId('01-valid-context-01'),
+      id: '01-valid-context-01',
       name: '',
     };
 
