@@ -399,7 +399,7 @@ groups:
 
       - setting: logging.loggers[].<logger>.filters[].type
         description: |
-          Filter type. Currently only `meta` is supported.
+          Filter type. Only `meta` is supported.
         datatype: enum
         options:
           - option: meta
