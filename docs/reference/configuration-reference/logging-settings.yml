@@ -388,7 +388,7 @@ groups:
                     level: debug
           ```
 
-          Matching uses strict equality (`===`). A string `"3"` in config does not match numeric `3` in meta. Filter paths support nested meta (`labels.ruleType`) and flat top-level keys (`'labels.ruleType'`). Filters only affect records that include matching meta at the log call site; they do not change `isLevelEnabled` checks.
+          Matching uses strict equality (`===`). A string `"3"` in config does not match numeric `3` in meta. Filter paths support nested meta (`labels.ruleType`) and flat top-level keys (`'labels.ruleType'`). Filters only affect records that include matching meta at the log call site. They do not change `isLevelEnabled` checks.
 
           Meta filters apply inside {{kib}} before log records are written to appenders. Collection and shipping (Filebeat, Elastic Agent, or OpenTelemetry) only see records that already passed the filter.
         datatype: array
