@@ -26,10 +26,10 @@ interface TableRow {
 
 const features = [
   new KibanaFeature({
-    id: asSpaceId('normal'),
+    id: 'normal',
     name: 'normal feature',
     app: [],
-    category: { id: asSpaceId('foo'), label: 'foo' },
+    category: { id: 'foo', label: 'foo' },
     privileges: {
       all: {
         savedObject: { all: [], read: [] },
@@ -42,10 +42,10 @@ const features = [
     },
   }),
   new KibanaFeature({
-    id: asSpaceId('normal_with_sub'),
+    id: 'normal_with_sub',
     name: 'normal feature with sub features',
     app: [],
-    category: { id: asSpaceId('foo'), label: 'foo' },
+    category: { id: 'foo', label: 'foo' },
     privileges: {
       all: {
         savedObject: { all: [], read: [] },
@@ -64,14 +64,14 @@ const features = [
             groupType: 'mutually_exclusive',
             privileges: [
               {
-                id: asSpaceId('normal_sub_all'),
+                id: 'normal_sub_all',
                 name: 'normal sub feature privilege',
                 includeIn: 'all',
                 savedObject: { all: [], read: [] },
                 ui: ['normal-sub-all', 'normal-sub-read'],
               },
               {
-                id: asSpaceId('normal_sub_read'),
+                id: 'normal_sub_read',
                 name: 'normal sub feature read privilege',
                 includeIn: 'read',
                 savedObject: { all: [], read: [] },
@@ -83,7 +83,7 @@ const features = [
             groupType: 'independent',
             privileges: [
               {
-                id: asSpaceId('excluded_sub_priv'),
+                id: 'excluded_sub_priv',
                 name: 'excluded sub feature privilege',
                 includeIn: 'none',
                 savedObject: { all: [], read: [] },
@@ -96,10 +96,10 @@ const features = [
     ],
   }),
   new KibanaFeature({
-    id: asSpaceId('bothPrivilegesExcludedFromBase'),
+    id: 'bothPrivilegesExcludedFromBase',
     name: 'bothPrivilegesExcludedFromBase',
     app: [],
-    category: { id: asSpaceId('foo'), label: 'foo' },
+    category: { id: 'foo', label: 'foo' },
     privileges: {
       all: {
         excludeFromBasePrivileges: true,
@@ -114,10 +114,10 @@ const features = [
     },
   }),
   new KibanaFeature({
-    id: asSpaceId('allPrivilegeExcludedFromBase'),
+    id: 'allPrivilegeExcludedFromBase',
     name: 'allPrivilegeExcludedFromBase',
     app: [],
-    category: { id: asSpaceId('foo'), label: 'foo' },
+    category: { id: 'foo', label: 'foo' },
     privileges: {
       all: {
         excludeFromBasePrivileges: true,

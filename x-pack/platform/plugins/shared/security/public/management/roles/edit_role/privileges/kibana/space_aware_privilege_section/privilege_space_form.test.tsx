@@ -8,7 +8,7 @@
 import { fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
-import { asSpaceId } from '@kbn/core-spaces-common';
+import { asSpaceId, brandSpaceId } from '@kbn/core-spaces-common';
 import {
   createFeature,
   createKibanaPrivileges,
@@ -41,7 +41,7 @@ const displaySpaces: Space[] = [
     disabledFeatures: [],
   },
   {
-    id: asSpaceId('*'),
+    id: brandSpaceId('*'),
     name: 'Global',
     disabledFeatures: [],
   },
@@ -374,7 +374,7 @@ describe('PrivilegeSpaceForm', () => {
     const extendedKibanaFeatures = [
       ...kibanaFeatures,
       createFeature({
-        id: asSpaceId('no_sub_features_disabled_read'),
+        id: 'no_sub_features_disabled_read',
         name: 'Feature 1: No Sub Features and read disabled',
         disabledReadPrivilege: true,
       }),
@@ -490,7 +490,7 @@ describe('PrivilegeSpaceForm', () => {
     const extendedKibanaFeatures = [
       ...kibanaFeatures,
       createFeature({
-        id: asSpaceId('no_sub_features_require_all_space'),
+        id: 'no_sub_features_require_all_space',
         name: 'Feature 1: No Sub Features and all privilege require all space',
         requireAllSpacesOnAllPrivilege: true,
       }),
