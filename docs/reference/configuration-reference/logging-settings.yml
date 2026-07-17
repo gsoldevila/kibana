@@ -410,7 +410,7 @@ groups:
 
       - setting: logging.loggers[].<logger>.filters[].match
         description: |
-          Map of key-value predicates. Every entry must match the log record's `meta` for the filter to apply. Keys are dot-notation paths into nested meta (for example `labels.ruleType`, `labels.actionId`). Values may be strings, numbers, or booleans. At most 10 keys per `match` object; string keys up to 256 characters and string values up to 1024 characters.
+          Map of key-value predicates. Every entry must match the log record's `meta` for the filter to apply. Keys are dot-notation paths into nested meta (for example, `labels.ruleType` or `labels.actionId`). Values may be strings, numbers, or booleans. Each `match` object can have up to 10 keys, string keys can contain up to 256 characters, and string values can contain up to 1024 characters.
         datatype: object
         applies_to:
           stack: ga 9.6
