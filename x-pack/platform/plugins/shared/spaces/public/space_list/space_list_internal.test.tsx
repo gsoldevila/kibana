@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 
 import { coreMock } from '@kbn/core/public/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { I18nProvider } from '@kbn/i18n-react';
 
 import { SpaceListInternal } from './space_list_internal';
@@ -17,7 +18,6 @@ import type { SpaceListProps } from './types';
 import type { Space } from '../../common';
 import { getSpacesContextProviderWrapper } from '../spaces_context';
 import { spacesManagerMock } from '../spaces_manager/mocks';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const ACTIVE_SPACE: Space = {
   id: asSpaceId('default'),

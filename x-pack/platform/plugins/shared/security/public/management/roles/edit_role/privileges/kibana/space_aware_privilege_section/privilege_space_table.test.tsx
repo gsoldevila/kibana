@@ -7,6 +7,7 @@
 
 import React from 'react';
 
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { KibanaFeature } from '@kbn/features-plugin/public';
 import type { Role, RoleKibanaPrivilege } from '@kbn/security-plugin-types-common';
 import { createKibanaPrivileges } from '@kbn/security-role-management-model/src/__fixtures__';
@@ -14,7 +15,6 @@ import { PrivilegeFormCalculator } from '@kbn/security-ui-components';
 import { renderWithI18n } from '@kbn/test-jest-helpers';
 
 import { PrivilegeSpaceTable } from './privilege_space_table';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 interface TableRow {
   spaces: string[];

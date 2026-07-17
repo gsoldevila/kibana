@@ -6,10 +6,10 @@
  */
 
 import { coreMock } from '@kbn/core/public/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { nextTick } from '@kbn/test-jest-helpers';
 
 import { SpacesManager } from './spaces_manager';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 describe('SpacesManager', () => {
   describe('#constructor', () => {

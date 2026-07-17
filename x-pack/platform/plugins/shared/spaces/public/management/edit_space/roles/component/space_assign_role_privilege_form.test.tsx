@@ -19,6 +19,7 @@ import {
   overlayServiceMock,
   themeServiceMock,
 } from '@kbn/core/public/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { userProfileServiceMock } from '@kbn/core-user-profile-browser-mocks';
 import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
 import type { Role, SecurityLicense } from '@kbn/security-plugin-types-common';
@@ -38,7 +39,6 @@ import { spacesManagerMock } from '../../../../spaces_manager/spaces_manager.moc
 import { createPrivilegeAPIClientMock } from '../../../privilege_api_client.mock';
 import { createRolesAPIClientMock } from '../../../roles_api_client.mock';
 import { EditSpaceProvider } from '../../provider';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const rolesAPIClient = createRolesAPIClientMock();
 const privilegeAPIClient = createPrivilegeAPIClientMock();

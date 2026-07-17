@@ -11,6 +11,7 @@ import { act } from '@testing-library/react';
 import React from 'react';
 
 import { coreMock } from '@kbn/core/public/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { findTestSubject, mountWithIntl, nextTick } from '@kbn/test-jest-helpers';
 
 import { CopyModeControl } from './copy_mode_control';
@@ -22,7 +23,6 @@ import type { Space } from '../../../common';
 import { getSpacesContextProviderWrapper } from '../../spaces_context';
 import { spacesManagerMock } from '../../spaces_manager/mocks';
 import type { CopyToSpaceSavedObjectTarget } from '../types';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 interface SetupOpts {
   mockSpaces?: Space[];

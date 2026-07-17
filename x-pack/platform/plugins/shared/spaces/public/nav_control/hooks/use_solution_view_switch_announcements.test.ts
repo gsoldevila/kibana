@@ -8,12 +8,12 @@
 import { act, renderHook } from '@testing-library/react';
 
 import type { Capabilities } from '@kbn/core/public';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 import { useSolutionViewSwitchAnnouncements } from './use_solution_view_switch_announcements';
 import type { Space } from '../../../common';
 import { SOLUTION_VIEW_SWITCH_STORAGE_KEY_PREFIX } from '../../solution_view_switch';
 import { SOLUTION_VIEW_SWITCH_TOUR_STORAGE_KEY_PREFIX } from '../solution_view_switch_tour';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const capabilities: Capabilities = {
   navLinks: {},

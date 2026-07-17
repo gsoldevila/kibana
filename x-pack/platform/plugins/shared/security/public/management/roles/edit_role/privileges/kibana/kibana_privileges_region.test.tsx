@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { coreMock } from '@kbn/core/public/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { I18nProvider } from '@kbn/i18n-react';
 import type { Role } from '@kbn/security-plugin-types-common';
 import { KibanaPrivileges } from '@kbn/security-role-management-model';
@@ -17,7 +18,6 @@ import { getUiApi } from '@kbn/spaces-plugin/public/ui_api';
 
 import { KibanaPrivilegesRegion } from './kibana_privileges_region';
 import { RoleValidator } from '../../validate_role';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('./simple_privilege_section', () => ({
   SimplePrivilegeSection: () => <div data-test-subj="simplePrivilegeSection" />,

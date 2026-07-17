@@ -7,12 +7,12 @@
 
 import React from 'react';
 
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { mountWithIntl, shallowWithIntl } from '@kbn/test-jest-helpers';
 
 import { CustomizeSpace } from './customize_space';
 import { SpaceValidator } from '../../lib';
 import { SectionPanel } from '../section_panel';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const validator = new SpaceValidator({ shouldValidate: true });
 

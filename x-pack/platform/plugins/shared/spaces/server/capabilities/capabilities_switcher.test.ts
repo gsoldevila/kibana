@@ -7,6 +7,7 @@
 
 import type { Capabilities, CoreSetup } from '@kbn/core/server';
 import { coreMock, httpServerMock, loggingSystemMock } from '@kbn/core/server/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import type { KibanaFeature } from '@kbn/features-plugin/server';
 import { featuresPluginMock } from '@kbn/features-plugin/server/mocks';
 
@@ -14,7 +15,6 @@ import { setupCapabilitiesSwitcher } from './capabilities_switcher';
 import type { Space } from '../../common';
 import { spacesServiceMock } from '../spaces_service/spaces_service.mock';
 import type { SpacesPluginStartDeps } from '../types';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const features = [
   {

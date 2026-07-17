@@ -5,9 +5,10 @@
  * 2.0.
  */
 
+import { asSpaceId } from '@kbn/core-spaces-common';
+
 import { migrateTo660 } from './space_migrations';
 import type { Space } from '../../../common';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 describe('migrateTo660', () => {
   it('adds a "disabledFeatures" attribute initialized as an empty array', () => {

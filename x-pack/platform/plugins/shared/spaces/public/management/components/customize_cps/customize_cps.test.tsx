@@ -9,11 +9,11 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { useState } from 'react';
 
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { KibanaContextProvider } from '@kbn/kibana-react-plugin/public';
 import { renderWithI18n } from '@kbn/test-jest-helpers';
 
 import { CustomizeCps } from './customize_cps';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 describe('CustomizeCps', () => {
   const mockOnChange = jest.fn();

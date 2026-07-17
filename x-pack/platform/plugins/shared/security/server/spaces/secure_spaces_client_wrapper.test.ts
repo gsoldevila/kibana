@@ -10,6 +10,7 @@ import { SavedObjectsErrorHelpers } from '@kbn/core/server';
 import { httpServerMock, savedObjectsServiceMock } from '@kbn/core/server/mocks';
 import { savedObjectsExtensionsMock } from '@kbn/core-saved-objects-api-server-mocks';
 import type { ISavedObjectsSecurityExtension } from '@kbn/core-saved-objects-server';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import type {
   AuditEvent,
   AuditLogger,
@@ -25,7 +26,6 @@ import { SpaceAuditAction } from '../audit';
 import { auditLoggerMock } from '../audit/mocks';
 import type { AuthorizationServiceSetupInternal } from '../authorization';
 import { authorizationMock } from '../authorization/index.mock';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 interface Opts {
   securityEnabled?: boolean;

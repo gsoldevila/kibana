@@ -9,6 +9,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import * as Rx from 'rxjs';
 
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { QueryClient, QueryClientProvider } from '@kbn/react-query';
 import { renderWithI18n } from '@kbn/test-jest-helpers';
 
@@ -19,7 +20,6 @@ import { EventTracker } from '../analytics';
 import { SOLUTION_VIEW_SWITCH_STORAGE_KEY_PREFIX } from '../solution_view_switch';
 import type { SpacesManager } from '../spaces_manager';
 import { spacesManagerMock } from '../spaces_manager/mocks';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('./solution_view_switch_tour', () => ({
   SOLUTION_VIEW_SWITCH_TOUR_STORAGE_KEY_PREFIX: 'spaces.solutionViewSwitchTourShown',

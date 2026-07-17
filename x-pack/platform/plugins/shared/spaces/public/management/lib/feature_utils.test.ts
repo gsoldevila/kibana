@@ -5,10 +5,10 @@
  * 2.0.
  */
 
+import { asSpaceId } from '@kbn/core-spaces-common';
 import type { KibanaFeatureConfig } from '@kbn/features-plugin/public';
 
 import { getEnabledFeatures } from './feature_utils';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const buildFeatures = () =>
   [

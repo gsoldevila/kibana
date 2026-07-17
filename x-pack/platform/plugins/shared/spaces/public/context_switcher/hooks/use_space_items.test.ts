@@ -7,9 +7,10 @@
 
 import { renderHook } from '@testing-library/react';
 
+import { asSpaceId } from '@kbn/core-spaces-common';
+
 import { useSpaceItems } from './use_space_items';
 import type { Space } from '../../../common';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('../../space_avatar', () => ({
   getSpaceAvatarComponent: () => Promise.resolve(() => null),
@@ -19,9 +20,7 @@ jest.mock('../../space_solution_badge', () => ({
   SpaceSolutionBadge: () => null,
 }));
 
-const createSpace = (
-  overrides: Partial<Omit<Space, 'id'>> & { id?: string } = {}
-): Space => {
+const createSpace = (overrides: Partial<Omit<Space, 'id'>> & { id?: string } = {}): Space => {
   const { id = 'test-space', ...rest } = overrides;
   return {
     id: asSpaceId(id),

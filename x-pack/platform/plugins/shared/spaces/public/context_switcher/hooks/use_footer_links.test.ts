@@ -9,9 +9,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 
 import type { CloudStart } from '@kbn/cloud-plugin/public';
 import type { CoreStart } from '@kbn/core/public';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 import { useFooterLinks } from './use_footer_links';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('@kbn/cloud/connection_details', () => ({
   openWiredConnectionDetails: jest.fn(),

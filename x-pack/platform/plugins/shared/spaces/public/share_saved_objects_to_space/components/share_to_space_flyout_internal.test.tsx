@@ -12,6 +12,7 @@ import React from 'react';
 
 import { coreMock } from '@kbn/core/public/mocks';
 import type { SavedObjectReferenceWithContext } from '@kbn/core-saved-objects-api-server';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { I18nProvider } from '@kbn/i18n-react';
 
 import { AliasTable } from './alias_table';
@@ -23,7 +24,6 @@ import type { Space } from '../../../common';
 import { ALL_SPACES_ID } from '../../../common/constants';
 import { getSpacesContextProviderWrapper } from '../../spaces_context';
 import { spacesManagerMock } from '../../spaces_manager/mocks';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('@elastic/eui', () => {
   const actual = jest.requireActual('@elastic/eui');
@@ -328,7 +328,9 @@ describe('ShareToSpaceFlyout', () => {
   describe('without enableCreateNewSpaceLink', () => {
     it('does not render a NoSpacesAvailable component when no spaces are available', async () => {
       const { onClose } = await setup({
-        mockSpaces: [{ id: asSpaceId('my-active-space'), name: 'my active space', disabledFeatures: [] }],
+        mockSpaces: [
+          { id: asSpaceId('my-active-space'), name: 'my active space', disabledFeatures: [] },
+        ],
       });
 
       expect(screen.getByTestId('share-mode-control-description')).toBeInTheDocument();
@@ -355,7 +357,9 @@ describe('ShareToSpaceFlyout', () => {
     it('renders a NoSpacesAvailable component when no spaces are available', async () => {
       const { onClose } = await setup({
         enableCreateNewSpaceLink,
-        mockSpaces: [{ id: asSpaceId('my-active-space'), name: 'my active space', disabledFeatures: [] }],
+        mockSpaces: [
+          { id: asSpaceId('my-active-space'), name: 'my active space', disabledFeatures: [] },
+        ],
       });
 
       expect(screen.getByTestId('share-mode-control-description')).toBeInTheDocument();
@@ -907,7 +911,13 @@ describe('ShareToSpaceFlyout', () => {
         additionalShareableReferences: [
           // the saved object target is already included in the mock results by default; it will not be counted
           { type: 'foo', id: asSpaceId('1'), spaces: [], inboundReferences: [] }, // this will not be counted because spaces is empty (it may not be a shareable type)
-          { type: 'foo', id: asSpaceId('2'), spaces: namespaces, inboundReferences: [], isMissing: true }, // this will not be counted because isMissing === true
+          {
+            type: 'foo',
+            id: asSpaceId('2'),
+            spaces: namespaces,
+            inboundReferences: [],
+            isMissing: true,
+          }, // this will not be counted because isMissing === true
           { type: 'foo', id: asSpaceId('3'), spaces: namespaces, inboundReferences: [] }, // this will be counted
         ],
       });

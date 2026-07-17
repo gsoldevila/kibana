@@ -8,7 +8,6 @@
 import Boom from '@hapi/boom';
 
 import { SavedObjectsErrorHelpers } from '@kbn/core/server';
-
 import { brandSpaceId } from '@kbn/core-spaces-common';
 
 import type { ExternalRouteDeps } from '.';

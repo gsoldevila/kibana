@@ -11,13 +11,13 @@ import React from 'react';
 import { of } from 'rxjs';
 
 import { customBrandingServiceMock } from '@kbn/core-custom-branding-browser-mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { QueryClient, QueryClientProvider } from '@kbn/react-query';
 import { renderWithI18n } from '@kbn/test-jest-helpers';
 
 import { SpaceSelector, type SpaceSelectorProps, VIEW_MODE_THRESHOLD } from './space_selector';
 import type { Space } from '../../common';
 import { spacesManagerMock } from '../spaces_manager/mocks';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 function getSpacesManager(spaces: Space[] = []) {
   const manager = spacesManagerMock.create();

@@ -9,6 +9,7 @@ import { errors } from '@elastic/elasticsearch';
 
 import { savedObjectsRepositoryMock } from '@kbn/core/server/mocks';
 import type { SavedObject } from '@kbn/core-saved-objects-server';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import type { INpreClient } from '@kbn/cps/server/npre';
 import type { KibanaFeature } from '@kbn/features-plugin/server';
 import { featuresPluginMock } from '@kbn/features-plugin/server/mocks';
@@ -17,7 +18,6 @@ import { SpacesClient } from './spaces_client';
 import type { GetAllSpacesPurpose, Space } from '../../common';
 import type { ConfigType } from '../config';
 import { ConfigSchema } from '../config';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const createMockDebugLogger = () => {
   return jest.fn();

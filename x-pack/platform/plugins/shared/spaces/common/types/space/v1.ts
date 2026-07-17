@@ -6,10 +6,10 @@
  */
 
 import type { SolutionId } from '@kbn/core-chrome-browser';
+import type { SpaceId } from '@kbn/core-spaces-common';
 import type { ProjectRouting } from '@kbn/es-query';
 
 import type { SOLUTION_VIEW_CLASSIC } from '../../constants';
-import type { SpaceId } from '@kbn/core-spaces-common';
 
 export type SolutionView = SolutionId | typeof SOLUTION_VIEW_CLASSIC;
 

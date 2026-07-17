@@ -8,6 +8,7 @@
 import { fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
+import { asSpaceId } from '@kbn/core-spaces-common';
 import {
   createFeature,
   createKibanaPrivileges,
@@ -19,7 +20,6 @@ import { renderWithKibanaRenderContext } from '@kbn/test-jest-helpers';
 
 import { PrivilegeSpaceForm } from './privilege_space_form';
 import type { Role } from '../../../../../../../common';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const createRole = (kibana: Role['kibana'] = []): Role => {
   return {

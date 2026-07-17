@@ -9,12 +9,12 @@ import React from 'react';
 
 import { DEFAULT_APP_CATEGORIES } from '@kbn/core/public';
 import { scopedHistoryMock } from '@kbn/core-application-browser-mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { KibanaFeature } from '@kbn/features-plugin/common';
 import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
 
 import type { GetTabsProps } from './edit_space_tabs';
 import { getTabs } from './edit_space_tabs';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const space = {
   id: asSpaceId('my-space'),

@@ -17,6 +17,7 @@ import { act } from '@testing-library/react';
 import React from 'react';
 
 import { coreMock } from '@kbn/core/public/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import type { Space } from '@kbn/spaces-plugin/public';
 import { SpaceAvatarInternal } from '@kbn/spaces-plugin/public/space_avatar/space_avatar_internal';
 import { spacesManagerMock } from '@kbn/spaces-plugin/public/spaces_manager/mocks';
@@ -24,7 +25,6 @@ import { getUiApi } from '@kbn/spaces-plugin/public/ui_api';
 import { mountWithIntl } from '@kbn/test-jest-helpers';
 
 import { SpacesPopoverList } from './spaces_popover_list';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const mockSpaces = [
   {

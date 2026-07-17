@@ -5,8 +5,9 @@
  * 2.0.
  */
 
-import { SpaceValidator } from './validate_space';
 import { asSpaceId } from '@kbn/core-spaces-common';
+
+import { SpaceValidator } from './validate_space';
 
 let validator: SpaceValidator;
 

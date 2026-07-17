@@ -8,8 +8,9 @@
 import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 
-import { SpaceCard } from './space_card';
 import { asSpaceId, type SpaceId } from '@kbn/core-spaces-common';
+
+import { SpaceCard } from './space_card';
 
 test('it renders without crashing', () => {
   const space = {

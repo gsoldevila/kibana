@@ -9,11 +9,11 @@ import type { EuiCheckboxProps } from '@elastic/eui';
 import React from 'react';
 
 import { DEFAULT_APP_CATEGORIES } from '@kbn/core/public';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import type { KibanaFeatureConfig } from '@kbn/features-plugin/public';
 import { findTestSubject, mountWithIntl, nextTick, shallowWithIntl } from '@kbn/test-jest-helpers';
 
 import { EnabledFeatures } from './enabled_features';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const features: KibanaFeatureConfig[] = [
   {

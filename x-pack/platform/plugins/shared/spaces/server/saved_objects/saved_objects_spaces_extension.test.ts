@@ -9,9 +9,10 @@ import { mockSpaceIdToNamespace } from './saved_objects_spaces_extension.test.mo
 
 import Boom from '@hapi/boom';
 
+import { asSpaceId } from '@kbn/core-spaces-common';
+
 import { SavedObjectsSpacesExtension } from './saved_objects_spaces_extension';
 import { spacesClientMock } from '../mocks';
-import { asSpaceId } from '@kbn/core-spaces-common';
 
 const ACTIVE_SPACE_ID = 'active-spaceId';
 function setup() {
