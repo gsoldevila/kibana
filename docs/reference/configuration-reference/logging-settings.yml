@@ -372,7 +372,7 @@ groups:
         description: |
           Optional list of meta filters for this logger context. Each filter temporarily lowers the effective log level for records whose `meta` matches all configured key-value predicates, so you can enable verbose logging for a subset of traffic without raising the logger's nominal `level`.
 
-          At most 10 filters are allowed per logger. Omit the setting or set it to `[]` to inherit filters from the nearest ancestor logger (same inheritance pattern as `appenders`). Set `filters: null` to opt out of inherited filters without defining any of your own.
+          At most, 10 filters are allowed per logger. Omit the setting or set it to `[]` to inherit filters from the nearest ancestor logger (same inheritance pattern as `appenders`). Set `filters: null` to opt out of inherited filters without defining your own.
 
           Example — keep most alerting logs at `warn`, but enable `debug` for ES|QL rules when plugins emit `labels.ruleType` in log meta:
 
