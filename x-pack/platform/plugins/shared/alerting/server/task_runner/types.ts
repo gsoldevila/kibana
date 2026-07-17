@@ -59,6 +59,7 @@ import type { ElasticsearchError } from '../lib';
 import type { ConnectorAdapterRegistry } from '../connector_adapters/connector_adapter_registry';
 import type { RulesSettingsService } from '../rules_settings';
 import type { MaintenanceWindowsService } from './maintenance_windows';
+import type { AlertTaskParams } from './alert_task_instance';
 import type { RawRuleSnoozedInstance } from '../saved_objects/schemas/raw_rule';
 
 export interface RuleTaskRunResult {
@@ -112,6 +113,7 @@ export interface RunRuleParams<Params extends RuleTypeParams> {
 
 export interface RuleTaskInstance extends ConcreteTaskInstance {
   state: RuleTaskState;
+  params: AlertTaskParams;
 }
 
 // ActionScheduler
