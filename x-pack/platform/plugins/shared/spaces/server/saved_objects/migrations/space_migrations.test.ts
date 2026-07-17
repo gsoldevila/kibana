@@ -7,17 +7,18 @@
 
 import { migrateTo660 } from './space_migrations';
 import type { Space } from '../../../common';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 describe('migrateTo660', () => {
   it('adds a "disabledFeatures" attribute initialized as an empty array', () => {
     expect(
       migrateTo660({
-        id: 'space:foo',
+        id: asSpaceId('space:foo'),
         type: 'space',
         attributes: {} as Space,
       })
     ).toEqual({
-      id: 'space:foo',
+      id: asSpaceId('space:foo'),
       type: 'space',
       attributes: {
         disabledFeatures: [],
@@ -29,14 +30,14 @@ describe('migrateTo660', () => {
     // This scenario shouldn't happen organically. Protecting against defects in the migration.
     expect(
       migrateTo660({
-        id: 'space:foo',
+        id: asSpaceId('space:foo'),
         type: 'space',
         attributes: {
           disabledFeatures: ['foo', 'bar', 'baz'],
         } as Space,
       })
     ).toEqual({
-      id: 'space:foo',
+      id: asSpaceId('space:foo'),
       type: 'space',
       attributes: {
         disabledFeatures: ['foo', 'bar', 'baz'],

@@ -17,9 +17,10 @@ import type { SpaceListProps } from './types';
 import type { Space } from '../../common';
 import { getSpacesContextProviderWrapper } from '../spaces_context';
 import { spacesManagerMock } from '../spaces_manager/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const ACTIVE_SPACE: Space = {
-  id: 'default',
+  id: asSpaceId('default'),
   name: 'Default',
   initials: 'D!',
   disabledFeatures: [],
@@ -28,7 +29,7 @@ const getSpaceData = (inactiveSpaceCount: number = 0) => {
   const inactive = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel']
     .map<Space>((name) => {
       const id = name.toLowerCase();
-      return { id, name, disabledFeatures: [`${id}-feature`] };
+      return { id: asSpaceId(id), name, disabledFeatures: [`${id}-feature`] };
     })
     .slice(0, inactiveSpaceCount);
   const spaces = [ACTIVE_SPACE, ...inactive];

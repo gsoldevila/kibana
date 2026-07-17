@@ -40,6 +40,7 @@ import { EventTracker } from '../analytics';
 import type { ConfigType } from '../config';
 import type { PluginsStart } from '../plugin';
 import { spacesManagerMock } from '../spaces_manager/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const config: ConfigType = {
   maxSpaces: 1000,
@@ -57,7 +58,7 @@ async function mountApp(basePath: string, pathname: string, spaceId?: string) {
   const spacesManager = spacesManagerMock.create();
   if (spaceId) {
     spacesManager.getSpace.mockResolvedValue({
-      id: spaceId,
+      id: asSpaceId(spaceId),
       name: `space with id ${spaceId}`,
       disabledFeatures: [],
     });

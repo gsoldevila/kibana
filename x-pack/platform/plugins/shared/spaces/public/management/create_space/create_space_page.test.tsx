@@ -21,6 +21,7 @@ import type { SolutionView, Space } from '../../../common/types/latest';
 import { EventTracker } from '../../analytics';
 import type { SpacesManager } from '../../spaces_manager';
 import { spacesManagerMock } from '../../spaces_manager/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('@elastic/eui/lib/components/overlay_mask', () => {
   return {
@@ -29,7 +30,7 @@ jest.mock('@elastic/eui/lib/components/overlay_mask', () => {
 });
 
 const space: Space = {
-  id: 'my-space',
+  id: asSpaceId('my-space'),
   name: 'My Space',
   disabledFeatures: [],
 };
@@ -37,7 +38,7 @@ const space: Space = {
 const featuresStart = featuresPluginMock.createStart();
 featuresStart.getFeatures.mockResolvedValue([
   new KibanaFeature({
-    id: 'feature-1',
+    id: asSpaceId('feature-1'),
     name: 'feature 1',
     app: [],
     category: DEFAULT_APP_CATEGORIES.kibana,

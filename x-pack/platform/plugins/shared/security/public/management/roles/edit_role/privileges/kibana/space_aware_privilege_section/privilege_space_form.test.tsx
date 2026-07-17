@@ -19,6 +19,7 @@ import { renderWithKibanaRenderContext } from '@kbn/test-jest-helpers';
 
 import { PrivilegeSpaceForm } from './privilege_space_form';
 import type { Role } from '../../../../../../../common';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const createRole = (kibana: Role['kibana'] = []): Role => {
   return {
@@ -30,17 +31,17 @@ const createRole = (kibana: Role['kibana'] = []): Role => {
 
 const displaySpaces: Space[] = [
   {
-    id: 'foo',
+    id: asSpaceId('foo'),
     name: 'Foo Space',
     disabledFeatures: [],
   },
   {
-    id: 'default',
+    id: asSpaceId('default'),
     name: 'Default Space',
     disabledFeatures: [],
   },
   {
-    id: '*',
+    id: asSpaceId('*'),
     name: 'Global',
     disabledFeatures: [],
   },
@@ -373,7 +374,7 @@ describe('PrivilegeSpaceForm', () => {
     const extendedKibanaFeatures = [
       ...kibanaFeatures,
       createFeature({
-        id: 'no_sub_features_disabled_read',
+        id: asSpaceId('no_sub_features_disabled_read'),
         name: 'Feature 1: No Sub Features and read disabled',
         disabledReadPrivilege: true,
       }),
@@ -489,7 +490,7 @@ describe('PrivilegeSpaceForm', () => {
     const extendedKibanaFeatures = [
       ...kibanaFeatures,
       createFeature({
-        id: 'no_sub_features_require_all_space',
+        id: asSpaceId('no_sub_features_require_all_space'),
         name: 'Feature 1: No Sub Features and all privilege require all space',
         requireAllSpacesOnAllPrivilege: true,
       }),

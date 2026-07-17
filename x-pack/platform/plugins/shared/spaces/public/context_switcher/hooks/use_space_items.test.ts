@@ -9,6 +9,7 @@ import { renderHook } from '@testing-library/react';
 
 import { useSpaceItems } from './use_space_items';
 import type { Space } from '../../../common';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('../../space_avatar', () => ({
   getSpaceAvatarComponent: () => Promise.resolve(() => null),
@@ -18,12 +19,17 @@ jest.mock('../../space_solution_badge', () => ({
   SpaceSolutionBadge: () => null,
 }));
 
-const createSpace = (overrides: Partial<Space> = {}): Space => ({
-  id: 'test-space',
-  name: 'Test Space',
-  disabledFeatures: [],
-  ...overrides,
-});
+const createSpace = (
+  overrides: Partial<Omit<Space, 'id'>> & { id?: string } = {}
+): Space => {
+  const { id = 'test-space', ...rest } = overrides;
+  return {
+    id: asSpaceId(id),
+    name: 'Test Space',
+    disabledFeatures: [],
+    ...rest,
+  };
+};
 
 describe('useSpaceItems', () => {
   it('maps spaces to space items and sets the active space item', () => {

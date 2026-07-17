@@ -14,15 +14,16 @@ import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
 
 import type { GetTabsProps } from './edit_space_tabs';
 import { getTabs } from './edit_space_tabs';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const space = {
-  id: 'my-space',
+  id: asSpaceId('my-space'),
   name: 'My Space',
   disabledFeatures: [],
 };
 const features = [
   new KibanaFeature({
-    id: 'feature-1',
+    id: asSpaceId('feature-1'),
     name: 'feature 1',
     app: [],
     category: DEFAULT_APP_CATEGORIES.kibana,

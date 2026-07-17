@@ -11,6 +11,7 @@ import Boom from '@hapi/boom';
 
 import { SavedObjectsSpacesExtension } from './saved_objects_spaces_extension';
 import { spacesClientMock } from '../mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const ACTIVE_SPACE_ID = 'active-spaceId';
 function setup() {
@@ -46,10 +47,10 @@ describe('#getSearchableNamespaces', () => {
     const { spacesClient, spacesExtension } = setup();
     spacesClient.getAll.mockImplementation(() =>
       Promise.resolve([
-        { id: 'ns-1', name: '', disabledFeatures: [] },
-        { id: 'ns-2', name: '', disabledFeatures: [] },
-        { id: 'ns-3', name: '', disabledFeatures: [] },
-        { id: 'ns-4', name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-1'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-2'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-3'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-4'), name: '', disabledFeatures: [] },
       ])
     );
     await expect(spacesExtension.getSearchableNamespaces(['some-namespace'])).resolves.toEqual([]);
@@ -67,10 +68,10 @@ describe('#getSearchableNamespaces', () => {
     const { spacesClient, spacesExtension } = setup();
     spacesClient.getAll.mockImplementation(() =>
       Promise.resolve([
-        { id: 'ns-1', name: '', disabledFeatures: [] },
-        { id: 'ns-2', name: '', disabledFeatures: [] },
-        { id: 'ns-3', name: '', disabledFeatures: [] },
-        { id: 'ns-4', name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-1'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-2'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-3'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-4'), name: '', disabledFeatures: [] },
       ])
     );
     await expect(spacesExtension.getSearchableNamespaces(undefined)).resolves.toEqual([
@@ -82,10 +83,10 @@ describe('#getSearchableNamespaces', () => {
     const { spacesClient, spacesExtension } = setup();
     spacesClient.getAll.mockImplementation(() =>
       Promise.resolve([
-        { id: 'ns-1', name: '', disabledFeatures: [] },
-        { id: 'ns-2', name: '', disabledFeatures: [] },
-        { id: 'ns-3', name: '', disabledFeatures: [] },
-        { id: 'ns-4', name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-1'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-2'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-3'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-4'), name: '', disabledFeatures: [] },
       ])
     );
     await expect(spacesExtension.getSearchableNamespaces([])).resolves.toEqual([]);
@@ -95,10 +96,10 @@ describe('#getSearchableNamespaces', () => {
     const { spacesClient, spacesExtension } = setup();
     spacesClient.getAll.mockImplementation(() =>
       Promise.resolve([
-        { id: 'ns-1', name: '', disabledFeatures: [] },
-        { id: 'ns-2', name: '', disabledFeatures: [] },
-        { id: 'ns-3', name: '', disabledFeatures: [] },
-        { id: 'ns-4', name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-1'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-2'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-3'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-4'), name: '', disabledFeatures: [] },
       ])
     );
 
@@ -112,8 +113,8 @@ describe('#getSearchableNamespaces', () => {
     const { spacesClient, spacesExtension } = setup();
     spacesClient.getAll.mockImplementation(() =>
       Promise.resolve([
-        { id: 'ns-1', name: '', disabledFeatures: [] },
-        { id: 'ns-2', name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-1'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-2'), name: '', disabledFeatures: [] },
       ])
     );
 
@@ -126,10 +127,10 @@ describe('#getSearchableNamespaces', () => {
     const { spacesClient, spacesExtension } = setup();
     spacesClient.getAll.mockImplementation(() =>
       Promise.resolve([
-        { id: 'ns-1', name: '', disabledFeatures: [] },
-        { id: 'ns-2', name: '', disabledFeatures: [] },
-        { id: 'ns-3', name: '', disabledFeatures: [] },
-        { id: 'ns-4', name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-1'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-2'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-3'), name: '', disabledFeatures: [] },
+        { id: asSpaceId('ns-4'), name: '', disabledFeatures: [] },
       ])
     );
 

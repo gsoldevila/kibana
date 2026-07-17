@@ -17,6 +17,7 @@ import { getUiApi } from '@kbn/spaces-plugin/public/ui_api';
 
 import { KibanaPrivilegesRegion } from './kibana_privileges_region';
 import { RoleValidator } from '../../validate_role';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('./simple_privilege_section', () => ({
   SimplePrivilegeSection: () => <div data-test-subj="simplePrivilegeSection" />,
@@ -49,13 +50,13 @@ const buildProps = () => {
     },
     spaces: [
       {
-        id: 'default',
+        id: asSpaceId('default'),
         name: 'Default Space',
         disabledFeatures: [],
         _reserved: true,
       },
       {
-        id: 'marketing',
+        id: asSpaceId('marketing'),
         name: 'Marketing',
         disabledFeatures: [],
       },

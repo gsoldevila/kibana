@@ -11,6 +11,7 @@ import type { CloudStart } from '@kbn/cloud-plugin/public';
 import type { CoreStart } from '@kbn/core/public';
 
 import { useFooterLinks } from './use_footer_links';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('@kbn/cloud/connection_details', () => ({
   openWiredConnectionDetails: jest.fn(),
@@ -70,7 +71,7 @@ describe('useFooterLinks', () => {
     expect(result.current).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 'connectionDetails',
+          id: asSpaceId('connectionDetails'),
           label: 'Connection details',
         }),
       ])
@@ -124,7 +125,7 @@ describe('useFooterLinks', () => {
     expect(result.current).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 'inviteUsers',
+          id: asSpaceId('inviteUsers'),
           label: 'Invite users',
           href: '/app/management/security/users',
           external: false,

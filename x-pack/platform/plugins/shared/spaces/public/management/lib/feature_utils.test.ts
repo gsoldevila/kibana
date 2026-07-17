@@ -8,6 +8,7 @@
 import type { KibanaFeatureConfig } from '@kbn/features-plugin/public';
 
 import { getEnabledFeatures } from './feature_utils';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const buildFeatures = () =>
   [
@@ -20,17 +21,17 @@ const buildFeatures = () =>
       name: 'feature 2',
     },
     {
-      id: 'feature3',
+      id: asSpaceId('feature3'),
       name: 'feature 3',
     },
     {
-      id: 'feature4',
+      id: asSpaceId('feature4'),
       name: 'feature 4',
     },
   ] as KibanaFeatureConfig[];
 
 const buildSpace = (disabledFeatures = [] as string[]) => ({
-  id: 'space',
+  id: asSpaceId('space'),
   name: 'space',
   disabledFeatures,
 });

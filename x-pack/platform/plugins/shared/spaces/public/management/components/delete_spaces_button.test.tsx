@@ -13,9 +13,10 @@ import { shallowWithIntl } from '@kbn/test-jest-helpers';
 import { DeleteSpacesButton } from './delete_spaces_button';
 import type { SpacesManager } from '../../spaces_manager';
 import { spacesManagerMock } from '../../spaces_manager/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const space = {
-  id: 'my-space',
+  id: asSpaceId('my-space'),
   name: 'My Space',
   disabledFeatures: [],
 };

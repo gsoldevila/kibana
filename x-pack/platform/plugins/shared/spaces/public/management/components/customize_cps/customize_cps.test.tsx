@@ -13,6 +13,7 @@ import { KibanaContextProvider } from '@kbn/kibana-react-plugin/public';
 import { renderWithI18n } from '@kbn/test-jest-helpers';
 
 import { CustomizeCps } from './customize_cps';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 describe('CustomizeCps', () => {
   const mockOnChange = jest.fn();
@@ -49,7 +50,7 @@ describe('CustomizeCps', () => {
   };
 
   const defaultSpace = {
-    id: 'test-space',
+    id: asSpaceId('test-space'),
     name: 'Test Space',
   };
 
@@ -129,7 +130,7 @@ describe('CustomizeCps', () => {
 
     it('renders with a space that has no projectRouting', async () => {
       const spaceWithoutRouting = {
-        id: 'test-space',
+        id: asSpaceId('test-space'),
         name: 'Test Space',
       };
       renderComponent(spaceWithoutRouting);
@@ -194,7 +195,7 @@ describe('CustomizeCps', () => {
         expect(screen.queryByText('linked_local_project')).not.toBeInTheDocument()
       );
       expect(mockOnChange).toHaveBeenCalledWith({
-        id: 'test-space',
+        id: asSpaceId('test-space'),
         name: 'Test Space',
         projectRouting: '_alias:_origin',
       });
@@ -204,7 +205,7 @@ describe('CustomizeCps', () => {
       expect(await screen.findByText('local_project')).toBeInTheDocument();
       expect(await screen.findByText('linked_local_project')).toBeInTheDocument();
       expect(mockOnChange).toHaveBeenCalledWith({
-        id: 'test-space',
+        id: asSpaceId('test-space'),
         name: 'Test Space',
         projectRouting: '_alias:*',
       });

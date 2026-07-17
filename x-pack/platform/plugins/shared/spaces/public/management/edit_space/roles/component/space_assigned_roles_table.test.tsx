@@ -12,6 +12,7 @@ import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
 import type { Role } from '@kbn/security-plugin-types-common';
 
 import { SpaceAssignedRolesTable } from './space_assigned_roles_table';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const defaultProps: Pick<
   ComponentProps<typeof SpaceAssignedRolesTable>,
@@ -22,7 +23,7 @@ const defaultProps: Pick<
   | 'currentSpace'
 > = {
   currentSpace: {
-    id: 'odyssey',
+    id: asSpaceId('odyssey'),
     name: 'Odyssey',
     disabledFeatures: [],
   },

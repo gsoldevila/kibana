@@ -9,6 +9,8 @@ import Boom from '@hapi/boom';
 
 import { SavedObjectsErrorHelpers } from '@kbn/core/server';
 
+import { brandSpaceId } from '@kbn/core-spaces-common';
+
 import type { ExternalRouteDeps } from '.';
 import { API_VERSIONS } from '../../../../common';
 import { wrapError } from '../../../lib/errors';
@@ -53,7 +55,8 @@ export function initPostSpacesApi(deps: ExternalRouteDeps) {
       },
       createLicensedRouteHandler(async (context, request, response) => {
         const spacesClient = getSpacesService().createSpacesClient(request);
-        const space = request.body;
+        // Body id was format-validated by getSpaceSchema; trusted re-brand into Space.id.
+        const space = { ...request.body, id: brandSpaceId(request.body.id) };
         try {
           const createdSpace = await spacesClient.create(space);
 

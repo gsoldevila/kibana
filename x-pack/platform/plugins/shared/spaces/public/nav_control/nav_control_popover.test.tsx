@@ -19,6 +19,7 @@ import { EventTracker } from '../analytics';
 import { SOLUTION_VIEW_SWITCH_STORAGE_KEY_PREFIX } from '../solution_view_switch';
 import type { SpacesManager } from '../spaces_manager';
 import { spacesManagerMock } from '../spaces_manager/mocks';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 jest.mock('./solution_view_switch_tour', () => ({
   SOLUTION_VIEW_SWITCH_TOUR_STORAGE_KEY_PREFIX: 'spaces.solutionViewSwitchTourShown',
@@ -29,18 +30,18 @@ jest.mock('./solution_view_switch_tour', () => ({
 
 const mockSpaces = [
   {
-    id: 'default',
+    id: asSpaceId('default'),
     name: 'Default Space',
     description: 'this is your default space',
     disabledFeatures: [],
   },
   {
-    id: 'space-1',
+    id: asSpaceId('space-1'),
     name: 'Space 1',
     disabledFeatures: [],
   },
   {
-    id: 'space-2',
+    id: asSpaceId('space-2'),
     name: 'Space 2',
     disabledFeatures: [],
   },
@@ -103,7 +104,7 @@ describe('NavControlPopover', () => {
 
   it('renders a SpaceAvatar with the active space', async () => {
     const activeSpace = {
-      id: 'default',
+      id: asSpaceId('default'),
       name: 'Default Space',
       description: 'this is your default space',
       disabledFeatures: [],
@@ -137,12 +138,12 @@ describe('NavControlPopover', () => {
   it('should render a search box when there are 8 or more spaces', async () => {
     const manySpaces = [
       ...mockSpaces,
-      { id: 'space-3', name: 'Space 3', disabledFeatures: [] },
-      { id: 'space-4', name: 'Space 4', disabledFeatures: [] },
-      { id: 'space-5', name: 'Space 5', disabledFeatures: [] },
-      { id: 'space-6', name: 'Space 6', disabledFeatures: [] },
-      { id: 'space-7', name: 'Space 7', disabledFeatures: [] },
-      { id: 'space-8', name: 'Space 8', disabledFeatures: [] },
+      { id: asSpaceId('space-3'), name: 'Space 3', disabledFeatures: [] },
+      { id: asSpaceId('space-4'), name: 'Space 4', disabledFeatures: [] },
+      { id: asSpaceId('space-5'), name: 'Space 5', disabledFeatures: [] },
+      { id: asSpaceId('space-6'), name: 'Space 6', disabledFeatures: [] },
+      { id: asSpaceId('space-7'), name: 'Space 7', disabledFeatures: [] },
+      { id: asSpaceId('space-8'), name: 'Space 8', disabledFeatures: [] },
     ];
 
     spacesManager.getSpaces.mockResolvedValue(manySpaces);

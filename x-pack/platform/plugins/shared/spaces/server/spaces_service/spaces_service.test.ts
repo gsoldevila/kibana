@@ -10,7 +10,7 @@ import * as Rx from 'rxjs';
 import type { SavedObjectsRepository } from '@kbn/core/server';
 import { SavedObjectsErrorHelpers } from '@kbn/core/server';
 import { coreMock, httpServerMock } from '@kbn/core/server/mocks';
-import { DEFAULT_SPACE_ID } from '@kbn/core-spaces-common';
+import { DEFAULT_SPACE_ID, asSpaceId } from '@kbn/core-spaces-common';
 import { featuresPluginMock } from '@kbn/features-plugin/server/mocks';
 
 import { SpacesService } from './spaces_service';
@@ -26,7 +26,7 @@ const createService = () => {
     get: jest.fn().mockImplementation((type, id) => {
       if (type === 'space' && id === 'foo') {
         return Promise.resolve({
-          id: 'space:foo',
+          id: asSpaceId('space:foo'),
           attributes: {
             name: 'Foo Space',
             disabledFeatures: [],
@@ -35,7 +35,7 @@ const createService = () => {
       }
       if (type === 'space' && id === 'default') {
         return Promise.resolve({
-          id: 'space:default',
+          id: asSpaceId('space:default'),
           attributes: {
             name: 'Default Space',
             disabledFeatures: [],
@@ -131,7 +131,7 @@ describe('SpacesService', () => {
 
       const activeSpace = await spacesServiceStart.getActiveSpace(request);
       expect(activeSpace).toEqual({
-        id: 'space:default',
+        id: asSpaceId('space:default'),
         name: 'Default Space',
         disabledFeatures: [],
         _reserved: true,
@@ -144,7 +144,7 @@ describe('SpacesService', () => {
 
       const activeSpace = await spacesServiceStart.getActiveSpace(request);
       expect(activeSpace).toEqual({
-        id: 'space:foo',
+        id: asSpaceId('space:foo'),
         name: 'Foo Space',
         disabledFeatures: [],
       });

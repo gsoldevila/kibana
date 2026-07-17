@@ -21,6 +21,7 @@ import {
   mockRouteContext,
   mockRouteContextWithInvalidLicense,
 } from '../__fixtures__';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 describe('GET /internal/spaces/space/{id}/persisted_feature_visibility', () => {
   const setup = async (options?: { spacesSavedObjects?: any[] }) => {
@@ -89,7 +90,7 @@ describe('GET /internal/spaces/space/{id}/persisted_feature_visibility', () => {
     const { routeHandler, routeContext } = await setup({
       spacesSavedObjects: [
         {
-          id: 'mySpace',
+          id: asSpaceId('mySpace'),
           attributes: {
             name: 'mySpace',
             disabledFeatures: ['feature_1', 'feature_2'],

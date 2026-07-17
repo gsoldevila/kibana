@@ -9,10 +9,11 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { SpaceCards } from './space_cards';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 test('it renders without crashing', () => {
   const space = {
-    id: 'space-id',
+    id: asSpaceId('space-id'),
     name: 'space name',
     description: 'space description',
     disabledFeatures: [],

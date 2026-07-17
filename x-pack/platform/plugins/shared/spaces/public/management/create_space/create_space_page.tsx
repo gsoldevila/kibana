@@ -21,6 +21,7 @@ import { difference } from 'lodash';
 import React, { Component } from 'react';
 
 import type { Capabilities, NotificationsStart, ScopedHistory } from '@kbn/core/public';
+import { asSpaceId } from '@kbn/core-spaces-common';
 import { PROJECT_ROUTING } from '@kbn/cps-common';
 import { SectionLoading } from '@kbn/es-ui-shared-plugin/public';
 import type { FeaturesPluginStart, KibanaFeature } from '@kbn/features-plugin/public';
@@ -426,9 +427,10 @@ export class CreateSpacePage extends Component<Props, State> {
       projectRouting,
     } = this.state.space;
 
-    const params = {
+    // Draft form id is a plain string; validate-and-brand at the create write boundary.
+    const params: Space = {
       name,
-      id,
+      id: asSpaceId(id),
       description,
       initials: avatarType !== 'image' ? initials : '',
       color: color ? hsvToHex(hexToHsv(color)).toUpperCase() : undefined, // Convert 3 digit hex codes to 6 digits since Spaces API requires 6 digits

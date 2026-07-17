@@ -9,6 +9,7 @@ import type { SolutionId } from '@kbn/core-chrome-browser';
 import type { ProjectRouting } from '@kbn/es-query';
 
 import type { SOLUTION_VIEW_CLASSIC } from '../../constants';
+import type { SpaceId } from '@kbn/core-spaces-common';
 
 export type SolutionView = SolutionId | typeof SOLUTION_VIEW_CLASSIC;
 
@@ -22,7 +23,7 @@ export interface Space {
    *
    * Example: an id of `marketing` would result in the URL identifier of `/s/marketing`.
    */
-  id: string;
+  id: SpaceId;
 
   /**
    * Display name for this space.

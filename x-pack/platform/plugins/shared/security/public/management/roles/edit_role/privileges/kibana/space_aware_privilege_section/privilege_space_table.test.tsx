@@ -14,6 +14,7 @@ import { PrivilegeFormCalculator } from '@kbn/security-ui-components';
 import { renderWithI18n } from '@kbn/test-jest-helpers';
 
 import { PrivilegeSpaceTable } from './privilege_space_table';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 interface TableRow {
   spaces: string[];
@@ -25,10 +26,10 @@ interface TableRow {
 
 const features = [
   new KibanaFeature({
-    id: 'normal',
+    id: asSpaceId('normal'),
     name: 'normal feature',
     app: [],
-    category: { id: 'foo', label: 'foo' },
+    category: { id: asSpaceId('foo'), label: 'foo' },
     privileges: {
       all: {
         savedObject: { all: [], read: [] },
@@ -41,10 +42,10 @@ const features = [
     },
   }),
   new KibanaFeature({
-    id: 'normal_with_sub',
+    id: asSpaceId('normal_with_sub'),
     name: 'normal feature with sub features',
     app: [],
-    category: { id: 'foo', label: 'foo' },
+    category: { id: asSpaceId('foo'), label: 'foo' },
     privileges: {
       all: {
         savedObject: { all: [], read: [] },
@@ -63,14 +64,14 @@ const features = [
             groupType: 'mutually_exclusive',
             privileges: [
               {
-                id: 'normal_sub_all',
+                id: asSpaceId('normal_sub_all'),
                 name: 'normal sub feature privilege',
                 includeIn: 'all',
                 savedObject: { all: [], read: [] },
                 ui: ['normal-sub-all', 'normal-sub-read'],
               },
               {
-                id: 'normal_sub_read',
+                id: asSpaceId('normal_sub_read'),
                 name: 'normal sub feature read privilege',
                 includeIn: 'read',
                 savedObject: { all: [], read: [] },
@@ -82,7 +83,7 @@ const features = [
             groupType: 'independent',
             privileges: [
               {
-                id: 'excluded_sub_priv',
+                id: asSpaceId('excluded_sub_priv'),
                 name: 'excluded sub feature privilege',
                 includeIn: 'none',
                 savedObject: { all: [], read: [] },
@@ -95,10 +96,10 @@ const features = [
     ],
   }),
   new KibanaFeature({
-    id: 'bothPrivilegesExcludedFromBase',
+    id: asSpaceId('bothPrivilegesExcludedFromBase'),
     name: 'bothPrivilegesExcludedFromBase',
     app: [],
-    category: { id: 'foo', label: 'foo' },
+    category: { id: asSpaceId('foo'), label: 'foo' },
     privileges: {
       all: {
         excludeFromBasePrivileges: true,
@@ -113,10 +114,10 @@ const features = [
     },
   }),
   new KibanaFeature({
-    id: 'allPrivilegeExcludedFromBase',
+    id: asSpaceId('allPrivilegeExcludedFromBase'),
     name: 'allPrivilegeExcludedFromBase',
     app: [],
-    category: { id: 'foo', label: 'foo' },
+    category: { id: asSpaceId('foo'), label: 'foo' },
     privileges: {
       all: {
         excludeFromBasePrivileges: true,
@@ -149,14 +150,14 @@ const buildProps = (roleKibanaPrivileges: RoleKibanaPrivilege[]): PrivilegeSpace
     onEdit: (spacesIndex: number) => {},
     displaySpaces: [
       {
-        id: 'default',
+        id: asSpaceId('default'),
         name: 'Default',
         description: '',
         disabledFeatures: [],
         _reserved: true,
       },
       {
-        id: 'marketing',
+        id: asSpaceId('marketing'),
         name: 'Marketing',
         description: '',
         disabledFeatures: [],

@@ -25,6 +25,7 @@ import { spacesManagerMock } from '../../spaces_manager/spaces_manager.mock';
 import { getPrivilegeAPIClientMock } from '../privilege_api_client.mock';
 import { getRolesAPIClientMock } from '../roles_api_client.mock';
 import { getSecurityLicenseMock } from '../security_license.mock';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const getUrlForApp = (appId: string) => appId;
 const navigateToUrl = jest.fn();
@@ -41,7 +42,7 @@ const i18n = i18nServiceMock.createStartContract();
 const logger = loggingSystemMock.createLogger();
 
 const space = {
-  id: 'space-a',
+  id: asSpaceId('space-a'),
   name: 'Space A',
   disabledFeatures: [],
   _reserved: false,

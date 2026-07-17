@@ -38,6 +38,7 @@ import { spacesManagerMock } from '../../../../spaces_manager/spaces_manager.moc
 import { createPrivilegeAPIClientMock } from '../../../privilege_api_client.mock';
 import { createRolesAPIClientMock } from '../../../roles_api_client.mock';
 import { EditSpaceProvider } from '../../provider';
+import { asSpaceId } from '@kbn/core-spaces-common';
 
 const rolesAPIClient = createRolesAPIClientMock();
 const privilegeAPIClient = createPrivilegeAPIClientMock();
@@ -59,7 +60,7 @@ const createRole = (roleName: string, kibana: Role['kibana'] = []): Role => {
 };
 
 const space: Space = {
-  id: crypto.randomUUID(),
+  id: asSpaceId(crypto.randomUUID()),
   name: 'Odyssey',
   description: 'Journey vs. Destination',
   disabledFeatures: [],
