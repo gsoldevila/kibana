@@ -151,5 +151,27 @@ describe('convertModelVersionBackwardConversionSchema', () => {
         },
       });
     });
+
+    describe('when an open record accepts arbitrary keys', () => {
+      const conversionSchema = schema.object(
+        {
+          record: schema.recordOf(schema.string(), schema.any()),
+        },
+        { unknowns: 'ignore' }
+      );
+
+      it.each([
+        ['numeric keys', { '0': 'zero', '1': 'one' }],
+        ['numeric and non-numeric keys', { '0': 'zero', foo: 'bar' }],
+        ['a numeric key in a nested object', { body: { '200': 'ok' } }],
+        ['a key containing a backslash', { 'C:\\Windows': true }],
+        ['a key containing a double quote', { 'say "hi"': true }],
+      ])('returns the record unchanged when it has %s', (_, record) => {
+        const doc = createDoc({ attributes: { record } });
+        const converted = convertModelVersionBackwardConversionSchema(conversionSchema);
+
+        expect(converted(doc)).toEqual(doc);
+      });
+    });
   });
 });

@@ -31,6 +31,7 @@
     "@kbn/data-plugin",
     "@kbn/i18n",
     "@kbn/core-saved-objects-server",
+    "@kbn/core-test-helpers-model-versions",
     "@kbn/es-query",
     "@kbn/logging",
     "@kbn/std",
